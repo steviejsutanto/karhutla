@@ -1,0 +1,18 @@
+Surface heat sprite atlas
+Created: 2026-10-30
+Generation route: built-in ImageGen; transparent_background=true.
+Master: visual-assets/surface-heat-atlas.png — 1774 × 887, RGBA, 2,009,402 bytes.
+Delivery: visual-assets/surface-heat-atlas.webp — 768 × 384, RGBA, 107,254 bytes, WebP quality 76.
+Delivery operation: proportional resize and WebP compression only; generated alpha preserved. Alpha extrema: 0–255 in master and delivery. Meaningful-alpha cell bounds retain transparent gutters; all eight bases align near 83 percent of cell height.
+Runtime color handling: a single decode-time emissive selection suppresses pale diffuse peach/gray pixels and tints the remaining generated carbon fibres to copper-red/orange; the generated master and optimized delivery remain unchanged. No per-frame image processing.
+Runtime: four columns × two rows, eight fixed variants; no frame cycling or spawn/death resets. Caller-clocked continuous movement and scale changes carry agitation, while local calming reduces motion and opacity. No external image service is used during performance.
+
+Exact generation prompt:
+Use case: stylized-concept
+Asset type: transparent sprite atlas for a live charcoal, ash and peat installation, not a finished scene.
+Primary request: Eight different short, abstract incandescent heat wisps arranged as an exact four-column, two-row sprite atlas. Each is a low, wide tangle of orange-red glowing carbon fibres, ember dust and very fine granular haze. The shape reads as restless material glowing above burned peat, without a recognizable pointed flame silhouette. Torn fibrous curls, ragged fragments, little internal dark gaps, dull copper-red density and a few brighter orange pinpricks low in the body. Each wisp has a low concentrated base and a short soft curl dissolving upward.
+Style: tactile charcoal dust, fine film grain, ash and dry peat fibre; restrained, atmospheric and somber. Reds, burnt sienna, copper and orange only. Hot embers rather than yellow fire.
+Composition: exact 4 by 2 grid of eight equal cells. Each wisp isolated fully inside its own cell. Every shape occupies the middle 70 percent of cell width and lower-middle 55 percent of cell height. At least 15 percent truly transparent gutter on every side of every cell. Each sprite's base sits at the same relative vertical position, 82 percent down its cell. Grid boundaries themselves are invisible. Different asymmetrical torn contours and curls for each cell; no contact or overlap between cells.
+Background: genuinely transparent alpha, including all gutters, margins and empty spaces between fibres. Soft partial alpha edges. No opaque black backdrop and no painted checkerboard.
+Text: none.
+Avoid: literal flames, pointed tongues, triangular peaks, cartoon fire symbols, flames shaped like leaves, photographs of burning logs, lava, shiny liquid, big smoke clouds, yellow/white blaze, ground platform, landscape, objects, borders, labels, grid lines, typography, watermark.

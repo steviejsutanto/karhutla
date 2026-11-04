@@ -1,0 +1,15 @@
+Rain feedback cloud asset
+Created: 2026-10-30
+Generation route: built-in ImageGen; transparent_background=true.
+Master: visual-assets/rain-cloud.png — 1900 × 828, RGBA, 1,720,421 bytes.
+Delivery: visual-assets/rain-cloud.webp — 512 × 223, RGBA, 19,052 bytes.
+Delivery operation: format compression and proportional resize only, WebP quality 82, alpha preserved. Master alpha extrema 0–254, delivery alpha extrema 0–255.
+Visual review: dense off-white/ash-gray cohesive cloud, bright upper mass and darker underside, no rain or background; recognizable at small scale. The runtime supplies the falling-rain effect.
+
+Exact generation prompt:
+Use case: stylized-concept
+Asset type: one transparent rain-cloud sprite for a dark charcoal and peat interactive installation, displayed at only 96 CSS pixels wide.
+Primary request: A single broad dense off-white and ash-gray rain cloud, clearly recognizable against an almost-black background. Tactile smoky charcoal-on-paper material. Soft bright ivory upper rim and a distinct medium-gray underside. Irregular rounded cloud mass, asymmetrical but cohesive, with a solid visible center. Rich quiet surface grain, restrained and serious.
+Composition: isolated horizontal cloud approximately 2.3:1 in shape, centered and filling 80 percent of the image width, comfortable transparent margin around every edge. The center is quite opaque so it remains noticeable at small size. Feathered alpha edges only at the perimeter.
+Text: none.
+Constraints: genuinely transparent background. No rain, because rain will animate separately. No sky, ground, horizon, lighting bolts, scene, other clouds, collage, icons, faces, symbols, letters, watermark. Avoid cartoon bubble outlines, generic flat weather-icon geometry, ultra-wispy transparent cloud centers, cinematic photorealistic thunderstorm sky.

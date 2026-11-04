@@ -1,0 +1,250 @@
+{
+  "model": "Stable Audio 3.0 Small SFX",
+  "model_card": "https://huggingface.co/stabilityai/stable-audio-3-small-sfx",
+  "provider": "Stability AI official public Hugging Face Space",
+  "space": "https://huggingface.co/spaces/stabilityai/stable-audio-3",
+  "license_reference": "https://huggingface.co/stabilityai/stable-audio-3-small-sfx/blob/main/LICENSE.md",
+  "notes": "Genuine text-to-audio generation. No external field recording was supplied to the model. Small-SFX is part of the Stable Audio 3.0 family; there is no claim that these files used the older Stable Audio Open 1.0 model.",
+  "assets": {
+    "close": {
+      "prompt": "A catastrophic intense forest wildfire at full strength, close perspective. Dense irregular loud fire crackling, roaring turbulent flames, dry twigs snapping unpredictably, huge burning tree trunks creaking and cracking, powerful ember gusts and harsh rushing air. Continuous chaotic natural environmental sound, unmetered, wild, dangerous, detailed stereo field recording. No animals, no crickets, no birds, no insects, no music, no rhythm, no percussion, no speech, no voices, no sirens.",
+      "seed": 2026103101,
+      "duration_seconds": 60,
+      "steps": 8,
+      "cfg_scale": 1.0,
+      "sampler": "pingpong",
+      "status": "generated",
+      "started_at": "2026-10-31T04:36:27.918381+00:00",
+      "request": {
+        "api_name": "/infer",
+        "data": [
+          "small-sfx",
+          "A catastrophic intense forest wildfire at full strength, close perspective. Dense irregular loud fire crackling, roaring turbulent flames, dry twigs snapping unpredictably, huge burning tree trunks creaking and cracking, powerful ember gusts and harsh rushing air. Continuous chaotic natural environmental sound, unmetered, wild, dangerous, detailed stereo field recording. No animals, no crickets, no birds, no insects, no music, no rhythm, no percussion, no speech, no voices, no sirens.",
+          60,
+          8,
+          1,
+          "pingpong",
+          2026103101
+        ]
+      },
+      "event_id": "e5031fcffcee413ba0002365679a4aa8",
+      "completed_at": "2026-10-31T04:36:40.999095+00:00",
+      "source_file_data": {
+        "path": "/tmp/gradio/bf36de6a8205259a4a8fd2f1e5f71e811832cbce050fe46c906551847ff5c238/sa3.wav",
+        "url": "https://stabilityai-stable-audio-3.hf.space/gradio_api/file=/tmp/gradio/bf36de6a8205259a4a8fd2f1e5f71e811832cbce050fe46c906551847ff5c238/sa3.wav",
+        "size": null,
+        "orig_name": "sa3.wav",
+        "mime_type": null,
+        "is_stream": false,
+        "meta": {
+          "_type": "gradio.FileData"
+        }
+      },
+      "wav_master": {
+        "file": "stable-fire-close-space.wav",
+        "bytes": 10584044,
+        "sha256": "16f647ce5204d799cc8580f45c6e8b5e743a98efcda582d6ebd7659f63a6a9c3"
+      },
+      "browser_asset": {
+        "file": "stable-fire-close.mp3",
+        "bytes": 1497236,
+        "sha256": "05c78f43813d840179fc7b9c8ca76cc06f4177c4fb56c9260425e94dd569965e",
+        "probe": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "codec_name": "mp3",
+              "sample_rate": "44100",
+              "channels": 2
+            }
+          ],
+          "format": {
+            "duration": "60.029388",
+            "size": "1497236"
+          }
+        }
+      },
+      "processing": "WAV master preserved unchanged. MP3 browser copy: 120ms fade-in, 350ms fade-out at 59.65s, -3dB gain, stereo 44.1kHz libmp3lame VBR q3. Full MP3 decode passed.",
+      "listening_review": "Not certified by a human listener; prompt adherence must be assessed by listening.",
+      "sourceUrl": "https://huggingface.co/spaces/stabilityai/stable-audio-3",
+      "model": "Stable Audio 3.0 Small SFX",
+      "modelLicense": "Stable Audio Community License",
+      "modelLicenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-small-sfx/blob/main/LICENSE.md"
+    },
+    "middle": {
+      "prompt": "An immense raging forest wildfire engulfing a dense forest, heard from the middle distance. Continuous deep turbulent roaring flame fronts surge and recede chaotically. Countless dry branches snap at unpredictable scattered times. Heavy burning trunks creak and fracture, brief sharp wood cracks burst through the broad rushing inferno. Hot wind and ember gusts sweep through a wide stereo field. Intense dangerous natural disaster field recording, sustained full-strength fire, organic irregular dynamics, unmetered environmental noise. No music, no beat, no rhythm, no drums, no voice, no speech, no birds, no crickets, no insects, no animals, no sirens.",
+      "seed": 2026103102,
+      "duration_seconds": 60,
+      "steps": 8,
+      "cfg_scale": 1.0,
+      "sampler": "pingpong",
+      "status": "generated",
+      "started_at": "2026-10-31T04:36:41.008041+00:00",
+      "request": {
+        "api_name": "/infer",
+        "data": [
+          "small-sfx",
+          "An immense raging forest wildfire engulfing a dense forest, heard from the middle distance. Continuous deep turbulent roaring flame fronts surge and recede chaotically. Countless dry branches snap at unpredictable scattered times. Heavy burning trunks creak and fracture, brief sharp wood cracks burst through the broad rushing inferno. Hot wind and ember gusts sweep through a wide stereo field. Intense dangerous natural disaster field recording, sustained full-strength fire, organic irregular dynamics, unmetered environmental noise. No music, no beat, no rhythm, no drums, no voice, no speech, no birds, no crickets, no insects, no animals, no sirens.",
+          60,
+          8,
+          1.0,
+          "pingpong",
+          2026103102
+        ]
+      },
+      "event_id": "c521d75b181d428d91cd4b4c2f733aeb",
+      "completed_at": "2026-10-31T04:36:58.351417+00:00",
+      "source_file_data": {
+        "path": "/tmp/gradio/16cdb446020cdb7451680254254373a4f3ec51ceefb1fe4a7f11db4208717bd3/sa3.wav",
+        "url": "https://stabilityai-stable-audio-3.hf.space/gradio_api/file=/tmp/gradio/16cdb446020cdb7451680254254373a4f3ec51ceefb1fe4a7f11db4208717bd3/sa3.wav",
+        "size": null,
+        "orig_name": "sa3.wav",
+        "mime_type": null,
+        "is_stream": false,
+        "meta": {
+          "_type": "gradio.FileData"
+        }
+      },
+      "wav_master": {
+        "file": "stable-fire-middle-space.wav",
+        "bytes": 10584044,
+        "sha256": "079cb3f30c770d008bdbf5d2974ea07899a5e27aa1cd7027069f36c0d2cf6bd6"
+      },
+      "browser_asset": {
+        "file": "stable-fire-middle.mp3",
+        "bytes": 1405204,
+        "sha256": "aff2af1c875917e4ae69c55d24d669e82196a6d306ed34a2e4d4947c6405911b",
+        "probe": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "codec_name": "mp3",
+              "sample_rate": "44100",
+              "channels": 2
+            }
+          ],
+          "format": {
+            "duration": "60.029388",
+            "size": "1405204"
+          }
+        }
+      },
+      "processing": "WAV master preserved unchanged. MP3 browser copy: 120ms fade-in, 350ms fade-out at 59.65s, -3dB gain, stereo 44.1kHz libmp3lame VBR q3. Full MP3 decode passed.",
+      "listening_review": "Not certified by a human listener; prompt adherence must be assessed by listening.",
+      "sourceUrl": "https://huggingface.co/spaces/stabilityai/stable-audio-3",
+      "model": "Stable Audio 3.0 Small SFX",
+      "modelLicense": "Stable Audio Community License",
+      "modelLicenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-small-sfx/blob/main/LICENSE.md"
+    },
+    "distant": {
+      "prompt": "A vast catastrophic forest fire roaring across a hillside, heard at a distance across the forest. Powerful low rushing flames and turbulent hot wind create a continuous broad spatial roar, with irregular violent surges, remote heavy tree cracks, random far-away branch snaps and dense rolling ember gusts. Dangerous raging wildfire at its maximum strength, organic chaotic unmetered natural environmental sound, wide stereo outdoor field recording. No music, no rhythm, no beat, no instruments, no voices, no speech, no birds, no crickets, no insects, no animals, no rain, no sirens.",
+      "seed": 2026103103,
+      "duration_seconds": 60,
+      "steps": 8,
+      "cfg_scale": 1.0,
+      "sampler": "pingpong",
+      "status": "generated",
+      "started_at": "2026-10-31T04:36:58.360975+00:00",
+      "request": {
+        "api_name": "/infer",
+        "data": [
+          "small-sfx",
+          "A vast catastrophic forest fire roaring across a hillside, heard at a distance across the forest. Powerful low rushing flames and turbulent hot wind create a continuous broad spatial roar, with irregular violent surges, remote heavy tree cracks, random far-away branch snaps and dense rolling ember gusts. Dangerous raging wildfire at its maximum strength, organic chaotic unmetered natural environmental sound, wide stereo outdoor field recording. No music, no rhythm, no beat, no instruments, no voices, no speech, no birds, no crickets, no insects, no animals, no rain, no sirens.",
+          60,
+          8,
+          1.0,
+          "pingpong",
+          2026103103
+        ]
+      },
+      "event_id": "70e81cdf77834d8aafaaf6f704240984",
+      "completed_at": "2026-10-31T04:37:05.185739+00:00",
+      "source_file_data": {
+        "path": "/tmp/gradio/765e17287dc439ee1cd364c8c1dc8de39a2ca5aa43383185ef2cc37c7eefdae5/sa3.wav",
+        "url": "https://stabilityai-stable-audio-3.hf.space/gradio_api/file=/tmp/gradio/765e17287dc439ee1cd364c8c1dc8de39a2ca5aa43383185ef2cc37c7eefdae5/sa3.wav",
+        "size": null,
+        "orig_name": "sa3.wav",
+        "mime_type": null,
+        "is_stream": false,
+        "meta": {
+          "_type": "gradio.FileData"
+        }
+      },
+      "wav_master": {
+        "file": "stable-fire-distant-space.wav",
+        "bytes": 10584044,
+        "sha256": "6157d831345b4f78d73837bb4feeaafab6e71aa880c2fd8aea5700187b576cd3"
+      },
+      "browser_asset": {
+        "file": "stable-fire-distant.mp3",
+        "bytes": 1366060,
+        "sha256": "264adfcb360dcce1e783a8c82fac9c69b5e05654426361ec9c707586521976d0",
+        "probe": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "codec_name": "mp3",
+              "sample_rate": "44100",
+              "channels": 2
+            }
+          ],
+          "format": {
+            "duration": "60.029388",
+            "size": "1366060"
+          }
+        }
+      },
+      "processing": "WAV master preserved unchanged. MP3 browser copy: 120ms fade-in, 350ms fade-out at 59.65s, -3dB gain, stereo 44.1kHz libmp3lame VBR q3. Full MP3 decode passed.",
+      "listening_review": "Not certified by a human listener; prompt adherence must be assessed by listening.",
+      "sourceUrl": "https://huggingface.co/spaces/stabilityai/stable-audio-3",
+      "model": "Stable Audio 3.0 Small SFX",
+      "modelLicense": "Stable Audio Community License",
+      "modelLicenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-small-sfx/blob/main/LICENSE.md"
+    },
+    "insects": {
+      "prompt": "Quiet tropical forest at night after the rain has stopped. A gentle natural chorus of small crickets and soft night insects, individual chirps at different irregular times and distances, delicate leaves moving in a very light breeze, open still air and spacious peaceful outdoor ambience. Subtle restrained stereo field recording, no dramatic sound. No fire, no crackling, no roaring, no music, no rhythm track, no beat, no instruments, no voices, no speech, no birds, no frogs, no traffic, no rain.",
+      "seed": 2026103104,
+      "duration_seconds": 60,
+      "steps": 8,
+      "cfg_scale": 1.0,
+      "sampler": "pingpong",
+      "status": "failed",
+      "started_at": "2026-10-31T04:37:05.196343+00:00",
+      "request": {
+        "api_name": "/infer",
+        "data": [
+          "small-sfx",
+          "Quiet tropical forest at night after the rain has stopped. A gentle natural chorus of small crickets and soft night insects, individual chirps at different irregular times and distances, delicate leaves moving in a very light breeze, open still air and spacious peaceful outdoor ambience. Subtle restrained stereo field recording, no dramatic sound. No fire, no crackling, no roaring, no music, no rhythm track, no beat, no instruments, no voices, no speech, no birds, no frogs, no traffic, no rain.",
+          60,
+          8,
+          1.0,
+          "pingpong",
+          2026103104
+        ]
+      },
+      "event_id": "60872fb6fe5544578d7dc43729a54089",
+      "error": "RuntimeError: Official Space generation error: {'error': 'You have exceeded your ZeroGPU quota (90s requested vs. 0s left). Try again in 0:00:00. Authenticate with a Hugging Face token for more quota - https://huggingface.co/settings/tokens', 'duration': 10, 'visible': True, 'title': 'ZeroGPU quota exceeded'}"
+    }
+  },
+  "space_revision": "a6d4a3300fb7d96b2f28ac409d868cba65eb6093",
+  "mainAsset": {
+    "file": "burning-forest.mp3",
+    "bytes": 1201154,
+    "sha256": "08ba2e8a08df10d3834970fe745df20f8c413dde7a38bed4473903eb8451283c",
+    "sourceUrl": "https://huggingface.co/spaces/stabilityai/stable-audio-3",
+    "model": "Stable Audio 3.0 Small SFX",
+    "modelLicense": "Stable Audio Community License",
+    "modelLicenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-small-sfx/blob/main/LICENSE.md",
+    "validation": {
+      "completeDecode": "passed",
+      "peakDbfs": -4.330720747415942,
+      "rmsDbfs": -24.009815736669033,
+      "NaN": 0,
+      "Inf": 0,
+      "decodedSamplesPerChannel": 2646000
+    }
+  }
+}

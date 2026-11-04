@@ -1,0 +1,43 @@
+{
+  "purpose": "New heavy finale rain with deep distant thunder and new weightless floating haze endpoints",
+  "preferredModel": "medium",
+  "durationSeconds": 30,
+  "steps": 8,
+  "cfgScale": 1.0,
+  "sampler": "pingpong",
+  "notes": "Four independent local official MLX generations with distinct seeds. Heavy rain remains separate from retained natural light rain and phone rain. Thunder timing in text is a request only; measured low-band events will be reported without claiming model time control. Original float masters retained unchanged.",
+  "assets": [
+    {
+      "id": "rain-storm-v23",
+      "kind": "rain",
+      "title": "Heavy rain and distant rolling thunder",
+      "seed": 202611032301,
+      "role": "Full sustained natural heavy rainfall with a distant deep rolling thunder body",
+      "prompt": "TrackType: SFX, High fidelity natural outdoor storm recording. A dense sustained heavy rainfall pours evenly onto forest earth and soft leaves, thousands of fine overlapping water impacts make a full continuous natural rain wash with slow organic changes in density. In the middle of the recording a distant very deep rolling thunder gently swells and rumbles with a broad low resonant 80 to 200 Hz body, receding slowly under the unbroken heavy rainfall. Rounded dark distant thunder, smooth low rolling pressure without sharp nearby lightning cracks. Wide clean open air field recording, stable rain throughout, no voices, music, machines or birds. Length: 30 seconds."
+    },
+    {
+      "id": "rain-storm-v23-study2",
+      "kind": "rain",
+      "title": "Heavy woodland shower and deep thunder",
+      "seed": 202611032302,
+      "role": "An independent heavy rain storm take with soft deep distant thunder rolls",
+      "prompt": "TrackType: SFX, An immersive clean outdoor field recording of steady abundant heavy rain in woodland. Dense broad natural rainfall covers the entire scene with countless soft fine drops and a continuous full rushing water texture, gently fluctuating naturally without gaps. Around halfway through, a long low distant rolling thunder grows smoothly beneath the rain, deep warm bass rumble and rounded resonant low frequency pressure from far across the landscape, then a slow soft decay. Dark low thunder remains distant and mellow with no aggressive sharp cracks. Natural open outdoor acoustics, no strong wind gusts, no voices, music, insects or machines. Length: 30 seconds."
+    },
+    {
+      "id": "haze-air-v23",
+      "kind": "haze",
+      "title": "Weightless air haze",
+      "seed": 202611032303,
+      "role": "New thin transparent floating haze with delicate soft airborne texture",
+      "prompt": "TrackType: SFX, A very thin delicate transparent airborne whisper, a weightless veil of fine soft air grains gently suspended in open space. Quiet silky diffuse air texture with tiny gentle irregular wisps drifting slowly past, an airy floating lightness with clear fine high fidelity detail. Smooth rounded soft activity throughout, a calm featherlight suspended atmosphere, no heavy wind, no low rumble, no gusts, no music or voices. Length: 30 seconds."
+    },
+    {
+      "id": "haze-float-v23",
+      "kind": "haze",
+      "title": "Floating fine mist",
+      "seed": 202611032304,
+      "role": "New independent gentle floating fine air with a diffuse silky suspended drift",
+      "prompt": "TrackType: SFX, Clean high fidelity close sound of an extremely gentle fine mist drifting through still open air. Delicate diffuse whispering particles and tiny soft airy swirls float continuously with quiet natural irregularity, a thin translucent silky light texture with a spacious suspended quality. Fine featherweight detail and smooth restrained dynamics, softly drifting throughout, no heavy wind, no low rumble, no liquid splashes, no lo fi distortion, no voices or music. Length: 30 seconds."
+    }
+  ]
+}

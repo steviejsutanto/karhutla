@@ -1,0 +1,212 @@
+{
+  "id": "rain-steady",
+  "kind": "rain",
+  "endpoint": "high",
+  "endpointPosition": 1,
+  "title": "Steady rain",
+  "seed": 2026103156,
+  "role": "Fuller steady water layer with restrained small transients",
+  "prompt": "TrackType: SFX, Steady gentle rainfall on damp leaves and soft forest soil, a continuous dense fabric of small rounded water drops pattering together, smooth even water movement with restrained soft transients, natural close outdoor detail and stable calm dynamics, little quiet leaf drips blended into the ongoing pure rain texture throughout. Length: 45 seconds.",
+  "durationSeconds": 45,
+  "steps": 8,
+  "cfgScale": 1.0,
+  "sampler": "pingpong",
+  "pack": "scripts/stablegen-v4-palette-prompts.json",
+  "model": "Stable Audio 3 Medium",
+  "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+  "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+  "license": "Stable Audio Community License",
+  "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+  "backend": "Official MLX local inference on Apple Silicon",
+  "runtimeRevision": "5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84",
+  "optimizedWeightsRevision": "30cb2644da54bfa63275d1bc7f1fa67fc718680f",
+  "generated": true,
+  "status": "generated",
+  "startedAt": "2026-10-31T16:24:36.941987+00:00",
+  "completedAt": "2026-10-31T16:24:51.882028+00:00",
+  "generationSeconds": 11.277,
+  "peakMetalAllocatedBytes": 7102088810,
+  "unclippedGeneratorPeak": 0.5737854242324829,
+  "unclippedGeneratorRms": 0.013810086144364275,
+  "unclippedGeneratorAboveFullScaleFraction": 0.0,
+  "unclippedGeneratorNearFullScaleFraction": 0.0,
+  "master": {
+    "file": "rain-steady-master.wav",
+    "bytes": 15876088,
+    "sha256": "e05cc0798370175e8a350ec6ea68fc0a1b4fd0cc38b1c79aa20d9a8635493dae"
+  },
+  "processing": "Fast gentle 3:1 compression at 0.024858155 amplitude threshold, 0.5 ms attack and 180 ms release softens isolated water onsets. No pitch or speed changes. Unchanged raw float model master retained. Browser derivative: 250 ms fade-in, 500 ms fade-out, peak normalization before stereo 44.1 kHz 160 kbps MP3 encoding. Encoded peak <= -3 dBFS verified. No reverb, delay, external recording, music, or synthesized substitute added.",
+  "listeningReview": "Not certified by a human listener. Technical validation does not establish prompt adherence.",
+  "verifiedWeights": {
+    "t5gemma_f16.npz": {
+      "bytes": 567443068,
+      "sha256": "8deb20489f36d9aec539f26c9c67321f99bc5fe300d470435ed6e76be4f16bbd"
+    },
+    "dit_medium_f16.npz": {
+      "bytes": 2907300946,
+      "sha256": "f9e5647ea3225818657d47d47ae4b34afa29c0568206ca89566c1a758944a38e"
+    },
+    "same_l_decoder_f32.npz": {
+      "bytes": 1704311976,
+      "sha256": "84924be2122d3a20fce443f40b782d9cd88e8e73707476326003ac47659a2287"
+    }
+  },
+  "device": {
+    "device_name": "Apple M1 Pro",
+    "max_recommended_working_set_size": 11453251584,
+    "memory_size": 17179869184,
+    "architecture": "applegpu_g13s",
+    "max_buffer_length": 8589934592,
+    "resource_limit": 499000
+  },
+  "assetKind": "processed-derivative-of-genuine-model-output",
+  "rawModelOutput": false,
+  "derivedFromGenuineModelOutput": true,
+  "sourceGeneration": {
+    "id": "rain-steady",
+    "kind": "rain",
+    "endpoint": "high",
+    "endpointPosition": 1,
+    "title": "Steady rain",
+    "seed": 2026103156,
+    "role": "Fuller steady water layer with restrained small transients",
+    "prompt": "TrackType: SFX, Steady gentle rainfall on damp leaves and soft forest soil, a continuous dense fabric of small rounded water drops pattering together, smooth even water movement with restrained soft transients, natural close outdoor detail and stable calm dynamics, little quiet leaf drips blended into the ongoing pure rain texture throughout. Length: 45 seconds.",
+    "durationSeconds": 45,
+    "steps": 8,
+    "cfgScale": 1.0,
+    "sampler": "pingpong",
+    "pack": "scripts/stablegen-v4-palette-prompts.json",
+    "model": "Stable Audio 3 Medium",
+    "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+    "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+    "license": "Stable Audio Community License",
+    "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+    "backend": "Official MLX local inference on Apple Silicon",
+    "runtimeRevision": "5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84",
+    "optimizedWeightsRevision": "30cb2644da54bfa63275d1bc7f1fa67fc718680f",
+    "generated": true,
+    "status": "generated",
+    "startedAt": "2026-10-31T16:24:36.941987+00:00",
+    "completedAt": "2026-10-31T16:24:48.219679+00:00",
+    "generationSeconds": 11.277,
+    "peakMetalAllocatedBytes": 7102088810,
+    "unclippedGeneratorPeak": 0.5737854242324829,
+    "unclippedGeneratorRms": 0.013810086144364275,
+    "unclippedGeneratorAboveFullScaleFraction": 0.0,
+    "unclippedGeneratorNearFullScaleFraction": 0.0,
+    "master": {
+      "file": "rain-steady-master.wav",
+      "bytes": 15876088,
+      "sha256": "e05cc0798370175e8a350ec6ea68fc0a1b4fd0cc38b1c79aa20d9a8635493dae"
+    },
+    "processing": "Official pipeline output preserved as stereo44100Hz32-bit float WAV without clipping or normalization. No reverb, compression, mixing or post-effects added. Browser copy normalized separately.",
+    "listeningReview": "Technical validity checked. Perceptual prompt adherence requires audition."
+  },
+  "rawGeneratedMaster": {
+    "file": "rain-steady-master.wav",
+    "bytes": 15876088,
+    "sha256": "e05cc0798370175e8a350ec6ea68fc0a1b4fd0cc38b1c79aa20d9a8635493dae"
+  },
+  "rawMasterValidation": {
+    "completeDecode": "passed",
+    "samplesPerChannel": 1984500,
+    "nonFiniteSamples": 0,
+    "peakAmplitude": 0.5737854242324829,
+    "peakDbfs": -4.825009765083909,
+    "rmsDbfs": -37.19607224753618,
+    "crestDb": 32.371062482452274,
+    "nearFullScaleSampleFraction": 0.0,
+    "quietWindowFractionBelowMinus65Dbfs": 0.0,
+    "windowRmsP95AboveMedianDb": 5.1467902264962575,
+    "windowRmsMaxAboveMedianDb": 13.119200476324831,
+    "spectralEnergyFractions": {
+      "0-120Hz": 0.004122297622926618,
+      "120-500Hz": 0.018282423834331225,
+      "500-2000Hz": 0.17727050146504233,
+      "2000-6000Hz": 0.49673430622004305,
+      "6000-22050Hz": 0.3035903648441964
+    },
+    "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content."
+  },
+  "derivation": {
+    "source": "rain-steady-master.wav",
+    "filters": "acompressor=threshold=0.024858155:ratio=3:attack=0.5:release=180:makeup=1:knee=2.828:detection=peak:link=maximum",
+    "description": "Fast gentle 3:1 compression at 0.024858155 amplitude threshold, 0.5 ms attack and 180 ms release softens isolated water onsets. No pitch or speed changes."
+  },
+  "wavMaster": {
+    "file": "rain-steady-processed-master.wav",
+    "bytes": 15876092,
+    "sha256": "e2e02d95b7e7ec07655572a675ff648f9da1128c572b5f9250377952e821bd62"
+  },
+  "browserAsset": {
+    "file": "rain-steady.mp3",
+    "bytes": 901268,
+    "sha256": "3902bd47425690a815512d466baf24c9ec3122136191f06506f9bbc1d3a1f1f5",
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "mp3",
+          "sample_rate": "44100",
+          "channels": 2
+        }
+      ],
+      "format": {
+        "duration": "45.035102",
+        "size": "901268"
+      }
+    }
+  },
+  "validation": {
+    "completeDecode": "passed",
+    "samplesPerChannel": 1984500,
+    "nonFiniteSamples": 0,
+    "peakAmplitude": 0.6190436482429504,
+    "peakDbfs": -4.16557456328908,
+    "rmsDbfs": -26.648165427091502,
+    "crestDb": 22.48259086380242,
+    "nearFullScaleSampleFraction": 0.0,
+    "quietWindowFractionBelowMinus65Dbfs": 0.0011111111111111111,
+    "windowRmsP95AboveMedianDb": 1.2668398364422373,
+    "windowRmsMaxAboveMedianDb": 3.7774759126581507,
+    "spectralEnergyFractions": {
+      "0-120Hz": 0.005550292826214166,
+      "120-500Hz": 0.022484240908751407,
+      "500-2000Hz": 0.21671077223728624,
+      "2000-6000Hz": 0.47781115299087673,
+      "6000-22050Hz": 0.2774435410368641
+    },
+    "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+    "encodedPeakCeilingDbfs": -3,
+    "encodedPeakCheck": "passed"
+  },
+  "masterValidation": {
+    "completeDecode": "passed",
+    "samplesPerChannel": 1984500,
+    "nonFiniteSamples": 0,
+    "peakAmplitude": 0.10474856197834015,
+    "peakDbfs": -19.597038609077455,
+    "rmsDbfs": -41.911923792053976,
+    "crestDb": 22.31488518297652,
+    "nearFullScaleSampleFraction": 0.0,
+    "quietWindowFractionBelowMinus65Dbfs": 0.0,
+    "windowRmsP95AboveMedianDb": 1.2609376640756267,
+    "windowRmsMaxAboveMedianDb": 3.908300076948656,
+    "spectralEnergyFractions": {
+      "0-120Hz": 0.005762408639796981,
+      "120-500Hz": 0.023282952296534726,
+      "500-2000Hz": 0.22379526097799526,
+      "2000-6000Hz": 0.4800388221694205,
+      "6000-22050Hz": 0.26712040240887047
+    },
+    "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content."
+  },
+  "normalization": {
+    "targetPeakDbfsBeforeEncoding": -4,
+    "appliedGainDb": 15.597038609077455,
+    "codecHeadroomCorrectionDb": 0
+  },
+  "sourceMasterUnchangedCheck": true,
+  "generationBatchRecord": "medium-palette-batch.json"
+}

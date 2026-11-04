@@ -1,0 +1,93 @@
+{
+  "id": "cricket-near",
+  "kind": "crickets",
+  "title": "Close garden cricket",
+  "description": "Clear close cricket pulses from a garden at night, with quiet spaces between calls.",
+  "sourceKey": "cricket-near",
+  "freesoundId": 805466,
+  "sourceTitle": "Night Crickets 02",
+  "author": "Vrymaa",
+  "sourcePreviewUrl": "https://cdn.freesound.org/previews/805/805466_13973196-hq.mp3",
+  "sourceStartSeconds": 22,
+  "durationSeconds": 36,
+  "channels": 1,
+  "highpassHz": 1800,
+  "depth": 0,
+  "sourceDescriptionSummary": "The creator describes close, clean crickets in a garden at night, without added reverb or echo. The original is mono.",
+  "status": "prepared",
+  "generated": false,
+  "fieldRecording": true,
+  "assetKind": "excerpt-of-cc0-field-recording-public-preview",
+  "retrievedOn": "2026-11-01",
+  "sourceUrl": "https://freesound.org/people/Vrymaa/sounds/805466/",
+  "license": "CC0 1.0 Universal",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "preview": true,
+  "access": "Public HQ MP3 preview, without login, account, or paid service; original WAV download requires Freesound login.",
+  "sourcePreview": {
+    "file": "audio-assets/v3/natural-sources/cricket-near-preview.mp3",
+    "bytes": 1384848,
+    "sha256": "8fec5bacbb8b89a3ee2491a3dfe2ad1611d87e136ec42314fd6c5e2063432391",
+    "url": "https://cdn.freesound.org/previews/805/805466_13973196-hq.mp3"
+  },
+  "sourcePageEvidence": {
+    "file": "audio-assets/v3/natural-sources/cricket-near-page.html",
+    "bytes": 47706,
+    "sha256": "4740e3c47e572fe6d4475a83e62c71069b0d9495462ad760ce14422470c92f1e",
+    "checkedLicense": "CC0 1.0 Universal"
+  },
+  "browserAsset": {
+    "file": "cricket-near.mp3",
+    "bytes": 865845,
+    "sha256": "64a7e0e9b03ce5b38370210f8e6dd332542e1e8325c7fa2d88b9c046dabbdc00",
+    "durationSeconds": 36,
+    "sampleRate": 44100,
+    "channels": 1,
+    "bitrateKbps": 192
+  },
+  "processing": "Select source seconds 22\u201358; 1800 Hz two-pole high-pass to remove low background wash; fixed 17.917094 dB gain throughout, 5 ms click guards at both boundaries, 1-channel 44.1 kHz 192 kbps MP3. No added compression, AGC, limiting, noise gate, dynamic denoise, envelope riding, time/pitch change, artificial pulse, or added layer. Runtime circular overlap handles the loop seam. The downloaded public preview is retained byte-for-byte; original uncompressed source was not downloaded.",
+  "normalization": {
+    "targetPeakCeilingDbfsBeforeEncoding": -5,
+    "appliedConstantGainDb": 17.917094282116253,
+    "sharedSourceGain": false
+  },
+  "validation": {
+    "completeDecode": "passed",
+    "samplesPerChannel": 1587600,
+    "nonFiniteSamples": 0,
+    "peakAmplitude": 0.5455709099769592,
+    "peakDbfs": -5.262975889219743,
+    "rmsDbfs": -22.936786086331445,
+    "crestDb": 17.673810197111703,
+    "nearFullScaleSampleFraction": 0.0,
+    "quietWindowFractionBelowMinus65Dbfs": 0.0,
+    "windowRmsP95AboveMedianDb": 5.35557892776297,
+    "windowRmsMaxAboveMedianDb": 7.34582664691747,
+    "spectralEnergyFractions": {
+      "0-120Hz": 6.582640677055232e-10,
+      "120-500Hz": 7.391029196418388e-08,
+      "500-2000Hz": 1.1636197696205808e-05,
+      "2000-6000Hz": 0.9700935656379346,
+      "6000-22050Hz": 0.029894723595799307
+    },
+    "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+    "encodedPeakCeilingDbfs": -3,
+    "encodedPeakCheck": "passed",
+    "envelope": {
+      "windowSeconds": 0.5,
+      "windowRmsP95MinusP5Db": 3.412888226262961,
+      "windowRmsStandardDeviationDb": 1.2935565213467966,
+      "windowRmsMaxMinusMinDb": 8.22036846854181,
+      "envelope10msModulationIndex": 0.7841027359540209,
+      "largestEnvelopeAutocorrelationWithin0p2To2": 0.2895626508013224,
+      "largestEnvelopeAutocorrelationLagSecondsWithin0p2To2": 0.54,
+      "scope": "Signal amplitude evidence only. Natural rainfall intensity and insect pulse gaps may vary; these measurements do not identify sources or certify perceptual absence of pumping."
+    }
+  },
+  "playbackBoundary": {
+    "fadeInSeconds": 0.005,
+    "fadeOutSeconds": 0.005,
+    "loopConditioning": "runtime-circular-overlap"
+  },
+  "listeningReview": "Source-page descriptions, waveform and spectrogram inspection, and signal/envelope measurements; no human listening certification."
+}

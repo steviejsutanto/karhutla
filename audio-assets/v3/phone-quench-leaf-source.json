@@ -1,0 +1,205 @@
+{
+  "id": "phone-quench-leaf",
+  "kind": "phone-quench",
+  "title": "Water onto burning leaves",
+  "description": "A spoonful of water quenches dry leaves and small twigs, delicate papery sizzle",
+  "model": "Stable Audio 3 Medium",
+  "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+  "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+  "license": "Stable Audio Community License",
+  "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+  "generated": true,
+  "assetKind": "processed-derivative-of-genuine-model-output",
+  "rawModelOutput": false,
+  "sourceGeneration": {
+    "id": "phone-quench-leaf",
+    "kind": "phone-quench",
+    "title": "Water onto burning leaves",
+    "seed": 202611021803,
+    "role": "A spoonful of water quenches dry leaves and small twigs, delicate papery sizzle",
+    "prompt": "TrackType: SFX, One spoonful of water splashes onto a tiny burning pile of dry leaves and fine woody twigs. A soft brief papery sizzle mingles with a small warm steam hiss and several gentle wet twig crackles, quickly fading to quiet. Close natural single water quench, intimate flat open-air sound, delicate restrained intensity and rounded texture. Length: 8 seconds.",
+    "durationSeconds": 8,
+    "steps": 8,
+    "cfgScale": 1.0,
+    "sampler": "pingpong",
+    "pack": "scripts/stablegen-v18-quench-prompts.json",
+    "model": "Stable Audio 3 Medium",
+    "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+    "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+    "license": "Stable Audio Community License",
+    "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+    "backend": "Official MLX local inference on Apple Silicon",
+    "runtimeRevision": "5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84",
+    "optimizedWeightsRevision": "30cb2644da54bfa63275d1bc7f1fa67fc718680f",
+    "generated": true,
+    "status": "generated",
+    "startedAt": "2026-11-02T16:51:32.887441+00:00",
+    "completedAt": "2026-11-02T16:51:38.900632+00:00",
+    "generationSeconds": 6.013,
+    "peakMetalAllocatedBytes": 5853982262,
+    "unclippedGeneratorPeak": 0.6732008457183838,
+    "unclippedGeneratorRms": 0.029208549888272605,
+    "unclippedGeneratorAboveFullScaleFraction": 0.0,
+    "unclippedGeneratorNearFullScaleFraction": 0.0,
+    "master": {
+      "file": "phone-quench-leaf-master.wav",
+      "bytes": 2822488,
+      "sha256": "1d14cb94ad88ac550f5d6bd54f287cef0a39733b315c3a5ea84f1b98a62f008b"
+    },
+    "processing": "Official pipeline output preserved as stereo44100Hz32-bit float WAV without clipping or normalization. No reverb, compression, mixing or post-effects added. Browser copy normalized separately.",
+    "listeningReview": "Technical validity checked. Perceptual prompt adherence requires audition."
+  },
+  "verifiedWeights": {
+    "t5gemma_f16.npz": {
+      "bytes": 567443068,
+      "sha256": "8deb20489f36d9aec539f26c9c67321f99bc5fe300d470435ed6e76be4f16bbd"
+    },
+    "dit_medium_f16.npz": {
+      "bytes": 2907300946,
+      "sha256": "f9e5647ea3225818657d47d47ae4b34afa29c0568206ca89566c1a758944a38e"
+    },
+    "same_l_decoder_f32.npz": {
+      "bytes": 1704311976,
+      "sha256": "84924be2122d3a20fce443f40b782d9cd88e8e73707476326003ac47659a2287"
+    }
+  },
+  "device": {
+    "device_name": "Apple M1 Pro",
+    "max_recommended_working_set_size": 11453251584,
+    "memory_size": 17179869184,
+    "architecture": "applegpu_g13s",
+    "max_buffer_length": 8589934592,
+    "resource_limit": 499000
+  },
+  "generationBatchRecord": "medium-phone-v18-batch.json",
+  "masterValidation": {
+    "completeDecode": "passed",
+    "samplesPerChannel": 352800,
+    "nonFiniteSamples": 0,
+    "peakAmplitude": 0.6732008457183838,
+    "peakDbfs": -3.437106942141845,
+    "rmsDbfs": -30.689800076656542,
+    "crestDb": 27.252693134514697,
+    "nearFullScaleSampleFraction": 0.0,
+    "quietWindowFractionBelowMinus65Dbfs": 0.175,
+    "windowRmsP95AboveMedianDb": 10.276539168543774,
+    "windowRmsMaxAboveMedianDb": 11.543819566979405,
+    "spectralEnergyFractions": {
+      "0-120Hz": 0.00024714931962389116,
+      "120-500Hz": 0.0010862659868305824,
+      "500-2000Hz": 0.024810016180143928,
+      "2000-6000Hz": 0.38609480144785063,
+      "6000-22050Hz": 0.5877616420493905
+    },
+    "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content."
+  },
+  "sourceExcerptStartSeconds": 0.78,
+  "sourceExcerptEndSeconds": 3.0300000000000002,
+  "processing": "Select 0.78\u20133.03s directly from the unchanged genuine float model master. Mono downmix, 160Hz two-pole high-pass, 6800Hz two-pole low-pass; soft compressor threshold 0.012/ratio 2.8/attack 0.2ms/release 65ms/knee 2.8/makeup 1; 12ms attack click guard and 520ms ending taper; fixed gain toward -28dBFS RMS, constrained to conservative peak headroom; mono44.1kHz96kbps MP3 encoded once from processed float. No reverb, delay, pitch/speed change, added sound, or synthesized noise.",
+  "browserAsset": {
+    "file": "phone-quench-leaf.mp3",
+    "bytes": 27942,
+    "sha256": "6019a4b50526d71523de8b8d0481ae4de7b7324cba78798602a9b20b592064b9",
+    "durationSeconds": 2.25,
+    "channels": 1,
+    "sampleRate": 44100,
+    "bitrateKbps": 96,
+    "normalization": {
+      "targetRmsDbfs": -28,
+      "peakCeilingDbfs": -9,
+      "appliedGainDb": 15.368777071977298,
+      "codecHeadroomCorrectionDb": 0.0
+    },
+    "validation": {
+      "completeDecode": "passed",
+      "samplesPerChannel": 99225,
+      "nonFiniteSamples": 0,
+      "peakAmplitude": 0.3020178973674774,
+      "peakDbfs": -10.399346405914716,
+      "rmsDbfs": -28.39281791273439,
+      "crestDb": 17.993471506819674,
+      "nearFullScaleSampleFraction": 0.0,
+      "quietWindowFractionBelowMinus65Dbfs": 0.0,
+      "windowRmsP95AboveMedianDb": 1.722723572130615,
+      "windowRmsMaxAboveMedianDb": 2.365218770667415,
+      "spectralEnergyFractions": {
+        "0-120Hz": 3.4144984888015046e-05,
+        "120-500Hz": 0.0020826253099857014,
+        "500-2000Hz": 0.07795984102190524,
+        "2000-6000Hz": 0.604114730548475,
+        "6000-22050Hz": 0.31580865813471876
+      },
+      "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+      "encodedPeakCeilingDbfs": -9,
+      "encodedPeakCheck": "passed"
+    }
+  },
+  "mobile": {
+    "file": "phone-quench-leaf.mp3",
+    "bytes": 27942,
+    "sha256": "6019a4b50526d71523de8b8d0481ae4de7b7324cba78798602a9b20b592064b9",
+    "durationSeconds": 2.25,
+    "channels": 1,
+    "sampleRate": 44100,
+    "bitrateKbps": 96,
+    "normalization": {
+      "targetRmsDbfs": -28,
+      "peakCeilingDbfs": -9,
+      "appliedGainDb": 15.368777071977298,
+      "codecHeadroomCorrectionDb": 0.0
+    },
+    "validation": {
+      "completeDecode": "passed",
+      "samplesPerChannel": 99225,
+      "nonFiniteSamples": 0,
+      "peakAmplitude": 0.3020178973674774,
+      "peakDbfs": -10.399346405914716,
+      "rmsDbfs": -28.39281791273439,
+      "crestDb": 17.993471506819674,
+      "nearFullScaleSampleFraction": 0.0,
+      "quietWindowFractionBelowMinus65Dbfs": 0.0,
+      "windowRmsP95AboveMedianDb": 1.722723572130615,
+      "windowRmsMaxAboveMedianDb": 2.365218770667415,
+      "spectralEnergyFractions": {
+        "0-120Hz": 3.4144984888015046e-05,
+        "120-500Hz": 0.0020826253099857014,
+        "500-2000Hz": 0.07795984102190524,
+        "2000-6000Hz": 0.604114730548475,
+        "6000-22050Hz": 0.31580865813471876
+      },
+      "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+      "encodedPeakCeilingDbfs": -9,
+      "encodedPeakCheck": "passed"
+    }
+  },
+  "validation": {
+    "completeDecode": "passed",
+    "samplesPerChannel": 99225,
+    "nonFiniteSamples": 0,
+    "peakAmplitude": 0.3020178973674774,
+    "peakDbfs": -10.399346405914716,
+    "rmsDbfs": -28.39281791273439,
+    "crestDb": 17.993471506819674,
+    "nearFullScaleSampleFraction": 0.0,
+    "quietWindowFractionBelowMinus65Dbfs": 0.0,
+    "windowRmsP95AboveMedianDb": 1.722723572130615,
+    "windowRmsMaxAboveMedianDb": 2.365218770667415,
+    "spectralEnergyFractions": {
+      "0-120Hz": 3.4144984888015046e-05,
+      "120-500Hz": 0.0020826253099857014,
+      "500-2000Hz": 0.07795984102190524,
+      "2000-6000Hz": 0.604114730548475,
+      "6000-22050Hz": 0.31580865813471876
+    },
+    "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+    "encodedPeakCeilingDbfs": -9,
+    "encodedPeakCheck": "passed"
+  },
+  "playbackBoundary": {
+    "oneShot": true,
+    "fadeInSeconds": 0.012,
+    "fadeOutSeconds": 0.52
+  },
+  "listeningReview": "Signal and provenance checks passed. No human listening certification; generated source identity and absence of voices or music require audition.",
+  "completedAt": "2026-11-02T16:56:25.358435+00:00"
+}

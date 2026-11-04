@@ -1,0 +1,94 @@
+{
+  "id": "rain-natural-light",
+  "kind": "rain",
+  "title": "Quiet countryside rain",
+  "description": "Fine continuous natural rainfall, with small irregular droplets and a steady background.",
+  "sourceKey": "rain-country",
+  "freesoundId": 688896,
+  "sourceTitle": "Soft rain in the countryside",
+  "author": "EduFigueres",
+  "sourcePreviewUrl": "https://cdn.freesound.org/previews/688/688896_2454586-hq.mp3",
+  "sourceStartSeconds": 46,
+  "durationSeconds": 40,
+  "channels": 2,
+  "constantGainDb": 16,
+  "endpoint": "low",
+  "endpointPosition": 0,
+  "sourceDescriptionSummary": "The creator describes soft rain in the countryside. Upstream processing is not disclosed; this export adds no dynamic processing.",
+  "status": "prepared",
+  "generated": false,
+  "fieldRecording": true,
+  "assetKind": "excerpt-of-cc0-field-recording-public-preview",
+  "retrievedOn": "2026-11-01",
+  "sourceUrl": "https://freesound.org/people/EduFigueres/sounds/688896/",
+  "license": "CC0 1.0 Universal",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "preview": true,
+  "access": "Public HQ MP3 preview, without login, account, or paid service; original WAV download requires Freesound login.",
+  "sourcePreview": {
+    "file": "audio-assets/v3/natural-sources/rain-country-preview.mp3",
+    "bytes": 2062298,
+    "sha256": "5527d0104b896184313a2be534169cda3e3d1a460cb34edbbecb6778a7ade129",
+    "url": "https://cdn.freesound.org/previews/688/688896_2454586-hq.mp3"
+  },
+  "sourcePageEvidence": {
+    "file": "audio-assets/v3/natural-sources/rain-country-page.html",
+    "bytes": 43150,
+    "sha256": "99651ee6215fe5b1d06f6e598fb41aa6d3e0f8e91796bd2a40a05be4f8520653",
+    "checkedLicense": "CC0 1.0 Universal"
+  },
+  "browserAsset": {
+    "file": "rain-natural-light.mp3",
+    "bytes": 961767,
+    "sha256": "d627fd9af9ff45e76100853418885d3906803273fc3b172d76503c48efa4e98c",
+    "durationSeconds": 40,
+    "sampleRate": 44100,
+    "channels": 2,
+    "bitrateKbps": 192
+  },
+  "processing": "Select source seconds 46\u201386; fixed 16.000000 dB gain throughout, 5 ms click guards at both boundaries, 2-channel 44.1 kHz 192 kbps MP3. No added compression, AGC, limiting, noise gate, dynamic denoise, envelope riding, time/pitch change, artificial pulse, or added layer. Runtime circular overlap handles the loop seam. The downloaded public preview is retained byte-for-byte; original uncompressed source was not downloaded.",
+  "normalization": {
+    "targetPeakCeilingDbfsBeforeEncoding": -5,
+    "appliedConstantGainDb": 16,
+    "sharedSourceGain": true
+  },
+  "validation": {
+    "completeDecode": "passed",
+    "samplesPerChannel": 1764000,
+    "nonFiniteSamples": 0,
+    "peakAmplitude": 0.3661215901374817,
+    "peakDbfs": -8.72749320160447,
+    "rmsDbfs": -31.214767503406478,
+    "crestDb": 22.487274301802007,
+    "nearFullScaleSampleFraction": 0.0,
+    "quietWindowFractionBelowMinus65Dbfs": 0.0,
+    "windowRmsP95AboveMedianDb": 1.2670632362659369,
+    "windowRmsMaxAboveMedianDb": 3.3068682911319947,
+    "spectralEnergyFractions": {
+      "0-120Hz": 0.042293924724689284,
+      "120-500Hz": 0.05768163083851281,
+      "500-2000Hz": 0.29079842786150745,
+      "2000-6000Hz": 0.30719352672321515,
+      "6000-22050Hz": 0.3020324898520673
+    },
+    "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+    "encodedPeakCeilingDbfs": -3,
+    "encodedPeakCheck": "passed",
+    "envelope": {
+      "windowSeconds": 0.5,
+      "windowRmsP95MinusP5Db": 1.4855504495666807,
+      "windowRmsStandardDeviationDb": 0.42319242396892753,
+      "windowRmsMaxMinusMinDb": 2.1328318228378826,
+      "envelope10msModulationIndex": 0.11673873132474591,
+      "largestEnvelopeAutocorrelationWithin0p2To2": 0.1433689344582079,
+      "largestEnvelopeAutocorrelationLagSecondsWithin0p2To2": 0.39,
+      "scope": "Signal amplitude evidence only. Natural rainfall intensity and insect pulse gaps may vary; these measurements do not identify sources or certify perceptual absence of pumping."
+    }
+  },
+  "playbackBoundary": {
+    "fadeInSeconds": 0.005,
+    "fadeOutSeconds": 0.005,
+    "loopConditioning": "runtime-circular-overlap"
+  },
+  "listeningReview": "Source-page descriptions, waveform and spectrogram inspection, and signal/envelope measurements; no human listening certification."
+}

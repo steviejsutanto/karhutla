@@ -1,0 +1,212 @@
+{
+  "id": "crickets-chorus",
+  "kind": "crickets",
+  "endpoint": "high",
+  "endpointPosition": 1,
+  "title": "Cricket pairs",
+  "seed": 2026103160,
+  "role": "A second rhythmic cricket pattern with minimal background",
+  "prompt": "TrackType: SFX, Two close field crickets repeating short paired chirps in a quiet dry recording, clear rhythmic chirr-chirr followed by a calm silent pause, repeated natural insect pulses at a consistent relaxed tempo with very slight alternation between the two insects, clean bright chirping detail and nearly silent spaces between calls, only the isolated cricket calls throughout. Length: 45 seconds.",
+  "durationSeconds": 45,
+  "steps": 8,
+  "cfgScale": 1.0,
+  "sampler": "pingpong",
+  "pack": "scripts/stablegen-v4-palette-prompts.json",
+  "model": "Stable Audio 3 Medium",
+  "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+  "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+  "license": "Stable Audio Community License",
+  "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+  "backend": "Official MLX local inference on Apple Silicon",
+  "runtimeRevision": "5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84",
+  "optimizedWeightsRevision": "30cb2644da54bfa63275d1bc7f1fa67fc718680f",
+  "generated": true,
+  "status": "generated",
+  "startedAt": "2026-10-31T16:23:31.287265+00:00",
+  "completedAt": "2026-10-31T16:24:42.229477+00:00",
+  "generationSeconds": 10.502,
+  "peakMetalAllocatedBytes": 7102072378,
+  "unclippedGeneratorPeak": 0.16316603124141693,
+  "unclippedGeneratorRms": 0.015189867821307563,
+  "unclippedGeneratorAboveFullScaleFraction": 0.0,
+  "unclippedGeneratorNearFullScaleFraction": 0.0,
+  "master": {
+    "file": "crickets-chorus-master.wav",
+    "bytes": 15876088,
+    "sha256": "92ec362168e96644ed5f2476e681e358d9df612da22a015e4f8c845a0ab8ca0c"
+  },
+  "processing": "1800 Hz two-pole high-pass removes low background rumble under the generated cricket calls; no imposed rhythm or added insect sound. Unchanged raw float model master retained. Browser derivative: 250 ms fade-in, 500 ms fade-out, peak normalization before stereo 44.1 kHz 160 kbps MP3 encoding. Encoded peak <= -3 dBFS verified. No reverb, delay, external recording, music, or synthesized substitute added.",
+  "listeningReview": "Not certified by a human listener. Technical validation does not establish prompt adherence.",
+  "verifiedWeights": {
+    "t5gemma_f16.npz": {
+      "bytes": 567443068,
+      "sha256": "8deb20489f36d9aec539f26c9c67321f99bc5fe300d470435ed6e76be4f16bbd"
+    },
+    "dit_medium_f16.npz": {
+      "bytes": 2907300946,
+      "sha256": "f9e5647ea3225818657d47d47ae4b34afa29c0568206ca89566c1a758944a38e"
+    },
+    "same_l_decoder_f32.npz": {
+      "bytes": 1704311976,
+      "sha256": "84924be2122d3a20fce443f40b782d9cd88e8e73707476326003ac47659a2287"
+    }
+  },
+  "device": {
+    "device_name": "Apple M1 Pro",
+    "max_recommended_working_set_size": 11453251584,
+    "memory_size": 17179869184,
+    "architecture": "applegpu_g13s",
+    "max_buffer_length": 8589934592,
+    "resource_limit": 499000
+  },
+  "assetKind": "processed-derivative-of-genuine-model-output",
+  "rawModelOutput": false,
+  "derivedFromGenuineModelOutput": true,
+  "sourceGeneration": {
+    "id": "crickets-chorus",
+    "kind": "crickets",
+    "endpoint": "high",
+    "endpointPosition": 1,
+    "title": "Cricket pairs",
+    "seed": 2026103160,
+    "role": "A second rhythmic cricket pattern with minimal background",
+    "prompt": "TrackType: SFX, Two close field crickets repeating short paired chirps in a quiet dry recording, clear rhythmic chirr-chirr followed by a calm silent pause, repeated natural insect pulses at a consistent relaxed tempo with very slight alternation between the two insects, clean bright chirping detail and nearly silent spaces between calls, only the isolated cricket calls throughout. Length: 45 seconds.",
+    "durationSeconds": 45,
+    "steps": 8,
+    "cfgScale": 1.0,
+    "sampler": "pingpong",
+    "pack": "scripts/stablegen-v4-palette-prompts.json",
+    "model": "Stable Audio 3 Medium",
+    "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+    "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+    "license": "Stable Audio Community License",
+    "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+    "backend": "Official MLX local inference on Apple Silicon",
+    "runtimeRevision": "5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84",
+    "optimizedWeightsRevision": "30cb2644da54bfa63275d1bc7f1fa67fc718680f",
+    "generated": true,
+    "status": "generated",
+    "startedAt": "2026-10-31T16:23:31.287265+00:00",
+    "completedAt": "2026-10-31T16:23:41.789666+00:00",
+    "generationSeconds": 10.502,
+    "peakMetalAllocatedBytes": 7102072378,
+    "unclippedGeneratorPeak": 0.16316603124141693,
+    "unclippedGeneratorRms": 0.015189867821307563,
+    "unclippedGeneratorAboveFullScaleFraction": 0.0,
+    "unclippedGeneratorNearFullScaleFraction": 0.0,
+    "master": {
+      "file": "crickets-chorus-master.wav",
+      "bytes": 15876088,
+      "sha256": "92ec362168e96644ed5f2476e681e358d9df612da22a015e4f8c845a0ab8ca0c"
+    },
+    "processing": "Official pipeline output preserved as stereo44100Hz32-bit float WAV without clipping or normalization. No reverb, compression, mixing or post-effects added. Browser copy normalized separately.",
+    "listeningReview": "Technical validity checked. Perceptual prompt adherence requires audition."
+  },
+  "rawGeneratedMaster": {
+    "file": "crickets-chorus-master.wav",
+    "bytes": 15876088,
+    "sha256": "92ec362168e96644ed5f2476e681e358d9df612da22a015e4f8c845a0ab8ca0c"
+  },
+  "rawMasterValidation": {
+    "completeDecode": "passed",
+    "samplesPerChannel": 1984500,
+    "nonFiniteSamples": 0,
+    "peakAmplitude": 0.16316603124141693,
+    "peakDbfs": -15.74740499741812,
+    "rmsDbfs": -36.36892010500432,
+    "crestDb": 20.6215151075862,
+    "nearFullScaleSampleFraction": 0.0,
+    "quietWindowFractionBelowMinus65Dbfs": 0.5155555555555555,
+    "windowRmsP95AboveMedianDb": 38.87338512007802,
+    "windowRmsMaxAboveMedianDb": 40.470696607763884,
+    "spectralEnergyFractions": {
+      "0-120Hz": 0.00016036080406969593,
+      "120-500Hz": 0.0005019676537748031,
+      "500-2000Hz": 0.0015934368813888063,
+      "2000-6000Hz": 0.9969061987503922,
+      "6000-22050Hz": 0.0008380348328972555
+    },
+    "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content."
+  },
+  "derivation": {
+    "source": "crickets-chorus-master.wav",
+    "filters": "highpass=f=1800:p=2",
+    "description": "1800 Hz two-pole high-pass removes low background rumble under the generated cricket calls; no imposed rhythm or added insect sound."
+  },
+  "wavMaster": {
+    "file": "crickets-chorus-processed-master.wav",
+    "bytes": 15876092,
+    "sha256": "98bb8fd35b6ff297b0c6f70c47eafd5e5bac71dde4da8b82e98fb40d50b58368"
+  },
+  "browserAsset": {
+    "file": "crickets-chorus.mp3",
+    "bytes": 901268,
+    "sha256": "a1ce17bfe3bb999864b7c7fc01cd8b2d08bd2f6a2bda37186fe02dcf27802589",
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "mp3",
+          "sample_rate": "44100",
+          "channels": 2
+        }
+      ],
+      "format": {
+        "duration": "45.035102",
+        "size": "901268"
+      }
+    }
+  },
+  "validation": {
+    "completeDecode": "passed",
+    "samplesPerChannel": 1984500,
+    "nonFiniteSamples": 0,
+    "peakAmplitude": 0.6086230278015137,
+    "peakDbfs": -4.313032394866603,
+    "rmsDbfs": -25.07725629222501,
+    "crestDb": 20.764223897358406,
+    "nearFullScaleSampleFraction": 0.0,
+    "quietWindowFractionBelowMinus65Dbfs": 0.45222222222222225,
+    "windowRmsP95AboveMedianDb": 39.57250375328071,
+    "windowRmsMaxAboveMedianDb": 41.177431285885554,
+    "spectralEnergyFractions": {
+      "0-120Hz": 2.139910571608049e-09,
+      "120-500Hz": 6.659389390779319e-07,
+      "500-2000Hz": 0.0003891669446234227,
+      "2000-6000Hz": 0.9987278569007086,
+      "6000-22050Hz": 0.0008823080758174421
+    },
+    "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+    "encodedPeakCeilingDbfs": -3,
+    "encodedPeakCheck": "passed"
+  },
+  "masterValidation": {
+    "completeDecode": "passed",
+    "samplesPerChannel": 1984500,
+    "nonFiniteSamples": 0,
+    "peakAmplitude": 0.16128778457641602,
+    "peakDbfs": -15.847970468953182,
+    "rmsDbfs": -36.47266061209811,
+    "crestDb": 20.624690143144928,
+    "nearFullScaleSampleFraction": 0.0,
+    "quietWindowFractionBelowMinus65Dbfs": 0.5177777777777778,
+    "windowRmsP95AboveMedianDb": 39.75810441837082,
+    "windowRmsMaxAboveMedianDb": 41.354787817416174,
+    "spectralEnergyFractions": {
+      "0-120Hz": 6.140685148472803e-10,
+      "120-500Hz": 6.33980568522215e-07,
+      "500-2000Hz": 0.00038571105340900325,
+      "2000-6000Hz": 0.9987580577005778,
+      "6000-22050Hz": 0.0008555955478138156
+    },
+    "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content."
+  },
+  "normalization": {
+    "targetPeakDbfsBeforeEncoding": -4,
+    "appliedGainDb": 11.847970468953182,
+    "codecHeadroomCorrectionDb": 0
+  },
+  "sourceMasterUnchangedCheck": true,
+  "generationBatchRecord": "medium-palette-batch.json"
+}

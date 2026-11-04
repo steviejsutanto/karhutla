@@ -1,0 +1,213 @@
+{
+  "id": "moisture-seep",
+  "kind": "moisture",
+  "endpoint": "low",
+  "endpointPosition": 0,
+  "title": "Quiet seep",
+  "seed": 2026103157,
+  "role": "Subtle water seep with gentle attacks and stable tone",
+  "prompt": "TrackType: SFX, A very small steady seep of water moving slowly through damp moss and soft soil, subtle close wet granular movement and tiny soft liquid murmurs, continuous fine water motion at low volume, softly rounded gentle onsets and stable natural tone, quiet intimate outdoor detail with a calm shallow flow throughout. Length: 45 seconds.",
+  "durationSeconds": 45,
+  "steps": 8,
+  "cfgScale": 1.0,
+  "sampler": "pingpong",
+  "pack": "scripts/stablegen-v4-palette-prompts.json",
+  "model": "Stable Audio 3 Medium",
+  "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+  "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+  "license": "Stable Audio Community License",
+  "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+  "backend": "Official MLX local inference on Apple Silicon",
+  "runtimeRevision": "5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84",
+  "optimizedWeightsRevision": "30cb2644da54bfa63275d1bc7f1fa67fc718680f",
+  "generated": true,
+  "status": "generated",
+  "startedAt": "2026-10-31T16:24:48.256447+00:00",
+  "completedAt": "2026-10-31T16:27:08.022851+00:00",
+  "generationSeconds": 11.03,
+  "peakMetalAllocatedBytes": 7102088810,
+  "unclippedGeneratorPeak": 0.17908863723278046,
+  "unclippedGeneratorRms": 0.005500819889120197,
+  "unclippedGeneratorAboveFullScaleFraction": 0.0,
+  "unclippedGeneratorNearFullScaleFraction": 0.0,
+  "master": {
+    "file": "moisture-seep-master.wav",
+    "bytes": 15876088,
+    "sha256": "d2b3ad9cfb98716a1c0d95fb1836c849295f9417748f7150e69822952646f180"
+  },
+  "processing": "Fast gentle 3:1 compression at 0.009901476 amplitude threshold, 0.5 ms attack and 180 ms release softens isolated water onsets. No pitch or speed changes. Unchanged raw float model master retained. Browser derivative: 250 ms fade-in, 500 ms fade-out, peak normalization before stereo 44.1 kHz 160 kbps MP3 encoding. Encoded peak <= -3 dBFS verified. No reverb, delay, external recording, music, or synthesized substitute added.",
+  "listeningReview": "Not certified by a human listener. Technical validation does not establish prompt adherence.",
+  "verifiedWeights": {
+    "t5gemma_f16.npz": {
+      "bytes": 567443068,
+      "sha256": "8deb20489f36d9aec539f26c9c67321f99bc5fe300d470435ed6e76be4f16bbd"
+    },
+    "dit_medium_f16.npz": {
+      "bytes": 2907300946,
+      "sha256": "f9e5647ea3225818657d47d47ae4b34afa29c0568206ca89566c1a758944a38e"
+    },
+    "same_l_decoder_f32.npz": {
+      "bytes": 1704311976,
+      "sha256": "84924be2122d3a20fce443f40b782d9cd88e8e73707476326003ac47659a2287"
+    }
+  },
+  "device": {
+    "device_name": "Apple M1 Pro",
+    "max_recommended_working_set_size": 11453251584,
+    "memory_size": 17179869184,
+    "architecture": "applegpu_g13s",
+    "max_buffer_length": 8589934592,
+    "resource_limit": 499000
+  },
+  "assetKind": "processed-derivative-of-genuine-model-output",
+  "rawModelOutput": false,
+  "derivedFromGenuineModelOutput": true,
+  "sourceGeneration": {
+    "id": "moisture-seep",
+    "kind": "moisture",
+    "endpoint": "low",
+    "endpointPosition": 0,
+    "title": "Quiet seep",
+    "seed": 2026103157,
+    "role": "Subtle water seep with gentle attacks and stable tone",
+    "prompt": "TrackType: SFX, A very small steady seep of water moving slowly through damp moss and soft soil, subtle close wet granular movement and tiny soft liquid murmurs, continuous fine water motion at low volume, softly rounded gentle onsets and stable natural tone, quiet intimate outdoor detail with a calm shallow flow throughout. Length: 45 seconds.",
+    "durationSeconds": 45,
+    "steps": 8,
+    "cfgScale": 1.0,
+    "sampler": "pingpong",
+    "pack": "scripts/stablegen-v4-palette-prompts.json",
+    "model": "Stable Audio 3 Medium",
+    "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+    "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+    "license": "Stable Audio Community License",
+    "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+    "backend": "Official MLX local inference on Apple Silicon",
+    "runtimeRevision": "5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84",
+    "optimizedWeightsRevision": "30cb2644da54bfa63275d1bc7f1fa67fc718680f",
+    "generated": true,
+    "status": "generated",
+    "startedAt": "2026-10-31T16:24:48.256447+00:00",
+    "completedAt": "2026-10-31T16:24:59.286706+00:00",
+    "generationSeconds": 11.03,
+    "peakMetalAllocatedBytes": 7102088810,
+    "unclippedGeneratorPeak": 0.17908863723278046,
+    "unclippedGeneratorRms": 0.005500819889120197,
+    "unclippedGeneratorAboveFullScaleFraction": 0.0,
+    "unclippedGeneratorNearFullScaleFraction": 0.0,
+    "master": {
+      "file": "moisture-seep-master.wav",
+      "bytes": 15876088,
+      "sha256": "d2b3ad9cfb98716a1c0d95fb1836c849295f9417748f7150e69822952646f180"
+    },
+    "processing": "Official pipeline output preserved as stereo44100Hz32-bit float WAV without clipping or normalization. No reverb, compression, mixing or post-effects added. Browser copy normalized separately.",
+    "listeningReview": "Technical validity checked. Perceptual prompt adherence requires audition."
+  },
+  "rawGeneratedMaster": {
+    "file": "moisture-seep-master.wav",
+    "bytes": 15876088,
+    "sha256": "d2b3ad9cfb98716a1c0d95fb1836c849295f9417748f7150e69822952646f180"
+  },
+  "rawMasterValidation": {
+    "completeDecode": "passed",
+    "samplesPerChannel": 1984500,
+    "nonFiniteSamples": 0,
+    "peakAmplitude": 0.17908863723278046,
+    "peakDbfs": -14.938639365503994,
+    "rmsDbfs": -45.191451494539656,
+    "crestDb": 30.25281212903566,
+    "nearFullScaleSampleFraction": 0.0,
+    "quietWindowFractionBelowMinus65Dbfs": 0.021111111111111112,
+    "windowRmsP95AboveMedianDb": 6.601109796817923,
+    "windowRmsMaxAboveMedianDb": 15.578050949184867,
+    "spectralEnergyFractions": {
+      "0-120Hz": 0.0010825353587876597,
+      "120-500Hz": 0.0023598344140606407,
+      "500-2000Hz": 0.33866504163985633,
+      "2000-6000Hz": 0.5215497183809349,
+      "6000-22050Hz": 0.1363424772845629
+    },
+    "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content."
+  },
+  "derivation": {
+    "source": "moisture-seep-master.wav",
+    "filters": "acompressor=threshold=0.009901476:ratio=3:attack=0.5:release=180:makeup=1:knee=2.828:detection=peak:link=maximum",
+    "description": "Fast gentle 3:1 compression at 0.009901476 amplitude threshold, 0.5 ms attack and 180 ms release softens isolated water onsets. No pitch or speed changes."
+  },
+  "wavMaster": {
+    "file": "moisture-seep-processed-master.wav",
+    "bytes": 15876092,
+    "sha256": "5046e46ed2103e15a9ba46068f2cc6b61463b623f7c46f9b90cfc8b874691545"
+  },
+  "browserAsset": {
+    "file": "moisture-seep.mp3",
+    "bytes": 901268,
+    "sha256": "bd1039cc5a947f9f6005a1a0cb7665f1662efed6e8a3d133ef4fbbd241553db9",
+    "bitrateKbps": 160,
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "mp3",
+          "sample_rate": "44100",
+          "channels": 2
+        }
+      ],
+      "format": {
+        "duration": "45.035102",
+        "size": "901268"
+      }
+    }
+  },
+  "validation": {
+    "completeDecode": "passed",
+    "samplesPerChannel": 1984500,
+    "nonFiniteSamples": 0,
+    "peakAmplitude": 0.5979214310646057,
+    "peakDbfs": -4.467117601063567,
+    "rmsDbfs": -27.095618232978463,
+    "crestDb": 22.628500631914896,
+    "nearFullScaleSampleFraction": 0.0,
+    "quietWindowFractionBelowMinus65Dbfs": 0.02,
+    "windowRmsP95AboveMedianDb": 3.329059840964451,
+    "windowRmsMaxAboveMedianDb": 8.567354424801945,
+    "spectralEnergyFractions": {
+      "0-120Hz": 0.0016540924132861547,
+      "120-500Hz": 0.003372239805964703,
+      "500-2000Hz": 0.28594228898577295,
+      "2000-6000Hz": 0.5765652923760343,
+      "6000-22050Hz": 0.13246608641893776
+    },
+    "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+    "encodedPeakCeilingDbfs": -3,
+    "encodedPeakCheck": "passed"
+  },
+  "masterValidation": {
+    "completeDecode": "passed",
+    "samplesPerChannel": 1984500,
+    "nonFiniteSamples": 0,
+    "peakAmplitude": 0.0388791449368,
+    "peakDbfs": -28.205665900281993,
+    "rmsDbfs": -50.84207550964172,
+    "crestDb": 22.636409609359724,
+    "nearFullScaleSampleFraction": 0.0,
+    "quietWindowFractionBelowMinus65Dbfs": 0.021111111111111112,
+    "windowRmsP95AboveMedianDb": 3.376228320653155,
+    "windowRmsMaxAboveMedianDb": 8.603229176556965,
+    "spectralEnergyFractions": {
+      "0-120Hz": 0.0016556873046364295,
+      "120-500Hz": 0.003363616924297858,
+      "500-2000Hz": 0.28561184991670174,
+      "2000-6000Hz": 0.5736845165418866,
+      "6000-22050Hz": 0.13568368366854988
+    },
+    "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content."
+  },
+  "normalization": {
+    "targetPeakDbfsBeforeEncoding": -4,
+    "appliedGainDb": 24.205665900281993,
+    "codecHeadroomCorrectionDb": 0
+  },
+  "sourceMasterUnchangedCheck": true,
+  "generationBatchRecord": "medium-palette-batch.json"
+}

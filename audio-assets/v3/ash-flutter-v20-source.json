@@ -1,0 +1,226 @@
+{
+  "id": "ash-flutter-v20",
+  "kind": "ash",
+  "title": "Fine ash flutter",
+  "description": "Independent clean fine papery ash flutter for concurrent residue patches",
+  "model": "Stable Audio 3 Medium",
+  "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+  "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+  "license": "Stable Audio Community License",
+  "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+  "generated": true,
+  "assetKind": "processed-derivative-of-genuine-model-output",
+  "rawModelOutput": false,
+  "generationId": "ash-flutter-v20",
+  "sourceGeneration": {
+    "id": "ash-flutter-v20",
+    "kind": "ash",
+    "title": "Fine ash flutter",
+    "seed": 202611032003,
+    "role": "Independent clean fine papery ash flutter for concurrent residue patches",
+    "prompt": "TrackType: SFX, Clear high fidelity close recording of extremely fine dry papery ash flakes gently fluttering and brushing across soft forest soil. Many tiny delicate flakes overlap as a continuous soft silky papery rustle, finely detailed airy granular texture with light natural irregular movement. Full bandwidth clean detail, quiet rounded dynamics and flat intimate outdoor acoustics, steady delicate activity throughout. Length: 30 seconds.",
+    "durationSeconds": 30,
+    "steps": 8,
+    "cfgScale": 1.0,
+    "sampler": "pingpong",
+    "pack": "scripts/stablegen-v20-residue-prompts.json",
+    "model": "Stable Audio 3 Medium",
+    "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+    "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+    "license": "Stable Audio Community License",
+    "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+    "backend": "Official MLX local inference on Apple Silicon",
+    "runtimeRevision": "5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84",
+    "optimizedWeightsRevision": "30cb2644da54bfa63275d1bc7f1fa67fc718680f",
+    "generated": true,
+    "status": "generated",
+    "startedAt": "2026-11-03T10:49:11.129852+00:00",
+    "completedAt": "2026-11-03T10:49:18.986488+00:00",
+    "generationSeconds": 7.852,
+    "peakMetalAllocatedBytes": 6890371774,
+    "unclippedGeneratorPeak": 0.9619616270065308,
+    "unclippedGeneratorRms": 0.012812339068218801,
+    "unclippedGeneratorAboveFullScaleFraction": 0.0,
+    "unclippedGeneratorNearFullScaleFraction": 0.0,
+    "master": {
+      "file": "ash-flutter-v20-master.wav",
+      "bytes": 10584088,
+      "sha256": "a06cec5af488638f47cc947641f2c3c322b950d0cff736b9c3356ba4b3776401"
+    },
+    "processing": "Official pipeline output preserved as stereo44100Hz32-bit float WAV without clipping or normalization. No reverb, compression, mixing or post-effects added. Browser copy normalized separately.",
+    "listeningReview": "Technical validity checked. Perceptual prompt adherence requires audition."
+  },
+  "generationBatchRecord": "medium-residue-v20-batch.json",
+  "verifiedWeights": {
+    "t5gemma_f16.npz": {
+      "bytes": 567443068,
+      "sha256": "8deb20489f36d9aec539f26c9c67321f99bc5fe300d470435ed6e76be4f16bbd"
+    },
+    "dit_medium_f16.npz": {
+      "bytes": 2907300946,
+      "sha256": "f9e5647ea3225818657d47d47ae4b34afa29c0568206ca89566c1a758944a38e"
+    },
+    "same_l_decoder_f32.npz": {
+      "bytes": 1704311976,
+      "sha256": "84924be2122d3a20fce443f40b782d9cd88e8e73707476326003ac47659a2287"
+    }
+  },
+  "device": {
+    "device_name": "Apple M1 Pro",
+    "max_recommended_working_set_size": 11453251584,
+    "memory_size": 17179869184,
+    "architecture": "applegpu_g13s",
+    "max_buffer_length": 8589934592,
+    "resource_limit": 499000
+  },
+  "rawGeneratedMaster": {
+    "file": "ash-flutter-v20-master.wav",
+    "bytes": 10584088,
+    "sha256": "a06cec5af488638f47cc947641f2c3c322b950d0cff736b9c3356ba4b3776401"
+  },
+  "rawMasterValidation": {
+    "completeDecode": "passed",
+    "samplesPerChannel": 1323000,
+    "nonFiniteSamples": 0,
+    "peakAmplitude": 0.9619616270065308,
+    "peakDbfs": -0.33684503557853007,
+    "rmsDbfs": -37.84743153205958,
+    "crestDb": 37.510586496481054,
+    "nearFullScaleSampleFraction": 0.0,
+    "quietWindowFractionBelowMinus65Dbfs": 0.08833333333333333,
+    "windowRmsP95AboveMedianDb": 14.286053250071987,
+    "windowRmsMaxAboveMedianDb": 22.698783871800195,
+    "spectralEnergyFractions": {
+      "0-120Hz": 0.00026658147240007636,
+      "120-500Hz": 0.0005860947359862707,
+      "500-2000Hz": 0.0030637673120336843,
+      "2000-6000Hz": 0.13140139870865797,
+      "6000-22050Hz": 0.8646821366838208
+    },
+    "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content."
+  },
+  "processedMaster": {
+    "file": "ash-flutter-v20-processed-master.wav",
+    "bytes": 10584092,
+    "sha256": "9b937ca50fec5553f950a4e2de2924ed80bca0d8baf8cee93cb8c3acf7c8f781"
+  },
+  "derivation": {
+    "source": "ash-flutter-v20-master.wav",
+    "filters": "acompressor=threshold=0.032030848:ratio=2:attack=0.15:release=90:knee=2.8:makeup=1",
+    "description": "Full generated ash bandwidth retained with no frequency filtering. Soft 2:1 compression at 0.032030848 amplitude threshold, 0.15 ms attack and 90 ms release restrains isolated flake spikes; no layered copies or lo-fi treatment."
+  },
+  "processing": "Full generated ash bandwidth retained with no frequency filtering. Soft 2:1 compression at 0.032030848 amplitude threshold, 0.15 ms attack and 90 ms release restrains isolated flake spikes; no layered copies or lo-fi treatment. Unchanged genuine float model master retained. Main derivative: 30 seconds, 5 ms boundary guards, fixed gain toward -35.5 dBFS RMS constrained by -4 dBFS encoded peak ceiling, stereo 44.1 kHz/320 kbps MP3. Mobile: direct 6\u201324 s float excerpt, mono 44.1 kHz/96 kbps, 5 ms guards. No repeated-copy layering, reverb, delay, external sound, synthesized substitute, pitch or speed change.",
+  "browserAsset": {
+    "file": "ash-flutter-v20.mp3",
+    "bytes": 1202720,
+    "sha256": "b80f36d11df3492f290b49f49d15b400782754010f7de6c286cf552340454618",
+    "durationSeconds": 30,
+    "channels": 2,
+    "sampleRate": 44100,
+    "bitrateKbps": 320,
+    "normalization": {
+      "targetRmsDbfs": -35.5,
+      "peakCeilingDbfs": -4,
+      "appliedGainDb": 7.678441925724059,
+      "codecHeadroomCorrectionDb": 0.0
+    },
+    "validation": {
+      "completeDecode": "passed",
+      "samplesPerChannel": 1323000,
+      "nonFiniteSamples": 0,
+      "peakAmplitude": 0.5304034948348999,
+      "peakDbfs": -5.507872460447572,
+      "rmsDbfs": -35.47842480998175,
+      "crestDb": 29.97055234953418,
+      "nearFullScaleSampleFraction": 0.0,
+      "quietWindowFractionBelowMinus65Dbfs": 0.023333333333333334,
+      "windowRmsP95AboveMedianDb": 9.196416201542092,
+      "windowRmsMaxAboveMedianDb": 13.453802910017416,
+      "spectralEnergyFractions": {
+        "0-120Hz": 0.00038068362633861616,
+        "120-500Hz": 0.0007147880494420102,
+        "500-2000Hz": 0.00324417096129557,
+        "2000-6000Hz": 0.1274865770707396,
+        "6000-22050Hz": 0.868173780292177
+      },
+      "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+      "encodedPeakCeilingDbfs": -4,
+      "encodedPeakCheck": "passed"
+    }
+  },
+  "mobile": {
+    "file": "ash-flutter-v20-mobile.mp3",
+    "bytes": 216964,
+    "sha256": "7c4f17aefceddeca46c975ec8acef636bc50860398f871ac20dd0398c3aaebc7",
+    "durationSeconds": 18,
+    "channels": 1,
+    "sampleRate": 44100,
+    "bitrateKbps": 96,
+    "normalization": {
+      "targetRmsDbfs": -35.5,
+      "peakCeilingDbfs": -4,
+      "appliedGainDb": 12.019539642537012,
+      "codecHeadroomCorrectionDb": 0.0
+    },
+    "validation": {
+      "completeDecode": "passed",
+      "samplesPerChannel": 793800,
+      "nonFiniteSamples": 0,
+      "peakAmplitude": 0.3886668086051941,
+      "peakDbfs": -8.208450913903773,
+      "rmsDbfs": -35.79703817804103,
+      "crestDb": 27.588587264137253,
+      "nearFullScaleSampleFraction": 0.0,
+      "quietWindowFractionBelowMinus65Dbfs": 0.0,
+      "windowRmsP95AboveMedianDb": 7.731635934732061,
+      "windowRmsMaxAboveMedianDb": 10.062972907185134,
+      "spectralEnergyFractions": {
+        "0-120Hz": 0.0008411594770925075,
+        "120-500Hz": 0.001319245455410748,
+        "500-2000Hz": 0.004819695475426313,
+        "2000-6000Hz": 0.19906263905453483,
+        "6000-22050Hz": 0.7939572605375205
+      },
+      "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+      "encodedPeakCeilingDbfs": -4,
+      "encodedPeakCheck": "passed"
+    },
+    "assetKind": "mobile-derivative-of-genuine-model-output",
+    "sourceGeneration": "ash-flutter-v20",
+    "sourceExcerptStartSeconds": 6,
+    "sourceExcerptEndSeconds": 24,
+    "sourceMasterSha256": "a06cec5af488638f47cc947641f2c3c322b950d0cff736b9c3356ba4b3776401",
+    "processing": "Direct seconds 6\u201324 of the processed float derivative, mono downmix and 5 ms boundary guards; fixed normalization and a single 44.1 kHz/96 kbps MP3 encoding. No MP3-to-MP3 transcode."
+  },
+  "validation": {
+    "completeDecode": "passed",
+    "samplesPerChannel": 1323000,
+    "nonFiniteSamples": 0,
+    "peakAmplitude": 0.5304034948348999,
+    "peakDbfs": -5.507872460447572,
+    "rmsDbfs": -35.47842480998175,
+    "crestDb": 29.97055234953418,
+    "nearFullScaleSampleFraction": 0.0,
+    "quietWindowFractionBelowMinus65Dbfs": 0.023333333333333334,
+    "windowRmsP95AboveMedianDb": 9.196416201542092,
+    "windowRmsMaxAboveMedianDb": 13.453802910017416,
+    "spectralEnergyFractions": {
+      "0-120Hz": 0.00038068362633861616,
+      "120-500Hz": 0.0007147880494420102,
+      "500-2000Hz": 0.00324417096129557,
+      "2000-6000Hz": 0.1274865770707396,
+      "6000-22050Hz": 0.868173780292177
+    },
+    "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+    "encodedPeakCeilingDbfs": -4,
+    "encodedPeakCheck": "passed"
+  },
+  "playbackBoundary": {
+    "fadeInSeconds": 0.005,
+    "fadeOutSeconds": 0.005,
+    "loopConditioning": "runtime-circular-overlap"
+  },
+  "sourceMasterUnchangedCheck": true,
+  "listeningReview": "Signal measurements only. No human listening certification; perceptual prompt adherence remains unverified.",
+  "completedAt": "2026-11-03T10:56:45.612695+00:00"
+}

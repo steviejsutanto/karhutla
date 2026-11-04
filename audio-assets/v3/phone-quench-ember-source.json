@@ -1,0 +1,205 @@
+{
+  "id": "phone-quench-ember",
+  "kind": "phone-quench",
+  "title": "Water onto embers",
+  "description": "A short rounded steam hiss as a little water quenches glowing wood embers",
+  "model": "Stable Audio 3 Medium",
+  "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+  "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+  "license": "Stable Audio Community License",
+  "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+  "generated": true,
+  "assetKind": "processed-derivative-of-genuine-model-output",
+  "rawModelOutput": false,
+  "sourceGeneration": {
+    "id": "phone-quench-ember-warm",
+    "kind": "phone-quench",
+    "title": "Water onto embers",
+    "seed": 202611021807,
+    "role": "A short rounded steam hiss as a little water quenches glowing wood embers",
+    "prompt": "TrackType: SFX, Fire extinguishing sound: a little water poured onto a small glowing wood fire makes one short continuous soft sizzling steam hiss, pssshhh. A warm breathy midrange sizzle with tiny wet woody sputters underneath, a small splash followed by gentle sustained hissing steam that quickly dies away. Close clear dry flat outdoor sound, quiet restrained intensity. Length: 5 seconds.",
+    "durationSeconds": 5,
+    "steps": 8,
+    "cfgScale": 1.0,
+    "sampler": "pingpong",
+    "pack": "scripts/stablegen-v18-quench-retry-prompts.json",
+    "model": "Stable Audio 3 Medium",
+    "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+    "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+    "license": "Stable Audio Community License",
+    "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+    "backend": "Official MLX local inference on Apple Silicon",
+    "runtimeRevision": "5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84",
+    "optimizedWeightsRevision": "30cb2644da54bfa63275d1bc7f1fa67fc718680f",
+    "generated": true,
+    "status": "generated",
+    "startedAt": "2026-11-02T16:55:41.108703+00:00",
+    "completedAt": "2026-11-02T16:55:44.970403+00:00",
+    "generationSeconds": 3.857,
+    "peakMetalAllocatedBytes": 6402043410,
+    "unclippedGeneratorPeak": 0.585485577583313,
+    "unclippedGeneratorRms": 0.019278012944567016,
+    "unclippedGeneratorAboveFullScaleFraction": 0.0,
+    "unclippedGeneratorNearFullScaleFraction": 0.0,
+    "master": {
+      "file": "phone-quench-ember-warm-master.wav",
+      "bytes": 1764088,
+      "sha256": "784320d0f34af636cb31a9752861aee1b47d1f7cbaf64ccf7ada9d65597aae0b"
+    },
+    "processing": "Official pipeline output preserved as stereo44100Hz32-bit float WAV without clipping or normalization. No reverb, compression, mixing or post-effects added. Browser copy normalized separately.",
+    "listeningReview": "Technical validity checked. Perceptual prompt adherence requires audition."
+  },
+  "verifiedWeights": {
+    "t5gemma_f16.npz": {
+      "bytes": 567443068,
+      "sha256": "8deb20489f36d9aec539f26c9c67321f99bc5fe300d470435ed6e76be4f16bbd"
+    },
+    "dit_medium_f16.npz": {
+      "bytes": 2907300946,
+      "sha256": "f9e5647ea3225818657d47d47ae4b34afa29c0568206ca89566c1a758944a38e"
+    },
+    "same_l_decoder_f32.npz": {
+      "bytes": 1704311976,
+      "sha256": "84924be2122d3a20fce443f40b782d9cd88e8e73707476326003ac47659a2287"
+    }
+  },
+  "device": {
+    "device_name": "Apple M1 Pro",
+    "max_recommended_working_set_size": 11453251584,
+    "memory_size": 17179869184,
+    "architecture": "applegpu_g13s",
+    "max_buffer_length": 8589934592,
+    "resource_limit": 499000
+  },
+  "generationBatchRecord": "medium-quench-v18-retry-batch.json",
+  "masterValidation": {
+    "completeDecode": "passed",
+    "samplesPerChannel": 220500,
+    "nonFiniteSamples": 0,
+    "peakAmplitude": 0.585485577583313,
+    "peakDbfs": -4.649675970948617,
+    "rmsDbfs": -34.29875464899867,
+    "crestDb": 29.64907867805005,
+    "nearFullScaleSampleFraction": 0.0,
+    "quietWindowFractionBelowMinus65Dbfs": 0.17,
+    "windowRmsP95AboveMedianDb": 13.58075848455638,
+    "windowRmsMaxAboveMedianDb": 21.30665492006279,
+    "spectralEnergyFractions": {
+      "0-120Hz": 0.00012236529967290824,
+      "120-500Hz": 0.0005865482139028688,
+      "500-2000Hz": 0.008989179297358405,
+      "2000-6000Hz": 0.15915446393331711,
+      "6000-22050Hz": 0.8311455486751018
+    },
+    "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content."
+  },
+  "sourceExcerptStartSeconds": 0.15,
+  "sourceExcerptEndSeconds": 2.1,
+  "processing": "Select 0.15\u20132.10s directly from the unchanged genuine float model master. Mono downmix, 160Hz two-pole high-pass, 6800Hz two-pole low-pass; soft compressor threshold 0.012/ratio 2.8/attack 0.2ms/release 65ms/knee 2.8/makeup 1; 12ms attack click guard and 520ms ending taper; fixed gain toward -28dBFS RMS, constrained to conservative peak headroom; mono44.1kHz96kbps MP3 encoded once from processed float. No reverb, delay, pitch/speed change, added sound, or synthesized noise.",
+  "browserAsset": {
+    "file": "phone-quench-ember.mp3",
+    "bytes": 24181,
+    "sha256": "e6f9823a5c58d94f8b80c8c8d1b4978c83e79424b1a8b4d38abb3fbf846323dc",
+    "durationSeconds": 1.95,
+    "channels": 1,
+    "sampleRate": 44100,
+    "bitrateKbps": 96,
+    "normalization": {
+      "targetRmsDbfs": -28,
+      "peakCeilingDbfs": -9,
+      "appliedGainDb": 17.07337401213615,
+      "codecHeadroomCorrectionDb": 0.0
+    },
+    "validation": {
+      "completeDecode": "passed",
+      "samplesPerChannel": 85995,
+      "nonFiniteSamples": 0,
+      "peakAmplitude": 0.22245129942893982,
+      "peakDbfs": -13.05530106033987,
+      "rmsDbfs": -28.357469718340322,
+      "crestDb": 15.302168658000452,
+      "nearFullScaleSampleFraction": 0.0,
+      "quietWindowFractionBelowMinus65Dbfs": 0.0,
+      "windowRmsP95AboveMedianDb": 1.3856468361126204,
+      "windowRmsMaxAboveMedianDb": 1.780611382114845,
+      "spectralEnergyFractions": {
+        "0-120Hz": 2.6507926887234597e-05,
+        "120-500Hz": 0.001679257126585312,
+        "500-2000Hz": 0.03457231925303139,
+        "2000-6000Hz": 0.4726860755078091,
+        "6000-22050Hz": 0.4910358401855782
+      },
+      "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+      "encodedPeakCeilingDbfs": -9,
+      "encodedPeakCheck": "passed"
+    }
+  },
+  "mobile": {
+    "file": "phone-quench-ember.mp3",
+    "bytes": 24181,
+    "sha256": "e6f9823a5c58d94f8b80c8c8d1b4978c83e79424b1a8b4d38abb3fbf846323dc",
+    "durationSeconds": 1.95,
+    "channels": 1,
+    "sampleRate": 44100,
+    "bitrateKbps": 96,
+    "normalization": {
+      "targetRmsDbfs": -28,
+      "peakCeilingDbfs": -9,
+      "appliedGainDb": 17.07337401213615,
+      "codecHeadroomCorrectionDb": 0.0
+    },
+    "validation": {
+      "completeDecode": "passed",
+      "samplesPerChannel": 85995,
+      "nonFiniteSamples": 0,
+      "peakAmplitude": 0.22245129942893982,
+      "peakDbfs": -13.05530106033987,
+      "rmsDbfs": -28.357469718340322,
+      "crestDb": 15.302168658000452,
+      "nearFullScaleSampleFraction": 0.0,
+      "quietWindowFractionBelowMinus65Dbfs": 0.0,
+      "windowRmsP95AboveMedianDb": 1.3856468361126204,
+      "windowRmsMaxAboveMedianDb": 1.780611382114845,
+      "spectralEnergyFractions": {
+        "0-120Hz": 2.6507926887234597e-05,
+        "120-500Hz": 0.001679257126585312,
+        "500-2000Hz": 0.03457231925303139,
+        "2000-6000Hz": 0.4726860755078091,
+        "6000-22050Hz": 0.4910358401855782
+      },
+      "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+      "encodedPeakCeilingDbfs": -9,
+      "encodedPeakCheck": "passed"
+    }
+  },
+  "validation": {
+    "completeDecode": "passed",
+    "samplesPerChannel": 85995,
+    "nonFiniteSamples": 0,
+    "peakAmplitude": 0.22245129942893982,
+    "peakDbfs": -13.05530106033987,
+    "rmsDbfs": -28.357469718340322,
+    "crestDb": 15.302168658000452,
+    "nearFullScaleSampleFraction": 0.0,
+    "quietWindowFractionBelowMinus65Dbfs": 0.0,
+    "windowRmsP95AboveMedianDb": 1.3856468361126204,
+    "windowRmsMaxAboveMedianDb": 1.780611382114845,
+    "spectralEnergyFractions": {
+      "0-120Hz": 2.6507926887234597e-05,
+      "120-500Hz": 0.001679257126585312,
+      "500-2000Hz": 0.03457231925303139,
+      "2000-6000Hz": 0.4726860755078091,
+      "6000-22050Hz": 0.4910358401855782
+    },
+    "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+    "encodedPeakCeilingDbfs": -9,
+    "encodedPeakCheck": "passed"
+  },
+  "playbackBoundary": {
+    "oneShot": true,
+    "fadeInSeconds": 0.012,
+    "fadeOutSeconds": 0.52
+  },
+  "listeningReview": "Signal and provenance checks passed. No human listening certification; generated source identity and absence of voices or music require audition.",
+  "completedAt": "2026-11-02T16:56:24.698987+00:00"
+}

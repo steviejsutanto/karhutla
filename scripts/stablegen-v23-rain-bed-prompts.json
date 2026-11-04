@@ -1,0 +1,27 @@
+{
+  "purpose": "Independent sustained natural heavy rain beds for the new storm derivative",
+  "preferredModel": "medium",
+  "durationSeconds": 30,
+  "steps": 8,
+  "cfgScale": 1.0,
+  "sampler": "pingpong",
+  "notes": "Two independent continuous rainfall-only studies. These are genuine model masters, not synthesized noise or copied layering. They may be blended with a separately generated actual thunder event with exact placement documented in source provenance.",
+  "assets": [
+    {
+      "id": "rain-downpour-v23-bed1",
+      "kind": "rain",
+      "title": "Sustained heavy woodland rain bed",
+      "seed": 202611032305,
+      "role": "Dense full continuous natural heavy rainfall without thunder",
+      "prompt": "TrackType: SFX, Heavy rain falling steadily outside in a quiet forest clearing. Thousands of overlapping water drops pour continuously onto soft leaves and forest earth, creating a dense broad full natural rainfall wash. A sustained abundant downpour with gently changing natural density, clear detailed water texture and a steady even open air perspective for the entire recording. Only continuous heavy rain is audible. Length: 30 seconds."
+    },
+    {
+      "id": "rain-downpour-v23-bed2",
+      "kind": "rain",
+      "title": "Sustained broad rain shower bed",
+      "seed": 202611032306,
+      "role": "An independent full heavy rain wash with sustained fine water impacts",
+      "prompt": "TrackType: SFX, Clear natural outdoor recording of an abundant heavy rain shower pouring over a wide area of soft woodland ground. Dense fine raindrops overlap into a continuous broad rushing water texture, rich natural high frequency rain detail and a soft full middle frequency body. Rainfall stays present and steadily heavy from start to finish, with small natural variations and no separate events. Only heavy rain in open air. Length: 30 seconds."
+    }
+  ]
+}

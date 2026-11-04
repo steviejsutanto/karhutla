@@ -1,0 +1,24 @@
+{
+  "purpose": "Continuous soft ash and warm ground-ember retries after preserving sparse bright first passes",
+  "preferredModel": "medium",
+  "modelCard": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+  "space": "https://huggingface.co/spaces/stabilityai/stable-audio-3",
+  "durationSeconds": 45,
+  "steps": 8,
+  "cfgScale": 1.0,
+  "sampler": "pingpong",
+  "assets": [
+    {
+      "id": "ash",
+      "seed": 2026103142,
+      "role": "Continuous soft midrange flake flutter; retry for steadier less bright texture",
+      "prompt": "TrackType: SFX, a continuous soft midrange layer of many fine papery leaf flakes gently rubbing and fluttering over dry soil, dense overlapping delicate rustles blending into one steady mellow fabric-like flutter, close dry outdoor perspective with softly rounded edges, very even quiet movement and unbroken stable texture throughout. Length: 45 seconds."
+    },
+    {
+      "id": "phone-crackle",
+      "seed": 2026103143,
+      "role": "Continuous warm muffled ground-ember bed; retry for steadier less bright phone texture",
+      "prompt": "TrackType: SFX, a continuous warm low and middle frequency granular bed of softly smouldering charcoal in a small patch of glowing ground embers, close muffled outdoor recording with dense overlapping mellow textures blended into a steady soft velvety rustle and gentle low combustion air, even volume and smoothly rounded organic variations throughout. Length: 45 seconds."
+    }
+  ]
+}

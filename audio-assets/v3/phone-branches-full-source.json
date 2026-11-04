@@ -1,0 +1,236 @@
+{
+  "id": "phone-branches-full",
+  "kind": "phone-crackle",
+  "title": "Burning branches and leaves",
+  "description": "A thicker layered woodfire bed, with warm woody twig body and dry papery leaf crackles.",
+  "model": "Stable Audio 3 Medium",
+  "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+  "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+  "license": "Stable Audio Community License",
+  "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+  "generated": true,
+  "assetKind": "processed-blend-of-genuine-model-outputs",
+  "rawModelOutput": false,
+  "sourceGenerations": [
+    {
+      "id": "phone-branches-body-take1",
+      "kind": "phone-crackle",
+      "title": "Warm burning branches and leaves",
+      "seed": 202611021805,
+      "role": "Dense soft wood crackles with warm twig body and dry papery leaves",
+      "prompt": "TrackType: SFX, Close recording of a small steady fire burning dry woody branches and crisp dead leaves. Dense continuous rounded wood crackle in the low and middle frequencies, warm chunky little twig snaps overlapping with soft papery leaf rustles and fine dry burning grain. Full-bodied intimate texture with gentle small flame movement beneath many quiet wood crackles. Even stable activity, natural irregularity, flat dry open-air acoustics. Length: 30 seconds.",
+      "durationSeconds": 30,
+      "steps": 8,
+      "cfgScale": 1.0,
+      "sampler": "pingpong",
+      "pack": "scripts/stablegen-v18-body-prompts.json",
+      "model": "Stable Audio 3 Medium",
+      "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+      "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+      "license": "Stable Audio Community License",
+      "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+      "backend": "Official MLX local inference on Apple Silicon",
+      "runtimeRevision": "5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84",
+      "optimizedWeightsRevision": "30cb2644da54bfa63275d1bc7f1fa67fc718680f",
+      "generated": true,
+      "status": "generated",
+      "startedAt": "2026-11-02T16:51:43.631319+00:00",
+      "completedAt": "2026-11-02T16:51:51.366782+00:00",
+      "generationSeconds": 7.735,
+      "peakMetalAllocatedBytes": 6889533018,
+      "unclippedGeneratorPeak": 0.9764952063560486,
+      "unclippedGeneratorRms": 0.012907582843418986,
+      "unclippedGeneratorAboveFullScaleFraction": 0.0,
+      "unclippedGeneratorNearFullScaleFraction": 0.0,
+      "master": {
+        "file": "phone-branches-body-take1-master.wav",
+        "bytes": 10584088,
+        "sha256": "a0f55a7d73fe5af35d3d77ddc50a89c0cefac88dc4bdaa71fc6928ff769471b1"
+      },
+      "processing": "Official pipeline output preserved as stereo44100Hz32-bit float WAV without clipping or normalization. No reverb, compression, mixing or post-effects added. Browser copy normalized separately.",
+      "listeningReview": "Technical validity checked. Perceptual prompt adherence requires audition."
+    },
+    {
+      "id": "phone-branches-body-take2",
+      "kind": "phone-crackle",
+      "title": "Layered dry twig crackle",
+      "seed": 202611021806,
+      "role": "Soft thick woody twig texture with overlapping papery dry leaves",
+      "prompt": "TrackType: SFX, Intimate close dry small woodfire steadily consuming a loose pile of slender branches, woody sticks and papery dead leaves. Countless quiet overlapping twig snaps and rounded woody ticks form a thick tactile continuous crackle with audible warm middle-frequency wood body, softly crumpling leaf texture and a low gentle flame rush. Natural irregular small details throughout, restrained even intensity in flat open outdoor acoustics. Length: 30 seconds.",
+      "durationSeconds": 30,
+      "steps": 8,
+      "cfgScale": 1.0,
+      "sampler": "pingpong",
+      "pack": "scripts/stablegen-v18-body-prompts.json",
+      "model": "Stable Audio 3 Medium",
+      "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+      "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+      "license": "Stable Audio Community License",
+      "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+      "backend": "Official MLX local inference on Apple Silicon",
+      "runtimeRevision": "5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84",
+      "optimizedWeightsRevision": "30cb2644da54bfa63275d1bc7f1fa67fc718680f",
+      "generated": true,
+      "status": "generated",
+      "startedAt": "2026-11-02T16:51:51.414297+00:00",
+      "completedAt": "2026-11-02T16:51:59.617121+00:00",
+      "generationSeconds": 8.201,
+      "peakMetalAllocatedBytes": 6889533066,
+      "unclippedGeneratorPeak": 0.896178126335144,
+      "unclippedGeneratorRms": 0.011518495010202747,
+      "unclippedGeneratorAboveFullScaleFraction": 0.0,
+      "unclippedGeneratorNearFullScaleFraction": 0.0,
+      "master": {
+        "file": "phone-branches-body-take2-master.wav",
+        "bytes": 10584088,
+        "sha256": "8c8e6a924ea898e5510e566a68b96c4317573c92805f91e8f8f2c74283df0467"
+      },
+      "processing": "Official pipeline output preserved as stereo44100Hz32-bit float WAV without clipping or normalization. No reverb, compression, mixing or post-effects added. Browser copy normalized separately.",
+      "listeningReview": "Technical validity checked. Perceptual prompt adherence requires audition."
+    }
+  ],
+  "verifiedWeights": {
+    "t5gemma_f16.npz": {
+      "bytes": 567443068,
+      "sha256": "8deb20489f36d9aec539f26c9c67321f99bc5fe300d470435ed6e76be4f16bbd"
+    },
+    "dit_medium_f16.npz": {
+      "bytes": 2907300946,
+      "sha256": "f9e5647ea3225818657d47d47ae4b34afa29c0568206ca89566c1a758944a38e"
+    },
+    "same_l_decoder_f32.npz": {
+      "bytes": 1704311976,
+      "sha256": "84924be2122d3a20fce443f40b782d9cd88e8e73707476326003ac47659a2287"
+    }
+  },
+  "device": {
+    "device_name": "Apple M1 Pro",
+    "max_recommended_working_set_size": 11453251584,
+    "memory_size": 17179869184,
+    "architecture": "applegpu_g13s",
+    "max_buffer_length": 8589934592,
+    "resource_limit": 499000
+  },
+  "generationBatchRecord": "medium-phone-v18-batch.json",
+  "sourceExcerpts": [
+    {
+      "generationId": "phone-branches-body-take1",
+      "startSeconds": 6,
+      "endSeconds": 24,
+      "linearMixGain": 1
+    },
+    {
+      "generationId": "phone-branches-body-take2",
+      "startSeconds": 4,
+      "endSeconds": 22,
+      "linearMixGain": 0.65
+    }
+  ],
+  "processing": "Mix two genuine independently generated float takes: take1 seconds6\u201324 at unity, with 150Hz two-pole high-pass/6500Hz two-pole low-pass and +3dB 900Hz two-octave equalizer; take2 seconds4\u201322 at linear gain0.65, with350Hz two-pole high-pass/5200Hz two-pole low-pass. No mix normalization. Soft compressor threshold0.007/ratio3.5/attack0.12ms/release60ms/knee2.8/makeup1 restrains isolated snaps. Five-millisecond boundary click guards; fixed gain toward-27.5dBFS RMS constrained to conservative peak headroom. Stereo44.1kHz160kbps desktop MP3 and mono44.1kHz96kbps mobile MP3 encoded independently from processed float. Raw masters retained unchanged. No external recording, synthesized noise, reverb, delay, or speed/pitch change.",
+  "browserAsset": {
+    "file": "phone-branches-full.mp3",
+    "bytes": 361578,
+    "sha256": "d5cb1d6dbc12a6fe835753565063c784bfabfa5922dd8fa19eb28a5e16d51a1d",
+    "durationSeconds": 18,
+    "channels": 2,
+    "sampleRate": 44100,
+    "bitrateKbps": 160,
+    "normalization": {
+      "targetRmsDbfs": -27.5,
+      "peakCeilingDbfs": -7,
+      "appliedGainDb": 21.646417066051125,
+      "codecHeadroomCorrectionDb": 0.0
+    },
+    "validation": {
+      "completeDecode": "passed",
+      "samplesPerChannel": 793800,
+      "nonFiniteSamples": 0,
+      "peakAmplitude": 0.38661205768585205,
+      "peakDbfs": -8.254492105747367,
+      "rmsDbfs": -31.96266633397455,
+      "crestDb": 23.708174228227183,
+      "nearFullScaleSampleFraction": 0.0,
+      "quietWindowFractionBelowMinus65Dbfs": 0.0,
+      "windowRmsP95AboveMedianDb": 3.8571370804109932,
+      "windowRmsMaxAboveMedianDb": 6.787246408561629,
+      "spectralEnergyFractions": {
+        "0-120Hz": 0.021883860007826682,
+        "120-500Hz": 0.2751588706680265,
+        "500-2000Hz": 0.15907158635030944,
+        "2000-6000Hz": 0.3325948609766001,
+        "6000-22050Hz": 0.21129082199722926
+      },
+      "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+      "encodedPeakCeilingDbfs": -7,
+      "encodedPeakCheck": "passed"
+    }
+  },
+  "mobile": {
+    "file": "phone-branches-full-mobile.mp3",
+    "bytes": 216964,
+    "sha256": "539002e8bb70c67285c52810b575c00b9d8d1cc66377da722875d9bf9adb17ad",
+    "durationSeconds": 18,
+    "channels": 1,
+    "sampleRate": 44100,
+    "bitrateKbps": 96,
+    "normalization": {
+      "targetRmsDbfs": -27.5,
+      "peakCeilingDbfs": -7,
+      "appliedGainDb": 23.62370175141598,
+      "codecHeadroomCorrectionDb": 0.0
+    },
+    "validation": {
+      "completeDecode": "passed",
+      "samplesPerChannel": 793800,
+      "nonFiniteSamples": 0,
+      "peakAmplitude": 0.39476439356803894,
+      "peakDbfs": -8.073240523000704,
+      "rmsDbfs": -30.772307549768794,
+      "crestDb": 22.69906702676809,
+      "nearFullScaleSampleFraction": 0.0,
+      "quietWindowFractionBelowMinus65Dbfs": 0.0,
+      "windowRmsP95AboveMedianDb": 3.8773247536925695,
+      "windowRmsMaxAboveMedianDb": 6.716816956984797,
+      "spectralEnergyFractions": {
+        "0-120Hz": 0.019553789593849142,
+        "120-500Hz": 0.24634580548806123,
+        "500-2000Hz": 0.15821397810124818,
+        "2000-6000Hz": 0.3598659628740354,
+        "6000-22050Hz": 0.2160204639427973
+      },
+      "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+      "encodedPeakCeilingDbfs": -7,
+      "encodedPeakCheck": "passed"
+    }
+  },
+  "validation": {
+    "completeDecode": "passed",
+    "samplesPerChannel": 793800,
+    "nonFiniteSamples": 0,
+    "peakAmplitude": 0.38661205768585205,
+    "peakDbfs": -8.254492105747367,
+    "rmsDbfs": -31.96266633397455,
+    "crestDb": 23.708174228227183,
+    "nearFullScaleSampleFraction": 0.0,
+    "quietWindowFractionBelowMinus65Dbfs": 0.0,
+    "windowRmsP95AboveMedianDb": 3.8571370804109932,
+    "windowRmsMaxAboveMedianDb": 6.787246408561629,
+    "spectralEnergyFractions": {
+      "0-120Hz": 0.021883860007826682,
+      "120-500Hz": 0.2751588706680265,
+      "500-2000Hz": 0.15907158635030944,
+      "2000-6000Hz": 0.3325948609766001,
+      "6000-22050Hz": 0.21129082199722926
+    },
+    "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+    "encodedPeakCeilingDbfs": -7,
+    "encodedPeakCheck": "passed"
+  },
+  "playbackBoundary": {
+    "fadeInSeconds": 0.005,
+    "fadeOutSeconds": 0.005,
+    "loopConditioning": "runtime-circular-overlap"
+  },
+  "listeningReview": "Signal and provenance checks passed. No human listening certification of burning source identity, dryness, or absence of music.",
+  "completedAt": "2026-11-02T16:56:26.818792+00:00"
+}

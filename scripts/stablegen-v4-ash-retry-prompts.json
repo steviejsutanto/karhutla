@@ -1,0 +1,25 @@
+{
+  "purpose": "Fresh natural palette endpoints for continuous wildfire ambiance controls",
+  "preferredModel": "medium",
+  "modelCard": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+  "space": "https://huggingface.co/spaces/stabilityai/stable-audio-3",
+  "durationSeconds": 45,
+  "steps": 8,
+  "cfgScale": 1.0,
+  "sampler": "pingpong",
+  "notes": "The CFG1 local path uses the positive prompt only. These are ten independent genuine generations; endpoint position describes the intended slider direction, not an acoustic measurement.",
+  "assets": [
+    {
+      "id": "ash-fine",
+      "kind": "ash",
+      "endpoint": "low",
+      "endpointPosition": 0,
+      "title": "Fine scattering",
+      "seed": 2026103183,
+      "role": "Clean delicate high-detail sifting ash, preserved without lo-fi filtering",
+      "prompt": "TrackType: SFX, Clear high fidelity close recording of a continuous soft shower of extremely fine dry papery ash and tiny thin leaf flakes scattering and fluttering over forest soil, countless overlapping finely detailed delicate dry rustles, very light fine granular movement blending into a continuous soft silky papery flutter, natural full bandwidth detail and quiet rounded dynamics, intimate flat outdoor sound with stable even activity throughout the whole recording. Length: 45 seconds.",
+      "generationId": "ash-fine-take3",
+      "bitrateKbps": 320
+    }
+  ]
+}

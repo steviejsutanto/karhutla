@@ -1,0 +1,49 @@
+{
+  "purpose": "Separate dry environmental textures for wildfire sound v3",
+  "preferredModel": "medium",
+  "modelCard": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+  "space": "https://huggingface.co/spaces/stabilityai/stable-audio-3",
+  "durationSeconds": 45,
+  "steps": 8,
+  "cfgScale": 1.0,
+  "sampler": "pingpong",
+  "negativePrompt": "Music, instruments, melody, rhythm, drone notes, voices, speech, indoor room tone, reverb, echo, cavern, explosions, gunshots, impacts, loud pops, abrupt whooshes, metallic sounds, harsh high frequency hiss, birds, ocean waves, traffic.",
+  "assets": [
+    {
+      "id": "rain",
+      "seed": 2026103133,
+      "role": "Pure water on leaves; separate from fire and animals",
+      "prompt": "TrackType: SFX, natural steady gentle rain falling onto broad leaves and soft soil in a close dry outdoor field recording, countless small rounded water drops pattering irregularly and softly with tiny leaf drips, a continuous pure water texture with restrained stable dynamics, soft mellow detail and a quiet forest floor perspective. Length: 45 seconds."
+    },
+    {
+      "id": "ash",
+      "seed": 2026103132,
+      "role": "Fine brittle dry flutter and sifting detail",
+      "prompt": "TrackType: SFX, very quiet fine dry ash and tiny brittle leaf flakes sifting and fluttering over soft forest soil, close dry outdoor detail with delicate papery grain, many tiny restrained irregular rustles and fine scattered movements, a gentle continuous light texture with soft rounded dynamics and stable low volume. Length: 45 seconds."
+    },
+    {
+      "id": "haze",
+      "seed": 2026103131,
+      "role": "Soft low air layer; no fire or animals",
+      "prompt": "TrackType: SFX, a continuous quiet low air wash moving slowly through sparse forest stems, close dry outdoor field recording with soft low and middle frequency wind breath, gentle irregular swells and a little restrained leaf movement, dark muffled natural detail, stable low volume and soft rounded dynamics. Length: 45 seconds."
+    },
+    {
+      "id": "moisture",
+      "seed": 2026103134,
+      "role": "Damped close soil seep and small water movement",
+      "prompt": "TrackType: SFX, a very close quiet recording of a little water gently soaking through damp forest soil and moss, soft tiny trickles and subtle wet granular movement, restrained intermittent little droplets absorbed into earth, mellow low and middle frequency detail, a dry intimate outdoor perspective and continuous subtle damp texture with stable low volume. Length: 45 seconds."
+    },
+    {
+      "id": "phone-crackle",
+      "seed": 2026103136,
+      "role": "Fine ground-level ember crackle with no large burning roar",
+      "prompt": "TrackType: SFX, a small patch of glowing embers and dry charred leaf litter making a quiet continuous fine crackle, recorded very close outdoors at ground level, many tiny restrained irregular dry ticks and soft granular settling, warm mellow detail, short delicate little crackles and stable low volume with natural pauses. Length: 45 seconds."
+    },
+    {
+      "id": "crickets",
+      "seed": 2026103135,
+      "role": "Quiet aftermath only, enabled after confirmed extinction",
+      "prompt": "TrackType: SFX, a quiet natural chorus of small night crickets in still forest air after rain, gentle delicate individual chirps at slightly different irregular times, several soft close insects over a quiet open-air background, low density with restful gaps and stable low volume, realistic restrained outdoor field recording with dry clear detail. Length: 45 seconds."
+    }
+  ]
+}

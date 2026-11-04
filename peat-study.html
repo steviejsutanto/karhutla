@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#000000"><title>karhutla · projection</title>
+  <link rel="icon" href="/favicon.svg"><link rel="stylesheet" href="/peat-study.css"><link rel="stylesheet" href="/sound-controls.css">
+  <script type="module" src="/peat-study.js"></script>
+</head>
+<body data-scene="waiting">
+  <main>
+    <header class="masthead"><h1 class="sr-only">karhutla</h1><button id="project-study" type="button" aria-label="Project fullscreen">⤢</button></header>
+    <section id="study-stage" aria-label="Indonesia above, an abstract peat cross-section below">
+      <div id="landscape-visuals"><div id="top-view" class="view"><canvas id="peat-canvas" role="img" aria-label="Shared fire landscape across Indonesia"></canvas></div>
+      <div id="side-view" class="view"><canvas id="section-canvas" role="img" aria-label="Abstract peat cross-section responding to shared rain"></canvas><canvas id="section-contact" aria-hidden="true"></canvas><canvas id="final-rain-visual" aria-hidden="true"></canvas></div>
+      <canvas id="shared-atmosphere" aria-hidden="true"></canvas></div>
+      <section id="arrival-screen" aria-label="Join karhutla" hidden>
+        <div class="arrival-copy"><h2 id="projection-opening-title">karhutla</h2><p id="projection-program-notes"></p><section id="projection-instructions" aria-label="Audience instructions" hidden><ol><li>Join the venue Wi-Fi and scan the code.</li><li>Turn off <strong>Silent Mode</strong>. Tap the <strong>speaker button</strong> and set a comfortable media volume. Sound begins shortly.</li><li>Hold over a fire to rain. Drag to move; lift to stop. Or use <strong>Rain</strong> to keep raining.</li><li>A bell marks the fires across your rain area going out.</li><li>Keep this page open, even in darkness.</li></ol></section><div id="projection-wifi" hidden><p><span>Wi-Fi:</span><strong id="projection-wifi-name"></strong></p><p id="projection-password-row" hidden><span>Password:</span><strong id="projection-wifi-password"></strong></p></div></div>
+        <div class="arrival-join"><p class="qr-call-to-action">Scan to join</p><img id="study-qr" src="/api/qr.svg?view=audience" alt="Scan to join the performance" width="360" height="360"><a class="sr-only" id="study-join-link" href="/audience">Connecting…</a><p class="sr-only" id="study-lan-note"></p></div>
+      </section>
+      <div id="study-loading" class="sr-only" role="status">Preparing…</div>
+      <p id="empty-region" class="sr-only" hidden>No fire patches.</p>
+      <p id="contact-status" class="sr-only" role="status" aria-live="polite"></p>
+      <div id="study-sound"></div>
+      <p id="projection-caption" class="sr-only" aria-live="polite"></p>
+    </section>
+    <div hidden aria-hidden="true"><span id="study-audience-count"></span><span id="study-heat"></span><span id="study-wetness"></span><span id="study-out"></span><span id="study-connection"></span><span id="study-observed"></span><div id="study-bootstrap">Open the operator page to begin.</div></div>
+  </main>
+</body>
+</html>

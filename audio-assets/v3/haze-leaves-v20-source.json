@@ -1,0 +1,226 @@
+{
+  "id": "haze-leaves-v20",
+  "kind": "haze",
+  "title": "Fine leaf air",
+  "description": "Independent gentle airy drift across slender leaves",
+  "model": "Stable Audio 3 Medium",
+  "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+  "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+  "license": "Stable Audio Community License",
+  "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+  "generated": true,
+  "assetKind": "processed-derivative-of-genuine-model-output",
+  "rawModelOutput": false,
+  "generationId": "haze-leaves-v20",
+  "sourceGeneration": {
+    "id": "haze-leaves-v20",
+    "kind": "haze",
+    "title": "Fine leaf air",
+    "seed": 202611032008,
+    "role": "Independent gentle airy drift across slender leaves",
+    "prompt": "TrackType: SFX, Clear close outdoor recording of the gentlest steady breeze brushing very thin dry leaves. Fine soft airy leaf flutter and transparent thin air movement overlap in a delicate continuous texture, stable quiet volume with subtle natural irregularity and fine open-air detail. Lightweight clean middle-frequency air whisper, restrained gentle dynamics and calm consistent activity throughout. Length: 30 seconds.",
+    "durationSeconds": 30,
+    "steps": 8,
+    "cfgScale": 1.0,
+    "sampler": "pingpong",
+    "pack": "scripts/stablegen-v20-residue-prompts.json",
+    "model": "Stable Audio 3 Medium",
+    "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+    "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+    "license": "Stable Audio Community License",
+    "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+    "backend": "Official MLX local inference on Apple Silicon",
+    "runtimeRevision": "5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84",
+    "optimizedWeightsRevision": "30cb2644da54bfa63275d1bc7f1fa67fc718680f",
+    "generated": true,
+    "status": "generated",
+    "startedAt": "2026-11-03T10:49:49.792044+00:00",
+    "completedAt": "2026-11-03T10:49:57.409510+00:00",
+    "generationSeconds": 7.617,
+    "peakMetalAllocatedBytes": 6890371774,
+    "unclippedGeneratorPeak": 0.31970396637916565,
+    "unclippedGeneratorRms": 0.008075254294089607,
+    "unclippedGeneratorAboveFullScaleFraction": 0.0,
+    "unclippedGeneratorNearFullScaleFraction": 0.0,
+    "master": {
+      "file": "haze-leaves-v20-master.wav",
+      "bytes": 10584088,
+      "sha256": "c35522ad25a6c5bda0b7bce1084b65c344648b2cd2c15de8986763a7d5afd4c9"
+    },
+    "processing": "Official pipeline output preserved as stereo44100Hz32-bit float WAV without clipping or normalization. No reverb, compression, mixing or post-effects added. Browser copy normalized separately.",
+    "listeningReview": "Technical validity checked. Perceptual prompt adherence requires audition."
+  },
+  "generationBatchRecord": "medium-residue-v20-batch.json",
+  "verifiedWeights": {
+    "t5gemma_f16.npz": {
+      "bytes": 567443068,
+      "sha256": "8deb20489f36d9aec539f26c9c67321f99bc5fe300d470435ed6e76be4f16bbd"
+    },
+    "dit_medium_f16.npz": {
+      "bytes": 2907300946,
+      "sha256": "f9e5647ea3225818657d47d47ae4b34afa29c0568206ca89566c1a758944a38e"
+    },
+    "same_l_decoder_f32.npz": {
+      "bytes": 1704311976,
+      "sha256": "84924be2122d3a20fce443f40b782d9cd88e8e73707476326003ac47659a2287"
+    }
+  },
+  "device": {
+    "device_name": "Apple M1 Pro",
+    "max_recommended_working_set_size": 11453251584,
+    "memory_size": 17179869184,
+    "architecture": "applegpu_g13s",
+    "max_buffer_length": 8589934592,
+    "resource_limit": 499000
+  },
+  "rawGeneratedMaster": {
+    "file": "haze-leaves-v20-master.wav",
+    "bytes": 10584088,
+    "sha256": "c35522ad25a6c5bda0b7bce1084b65c344648b2cd2c15de8986763a7d5afd4c9"
+  },
+  "rawMasterValidation": {
+    "completeDecode": "passed",
+    "samplesPerChannel": 1323000,
+    "nonFiniteSamples": 0,
+    "peakAmplitude": 0.31970396637916565,
+    "peakDbfs": -9.90503951317123,
+    "rmsDbfs": -41.856875852306246,
+    "crestDb": 31.951836339135014,
+    "nearFullScaleSampleFraction": 0.0,
+    "quietWindowFractionBelowMinus65Dbfs": 0.016666666666666666,
+    "windowRmsP95AboveMedianDb": 6.123727095281346,
+    "windowRmsMaxAboveMedianDb": 17.450779937465356,
+    "spectralEnergyFractions": {
+      "0-120Hz": 0.016282233899139107,
+      "120-500Hz": 0.19994254343836876,
+      "500-2000Hz": 0.7428126692357043,
+      "2000-6000Hz": 0.018577411019505264,
+      "6000-22050Hz": 0.022385101955968597
+    },
+    "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content."
+  },
+  "processedMaster": {
+    "file": "haze-leaves-v20-processed-master.wav",
+    "bytes": 10584092,
+    "sha256": "48d1159862834a5e927d37762cc30b3dd3a7f3d3a4634b27fd86c71cf903d7cc"
+  },
+  "derivation": {
+    "source": "haze-leaves-v20-master.wav",
+    "filters": "highpass=f=180:p=2,acompressor=threshold=0.014535458:ratio=3:attack=0.5:release=250:knee=2.828:makeup=1",
+    "description": "180 Hz two-pole high-pass removes low rumbling weight while preserving fine airy detail. Gentle 3:1 compression at 0.014535458 amplitude threshold, 0.5 ms attack and 250 ms release restrains isolated gust spikes before fixed level matching."
+  },
+  "processing": "180 Hz two-pole high-pass removes low rumbling weight while preserving fine airy detail. Gentle 3:1 compression at 0.014535458 amplitude threshold, 0.5 ms attack and 250 ms release restrains isolated gust spikes before fixed level matching. Unchanged genuine float model master retained. Main derivative: 30 seconds, 5 ms boundary guards, fixed gain toward -29 dBFS RMS constrained by -4 dBFS encoded peak ceiling, stereo 44.1 kHz/160 kbps MP3. Mobile: direct 6\u201324 s float excerpt, mono 44.1 kHz/96 kbps, 5 ms guards. No repeated-copy layering, reverb, delay, external sound, synthesized substitute, pitch or speed change.",
+  "browserAsset": {
+    "file": "haze-leaves-v20.mp3",
+    "bytes": 601382,
+    "sha256": "caa1dc2728aa44cdbdc772ee743326e6b4b489df752f18b4ea417dba99f825ae",
+    "durationSeconds": 30,
+    "channels": 2,
+    "sampleRate": 44100,
+    "bitrateKbps": 160,
+    "normalization": {
+      "targetRmsDbfs": -29,
+      "peakCeilingDbfs": -4,
+      "appliedGainDb": 17.310978324225744,
+      "codecHeadroomCorrectionDb": 0.0
+    },
+    "validation": {
+      "completeDecode": "passed",
+      "samplesPerChannel": 1323000,
+      "nonFiniteSamples": 0,
+      "peakAmplitude": 0.33044812083244324,
+      "peakDbfs": -9.617934269995457,
+      "rmsDbfs": -29.46160217525521,
+      "crestDb": 19.84366790525975,
+      "nearFullScaleSampleFraction": 0.0,
+      "quietWindowFractionBelowMinus65Dbfs": 0.016666666666666666,
+      "windowRmsP95AboveMedianDb": 2.7996523953425587,
+      "windowRmsMaxAboveMedianDb": 5.579314739869627,
+      "spectralEnergyFractions": {
+        "0-120Hz": 0.0018359890308595923,
+        "120-500Hz": 0.1424343827482512,
+        "500-2000Hz": 0.8007587562095096,
+        "2000-6000Hz": 0.0257872920224665,
+        "6000-22050Hz": 0.02918357998891115
+      },
+      "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+      "encodedPeakCeilingDbfs": -4,
+      "encodedPeakCheck": "passed"
+    }
+  },
+  "mobile": {
+    "file": "haze-leaves-v20-mobile.mp3",
+    "bytes": 216964,
+    "sha256": "f7fb20007266a75e15085f344b50c2660f6910b901d6796fc743beeb851f9850",
+    "durationSeconds": 18,
+    "channels": 1,
+    "sampleRate": 44100,
+    "bitrateKbps": 96,
+    "normalization": {
+      "targetRmsDbfs": -29,
+      "peakCeilingDbfs": -4,
+      "appliedGainDb": 17.50733296741329,
+      "codecHeadroomCorrectionDb": 0.0
+    },
+    "validation": {
+      "completeDecode": "passed",
+      "samplesPerChannel": 793800,
+      "nonFiniteSamples": 0,
+      "peakAmplitude": 0.2443825751543045,
+      "peakDbfs": -12.238595263525408,
+      "rmsDbfs": -29.427015815967966,
+      "crestDb": 17.188420552442558,
+      "nearFullScaleSampleFraction": 0.0,
+      "quietWindowFractionBelowMinus65Dbfs": 0.0,
+      "windowRmsP95AboveMedianDb": 2.468231147510174,
+      "windowRmsMaxAboveMedianDb": 4.812351127917498,
+      "spectralEnergyFractions": {
+        "0-120Hz": 0.0018504955825596105,
+        "120-500Hz": 0.15476371931989427,
+        "500-2000Hz": 0.7782604125206376,
+        "2000-6000Hz": 0.02679893366570906,
+        "6000-22050Hz": 0.03832643891119543
+      },
+      "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+      "encodedPeakCeilingDbfs": -4,
+      "encodedPeakCheck": "passed"
+    },
+    "assetKind": "mobile-derivative-of-genuine-model-output",
+    "sourceGeneration": "haze-leaves-v20",
+    "sourceExcerptStartSeconds": 6,
+    "sourceExcerptEndSeconds": 24,
+    "sourceMasterSha256": "c35522ad25a6c5bda0b7bce1084b65c344648b2cd2c15de8986763a7d5afd4c9",
+    "processing": "Direct seconds 6\u201324 of the processed float derivative, mono downmix and 5 ms boundary guards; fixed normalization and a single 44.1 kHz/96 kbps MP3 encoding. No MP3-to-MP3 transcode."
+  },
+  "validation": {
+    "completeDecode": "passed",
+    "samplesPerChannel": 1323000,
+    "nonFiniteSamples": 0,
+    "peakAmplitude": 0.33044812083244324,
+    "peakDbfs": -9.617934269995457,
+    "rmsDbfs": -29.46160217525521,
+    "crestDb": 19.84366790525975,
+    "nearFullScaleSampleFraction": 0.0,
+    "quietWindowFractionBelowMinus65Dbfs": 0.016666666666666666,
+    "windowRmsP95AboveMedianDb": 2.7996523953425587,
+    "windowRmsMaxAboveMedianDb": 5.579314739869627,
+    "spectralEnergyFractions": {
+      "0-120Hz": 0.0018359890308595923,
+      "120-500Hz": 0.1424343827482512,
+      "500-2000Hz": 0.8007587562095096,
+      "2000-6000Hz": 0.0257872920224665,
+      "6000-22050Hz": 0.02918357998891115
+    },
+    "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+    "encodedPeakCeilingDbfs": -4,
+    "encodedPeakCheck": "passed"
+  },
+  "playbackBoundary": {
+    "fadeInSeconds": 0.005,
+    "fadeOutSeconds": 0.005,
+    "loopConditioning": "runtime-circular-overlap"
+  },
+  "sourceMasterUnchangedCheck": true,
+  "listeningReview": "Signal measurements only. No human listening certification; perceptual prompt adherence remains unverified.",
+  "completedAt": "2026-11-03T10:56:53.134050+00:00"
+}

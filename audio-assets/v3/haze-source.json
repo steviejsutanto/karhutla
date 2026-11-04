@@ -1,0 +1,134 @@
+{
+  "id": "haze",
+  "seed": 2026103131,
+  "role": "Soft low air layer; no fire or animals",
+  "prompt": "TrackType: SFX, a continuous quiet low air wash moving slowly through sparse forest stems, close dry outdoor field recording with soft low and middle frequency wind breath, gentle irregular swells and a little restrained leaf movement, dark muffled natural detail, stable low volume and soft rounded dynamics. Length: 45 seconds.",
+  "durationSeconds": 45,
+  "steps": 8,
+  "cfgScale": 1.0,
+  "sampler": "pingpong",
+  "pack": "scripts/stablegen-v3-textures-prompts.json",
+  "model": "Stable Audio 3 Medium",
+  "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+  "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+  "license": "Stable Audio Community License",
+  "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+  "backend": "Official MLX local inference on Apple Silicon",
+  "runtimeRevision": "5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84",
+  "optimizedWeightsRevision": "30cb2644da54bfa63275d1bc7f1fa67fc718680f",
+  "generated": true,
+  "status": "generated",
+  "startedAt": "2026-10-31T05:23:51.713065+00:00",
+  "completedAt": "2026-10-31T05:24:21.484755+00:00",
+  "generationSeconds": 10.4,
+  "peakMetalAllocatedBytes": 7102088810,
+  "unclippedGeneratorPeak": 0.3004555106163025,
+  "unclippedGeneratorRms": 0.04374939136959705,
+  "unclippedGeneratorAboveFullScaleFraction": 0.0,
+  "unclippedGeneratorNearFullScaleFraction": 0.0,
+  "master": {
+    "file": "haze-master.wav",
+    "bytes": 15876088,
+    "sha256": "a7bd95f4df6f575a5a506d877e15d37c37941cdf9ab0809343d86c3bd02c6ee2"
+  },
+  "processing": "Original generated float WAV retained unchanged; MP3: 250ms fade-in, 500ms fade-out, raw master peak normalized near -4dBFS before encoding, stereo44.1kHz160kbps. Any codec overshoot is corrected by encoding again directly from the unchanged original master. Complete MP3 decode and encoded peak <= -3dBFS checks passed.",
+  "listeningReview": "Not certified by a human listener. Technical validation does not establish prompt adherence.",
+  "modelCard": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+  "adoptedAt": "2026-10-31T05:24:19.916468+00:00",
+  "verifiedWeights": {
+    "t5gemma_f16.npz": {
+      "bytes": 567443068,
+      "sha256": "8deb20489f36d9aec539f26c9c67321f99bc5fe300d470435ed6e76be4f16bbd"
+    },
+    "dit_medium_f16.npz": {
+      "bytes": 2907300946,
+      "sha256": "f9e5647ea3225818657d47d47ae4b34afa29c0568206ca89566c1a758944a38e"
+    },
+    "same_l_decoder_f32.npz": {
+      "bytes": 1704311976,
+      "sha256": "84924be2122d3a20fce443f40b782d9cd88e8e73707476326003ac47659a2287"
+    }
+  },
+  "device": {
+    "device_name": "Apple M1 Pro",
+    "max_recommended_working_set_size": 11453251584,
+    "memory_size": 17179869184,
+    "architecture": "applegpu_g13s",
+    "max_buffer_length": 8589934592,
+    "resource_limit": 499000
+  },
+  "wavMaster": {
+    "file": "haze-master.wav",
+    "bytes": 15876088,
+    "sha256": "a7bd95f4df6f575a5a506d877e15d37c37941cdf9ab0809343d86c3bd02c6ee2"
+  },
+  "browserAsset": {
+    "file": "haze.mp3",
+    "bytes": 901268,
+    "sha256": "f0f23d9a96ca74bdc99595db8fc5742deba98104a6de2062b1bd6344c3e212cd",
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "mp3",
+          "sample_rate": "44100",
+          "channels": 2
+        }
+      ],
+      "format": {
+        "duration": "45.035102",
+        "size": "901268"
+      }
+    }
+  },
+  "validation": {
+    "completeDecode": "passed",
+    "samplesPerChannel": 1984500,
+    "nonFiniteSamples": 0,
+    "peakAmplitude": 0.5965687036514282,
+    "peakDbfs": -4.486790674457332,
+    "rmsDbfs": -21.200780018617266,
+    "crestDb": 16.713989344159934,
+    "nearFullScaleSampleFraction": 0.0,
+    "quietWindowFractionBelowMinus65Dbfs": 0.0022222222222222222,
+    "windowRmsP95AboveMedianDb": 6.628234907338559,
+    "windowRmsMaxAboveMedianDb": 11.848250170811287,
+    "spectralEnergyFractions": {
+      "0-120Hz": 0.9263124540797453,
+      "120-500Hz": 0.018818764554561312,
+      "500-2000Hz": 0.037724949100642814,
+      "2000-6000Hz": 0.01152502917115456,
+      "6000-22050Hz": 0.0056188030938938965
+    },
+    "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+    "encodedPeakCeilingDbfs": -3,
+    "encodedPeakCheck": "passed"
+  },
+  "masterValidation": {
+    "completeDecode": "passed",
+    "samplesPerChannel": 1984500,
+    "nonFiniteSamples": 0,
+    "peakAmplitude": 0.3004555106163025,
+    "peakDbfs": -10.444396524756907,
+    "rmsDbfs": -27.180559687879814,
+    "crestDb": 16.736163163122907,
+    "nearFullScaleSampleFraction": 0.0,
+    "quietWindowFractionBelowMinus65Dbfs": 0.0011111111111111111,
+    "windowRmsP95AboveMedianDb": 6.613156568803323,
+    "windowRmsMaxAboveMedianDb": 11.815245077217355,
+    "spectralEnergyFractions": {
+      "0-120Hz": 0.9269539722390491,
+      "120-500Hz": 0.01879266228533614,
+      "500-2000Hz": 0.03768098578096501,
+      "2000-6000Hz": 0.01122669217152693,
+      "6000-22050Hz": 0.005345676151258717
+    },
+    "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content."
+  },
+  "normalization": {
+    "targetPeakDbfsBeforeEncoding": -4,
+    "appliedGainDb": 6.4443965247569075,
+    "codecHeadroomCorrectionDb": 0
+  }
+}

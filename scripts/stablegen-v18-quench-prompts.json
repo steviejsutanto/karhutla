@@ -1,0 +1,43 @@
+{
+  "purpose": "Four independent gentle water-on-woodfire one-shot studies for the phone bell",
+  "preferredModel": "medium",
+  "durationSeconds": 8,
+  "steps": 8,
+  "cfgScale": 1.0,
+  "sampler": "pingpong",
+  "notes": "Genuine local official Stable Audio 3 Medium inference. Positive CFG1 prompts specify the dry source. Unchanged masters retained; short derivatives select a single event and taper its tail. Signal checks do not certify perceptual prompt adherence.",
+  "assets": [
+    {
+      "id": "phone-quench-ember",
+      "kind": "phone-quench",
+      "title": "Water onto embers",
+      "seed": 202611021801,
+      "role": "A little water lands on glowing woody embers, one gentle short hiss and soft sputter",
+      "prompt": "TrackType: SFX, One small splash of water falling onto glowing hot woody embers in a small wood fire, close intimate dry sound. A gentle rounded pssh of steam and a few soft tiny wet wood sputters rapidly subside into quiet. One single restrained water-on-woodfire quench event, softly full-bodied hiss with delicate woody crackle. Flat open-air acoustics. Length: 8 seconds."
+    },
+    {
+      "id": "phone-quench-wood",
+      "kind": "phone-quench",
+      "title": "Water onto charred wood",
+      "seed": 202611021802,
+      "role": "A few water drops touch a hot charred twig, soft woody sputter with steam",
+      "prompt": "TrackType: SFX, A few large water drops land together on a hot charred branch in a small wood fire. One short close soft wet crackle and a warm gentle steaming hiss, tiny irregular woody sputters trailing quickly into quiet. An intimate restrained single water quenching hot wood event with rounded midrange body and fine detail in flat dry outdoor acoustics. Length: 8 seconds."
+    },
+    {
+      "id": "phone-quench-leaf",
+      "kind": "phone-quench",
+      "title": "Water onto burning leaves",
+      "seed": 202611021803,
+      "role": "A spoonful of water quenches dry leaves and small twigs, delicate papery sizzle",
+      "prompt": "TrackType: SFX, One spoonful of water splashes onto a tiny burning pile of dry leaves and fine woody twigs. A soft brief papery sizzle mingles with a small warm steam hiss and several gentle wet twig crackles, quickly fading to quiet. Close natural single water quench, intimate flat open-air sound, delicate restrained intensity and rounded texture. Length: 8 seconds."
+    },
+    {
+      "id": "phone-quench-steam",
+      "kind": "phone-quench",
+      "title": "Soft steam from hot wood",
+      "seed": 202611021804,
+      "role": "A small water splash makes a short airy steam release over hot wood",
+      "prompt": "TrackType: SFX, A small splash of cool water lands once on a glowing piece of burning wood, creating a brief gentle airy psssh of steam with soft small damp wood ticks. The warm rounded quenching sound swells slightly then falls away rapidly to quiet. One close restrained water-on-woodfire event in flat dry outdoor acoustics. Length: 8 seconds."
+    }
+  ]
+}

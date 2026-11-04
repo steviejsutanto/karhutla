@@ -1,0 +1,141 @@
+{
+  "status": "complete",
+  "assets": [
+    {
+      "id": "cricket-far",
+      "file": "audio-assets/v3/cricket-far-mobile.mp3",
+      "bytes": 216964,
+      "sha256": "ee1c4ba88b3fab9e67de89fc7f6354861d8eab969a0f5eb76a66a3764f7a071d",
+      "durationSeconds": 18,
+      "sampleRate": 44100,
+      "channels": 1,
+      "bitrateKbps": 96,
+      "assetKind": "mobile-derivative-of-published-cc0-field-recording-preview",
+      "sourceFile": "audio-assets/v3/cricket-far.mp3",
+      "sourceSha256": "221f31277a861d386eda6fc5b127bb3f0b2ff0ab93861d0b2a0ce06e000a8c25",
+      "sourceExcerptStartSeconds": 11,
+      "sourceExcerptEndSeconds": 29,
+      "processing": "Select published asset seconds11\u201329; mono downmix at44.1kHz, 5ms boundary click guards and fixed0.000000000dB additional gain. Encode96kbps MP3. Base audio and provenance remain unchanged. Existing source high-pass and fixed gain are inherited from the published asset. No new filtering, compression, AGC, imposed rhythm, time/pitch change, synthesis or added layer. Runtime circular overlap handles the seam.",
+      "validation": {
+        "completeDecode": "passed",
+        "samplesPerChannel": 793800,
+        "nonFiniteSamples": 0,
+        "peakAmplitude": 0.5144317150115967,
+        "peakDbfs": -5.773445295069209,
+        "rmsDbfs": -21.00367519801066,
+        "crestDb": 15.230229902941453,
+        "nearFullScaleSampleFraction": 0.0,
+        "quietWindowFractionBelowMinus65Dbfs": 0.0,
+        "windowRmsP95AboveMedianDb": 2.133039377447947,
+        "windowRmsMaxAboveMedianDb": 3.379723733684898,
+        "spectralEnergyFractions": {
+          "0-120Hz": 2.3198298584653074e-10,
+          "120-500Hz": 1.2314833174838793e-05,
+          "500-2000Hz": 0.00026335067641184123,
+          "2000-6000Hz": 0.5195065111513342,
+          "6000-22050Hz": 0.4802178231070886
+        },
+        "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+        "encodedPeakCeilingDbfs": -3,
+        "encodedPeakCheck": "passed"
+      },
+      "playbackBoundary": {
+        "fadeInSeconds": 0.005,
+        "fadeOutSeconds": 0.005,
+        "loopConditioning": "runtime-circular-overlap"
+      },
+      "provenanceFile": "audio-assets/v3/cricket-far-mobile-source.json"
+    },
+    {
+      "id": "cricket-mid",
+      "file": "audio-assets/v3/cricket-mid-mobile.mp3",
+      "bytes": 216964,
+      "sha256": "42d24414f4d85ed175eb4c7723261ab614baf7b9999ffc14180d8f62a463a867",
+      "durationSeconds": 18,
+      "sampleRate": 44100,
+      "channels": 1,
+      "bitrateKbps": 96,
+      "assetKind": "mobile-derivative-of-published-cc0-field-recording-preview",
+      "sourceFile": "audio-assets/v3/cricket-mid.mp3",
+      "sourceSha256": "a00eade79246db77b92cc8e4eec4fa6c2249da2018b0475843d3caaa0742f57b",
+      "sourceExcerptStartSeconds": 8,
+      "sourceExcerptEndSeconds": 26,
+      "processing": "Select published asset seconds8\u201326; mono downmix at44.1kHz, 5ms boundary click guards and fixed0.000000000dB additional gain. Encode96kbps MP3. Base audio and provenance remain unchanged. Existing source high-pass and fixed gain are inherited from the published asset. No new filtering, compression, AGC, imposed rhythm, time/pitch change, synthesis or added layer. Runtime circular overlap handles the seam.",
+      "validation": {
+        "completeDecode": "passed",
+        "samplesPerChannel": 793800,
+        "nonFiniteSamples": 0,
+        "peakAmplitude": 0.30611452460289,
+        "peakDbfs": -10.28232126788775,
+        "rmsDbfs": -28.143293976954684,
+        "crestDb": 17.860972709066935,
+        "nearFullScaleSampleFraction": 0.0,
+        "quietWindowFractionBelowMinus65Dbfs": 0.0,
+        "windowRmsP95AboveMedianDb": 5.8216092810935685,
+        "windowRmsMaxAboveMedianDb": 8.989392379785947,
+        "spectralEnergyFractions": {
+          "0-120Hz": 4.151878837142813e-10,
+          "120-500Hz": 4.450122672357585e-07,
+          "500-2000Hz": 4.133186329223217e-05,
+          "2000-6000Hz": 0.994819624852752,
+          "6000-22050Hz": 0.005138597856488587
+        },
+        "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+        "encodedPeakCeilingDbfs": -3,
+        "encodedPeakCheck": "passed"
+      },
+      "playbackBoundary": {
+        "fadeInSeconds": 0.005,
+        "fadeOutSeconds": 0.005,
+        "loopConditioning": "runtime-circular-overlap"
+      },
+      "provenanceFile": "audio-assets/v3/cricket-mid-mobile-source.json"
+    },
+    {
+      "id": "cricket-near",
+      "file": "audio-assets/v3/cricket-near-mobile.mp3",
+      "bytes": 216964,
+      "sha256": "17829f8d9c136ed5e5063baee2c3152d138546fde1428df7b41cf2945ade59ee",
+      "durationSeconds": 18,
+      "sampleRate": 44100,
+      "channels": 1,
+      "bitrateKbps": 96,
+      "assetKind": "mobile-derivative-of-published-cc0-field-recording-preview",
+      "sourceFile": "audio-assets/v3/cricket-near.mp3",
+      "sourceSha256": "64a7e0e9b03ce5b38370210f8e6dd332542e1e8325c7fa2d88b9c046dabbdc00",
+      "sourceExcerptStartSeconds": 4,
+      "sourceExcerptEndSeconds": 22,
+      "processing": "Select published asset seconds4\u201322; mono downmix at44.1kHz, 5ms boundary click guards and fixed0.000000000dB additional gain. Encode96kbps MP3. Base audio and provenance remain unchanged. Existing source high-pass and fixed gain are inherited from the published asset. No new filtering, compression, AGC, imposed rhythm, time/pitch change, synthesis or added layer. Runtime circular overlap handles the seam.",
+      "validation": {
+        "completeDecode": "passed",
+        "samplesPerChannel": 793800,
+        "nonFiniteSamples": 0,
+        "peakAmplitude": 0.5173074007034302,
+        "peakDbfs": -5.7250261688502,
+        "rmsDbfs": -23.374335985931918,
+        "crestDb": 17.64930981708172,
+        "nearFullScaleSampleFraction": 0.0,
+        "quietWindowFractionBelowMinus65Dbfs": 0.0,
+        "windowRmsP95AboveMedianDb": 5.692572176441132,
+        "windowRmsMaxAboveMedianDb": 7.367611790652223,
+        "spectralEnergyFractions": {
+          "0-120Hz": 1.2695425083148287e-11,
+          "120-500Hz": 8.37967014032172e-08,
+          "500-2000Hz": 8.81763636499149e-06,
+          "2000-6000Hz": 0.9779723734209024,
+          "6000-22050Hz": 0.022018725133328126
+        },
+        "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+        "encodedPeakCeilingDbfs": -3,
+        "encodedPeakCheck": "passed"
+      },
+      "playbackBoundary": {
+        "fadeInSeconds": 0.005,
+        "fadeOutSeconds": 0.005,
+        "loopConditioning": "runtime-circular-overlap"
+      },
+      "provenanceFile": "audio-assets/v3/cricket-near-mobile-source.json"
+    }
+  ],
+  "scope": "Full decode/sample count, zero nonfinite samples, final hashes and headroom validated; no human listening certification."
+}

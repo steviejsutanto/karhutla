@@ -1,0 +1,226 @@
+{
+  "id": "ash-settle-v20",
+  "kind": "ash",
+  "title": "Fine ash settling",
+  "description": "Independent clean light ash sifting with fine dry leafy grains",
+  "model": "Stable Audio 3 Medium",
+  "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+  "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+  "license": "Stable Audio Community License",
+  "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+  "generated": true,
+  "assetKind": "processed-derivative-of-genuine-model-output",
+  "rawModelOutput": false,
+  "generationId": "ash-settle-v20",
+  "sourceGeneration": {
+    "id": "ash-settle-v20",
+    "kind": "ash",
+    "title": "Fine ash settling",
+    "seed": 202611032004,
+    "role": "Independent clean light ash sifting with fine dry leafy grains",
+    "prompt": "TrackType: SFX, Clean close high fidelity sound of a gentle continuous sift of fine dry ash and featherweight thin leaf flakes settling over soft earth. Countless small overlapping papery grains make a smooth delicate dry shivering rustle, softly rubbing and lightly scattering with full bandwidth natural detail. Restrained even soft dynamics, consistent intimate dry outdoor perspective and fine continuous activity for the entire recording. Length: 30 seconds.",
+    "durationSeconds": 30,
+    "steps": 8,
+    "cfgScale": 1.0,
+    "sampler": "pingpong",
+    "pack": "scripts/stablegen-v20-residue-prompts.json",
+    "model": "Stable Audio 3 Medium",
+    "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+    "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+    "license": "Stable Audio Community License",
+    "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+    "backend": "Official MLX local inference on Apple Silicon",
+    "runtimeRevision": "5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84",
+    "optimizedWeightsRevision": "30cb2644da54bfa63275d1bc7f1fa67fc718680f",
+    "generated": true,
+    "status": "generated",
+    "startedAt": "2026-11-03T10:49:19.012037+00:00",
+    "completedAt": "2026-11-03T10:49:26.400782+00:00",
+    "generationSeconds": 7.388,
+    "peakMetalAllocatedBytes": 6890371774,
+    "unclippedGeneratorPeak": 0.5524338483810425,
+    "unclippedGeneratorRms": 0.013177351918771077,
+    "unclippedGeneratorAboveFullScaleFraction": 0.0,
+    "unclippedGeneratorNearFullScaleFraction": 0.0,
+    "master": {
+      "file": "ash-settle-v20-master.wav",
+      "bytes": 10584088,
+      "sha256": "01f84b69504e123a00c4407e61b6e017293dcd076c05acea1638b7b968db9c04"
+    },
+    "processing": "Official pipeline output preserved as stereo44100Hz32-bit float WAV without clipping or normalization. No reverb, compression, mixing or post-effects added. Browser copy normalized separately.",
+    "listeningReview": "Technical validity checked. Perceptual prompt adherence requires audition."
+  },
+  "generationBatchRecord": "medium-residue-v20-batch.json",
+  "verifiedWeights": {
+    "t5gemma_f16.npz": {
+      "bytes": 567443068,
+      "sha256": "8deb20489f36d9aec539f26c9c67321f99bc5fe300d470435ed6e76be4f16bbd"
+    },
+    "dit_medium_f16.npz": {
+      "bytes": 2907300946,
+      "sha256": "f9e5647ea3225818657d47d47ae4b34afa29c0568206ca89566c1a758944a38e"
+    },
+    "same_l_decoder_f32.npz": {
+      "bytes": 1704311976,
+      "sha256": "84924be2122d3a20fce443f40b782d9cd88e8e73707476326003ac47659a2287"
+    }
+  },
+  "device": {
+    "device_name": "Apple M1 Pro",
+    "max_recommended_working_set_size": 11453251584,
+    "memory_size": 17179869184,
+    "architecture": "applegpu_g13s",
+    "max_buffer_length": 8589934592,
+    "resource_limit": 499000
+  },
+  "rawGeneratedMaster": {
+    "file": "ash-settle-v20-master.wav",
+    "bytes": 10584088,
+    "sha256": "01f84b69504e123a00c4407e61b6e017293dcd076c05acea1638b7b968db9c04"
+  },
+  "rawMasterValidation": {
+    "completeDecode": "passed",
+    "samplesPerChannel": 1323000,
+    "nonFiniteSamples": 0,
+    "peakAmplitude": 0.5524338483810425,
+    "peakDbfs": -5.154394389169022,
+    "rmsDbfs": -37.603437109882094,
+    "crestDb": 32.449042720713074,
+    "nearFullScaleSampleFraction": 0.0,
+    "quietWindowFractionBelowMinus65Dbfs": 0.011666666666666667,
+    "windowRmsP95AboveMedianDb": 11.542670300082637,
+    "windowRmsMaxAboveMedianDb": 18.14543165886884,
+    "spectralEnergyFractions": {
+      "0-120Hz": 0.0002716164647085042,
+      "120-500Hz": 0.0018274097502849983,
+      "500-2000Hz": 0.03013146886741798,
+      "2000-6000Hz": 0.3764272101829955,
+      "6000-22050Hz": 0.5913422411604266
+    },
+    "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content."
+  },
+  "processedMaster": {
+    "file": "ash-settle-v20-processed-master.wav",
+    "bytes": 10584092,
+    "sha256": "54c0ad111f58c6b40fc4fe84bf7e25a2420b8cc005bdd57315f0d5d84a910540"
+  },
+  "derivation": {
+    "source": "ash-settle-v20-master.wav",
+    "filters": "acompressor=threshold=0.032943380:ratio=2:attack=0.15:release=90:knee=2.8:makeup=1",
+    "description": "Full generated ash bandwidth retained with no frequency filtering. Soft 2:1 compression at 0.032943380 amplitude threshold, 0.15 ms attack and 90 ms release restrains isolated flake spikes; no layered copies or lo-fi treatment."
+  },
+  "processing": "Full generated ash bandwidth retained with no frequency filtering. Soft 2:1 compression at 0.032943380 amplitude threshold, 0.15 ms attack and 90 ms release restrains isolated flake spikes; no layered copies or lo-fi treatment. Unchanged genuine float model master retained. Main derivative: 30 seconds, 5 ms boundary guards, fixed gain toward -35.5 dBFS RMS constrained by -4 dBFS encoded peak ceiling, stereo 44.1 kHz/320 kbps MP3. Mobile: direct 6\u201324 s float excerpt, mono 44.1 kHz/96 kbps, 5 ms guards. No repeated-copy layering, reverb, delay, external sound, synthesized substitute, pitch or speed change.",
+  "browserAsset": {
+    "file": "ash-settle-v20.mp3",
+    "bytes": 1202720,
+    "sha256": "2b6e40d3c2a0c1f9beb1ea9fee8aa4c50b14d21eea9bd74ec53747ebde795e3b",
+    "durationSeconds": 30,
+    "channels": 2,
+    "sampleRate": 44100,
+    "bitrateKbps": 320,
+    "normalization": {
+      "targetRmsDbfs": -35.5,
+      "peakCeilingDbfs": -4,
+      "appliedGainDb": 6.986161999259949,
+      "codecHeadroomCorrectionDb": 0.0
+    },
+    "validation": {
+      "completeDecode": "passed",
+      "samplesPerChannel": 1323000,
+      "nonFiniteSamples": 0,
+      "peakAmplitude": 0.3190437853336334,
+      "peakDbfs": -9.922994211967769,
+      "rmsDbfs": -35.49839161345992,
+      "crestDb": 25.575397401492154,
+      "nearFullScaleSampleFraction": 0.0,
+      "quietWindowFractionBelowMinus65Dbfs": 0.01,
+      "windowRmsP95AboveMedianDb": 7.055487958062805,
+      "windowRmsMaxAboveMedianDb": 10.886129954158825,
+      "spectralEnergyFractions": {
+        "0-120Hz": 0.00032781813379828616,
+        "120-500Hz": 0.0014844071819029266,
+        "500-2000Hz": 0.025422482380747034,
+        "2000-6000Hz": 0.3639390730525479,
+        "6000-22050Hz": 0.608826219250958
+      },
+      "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+      "encodedPeakCeilingDbfs": -4,
+      "encodedPeakCheck": "passed"
+    }
+  },
+  "mobile": {
+    "file": "ash-settle-v20-mobile.mp3",
+    "bytes": 216964,
+    "sha256": "c449f78a864cf6d0bf29a086829f39f28018b343436cddc93b0b8a49f815bffa",
+    "durationSeconds": 18,
+    "channels": 1,
+    "sampleRate": 44100,
+    "bitrateKbps": 96,
+    "normalization": {
+      "targetRmsDbfs": -35.5,
+      "peakCeilingDbfs": -4,
+      "appliedGainDb": 7.086721674865153,
+      "codecHeadroomCorrectionDb": 0.0
+    },
+    "validation": {
+      "completeDecode": "passed",
+      "samplesPerChannel": 793800,
+      "nonFiniteSamples": 0,
+      "peakAmplitude": 0.32519227266311646,
+      "peakDbfs": -9.75719565637123,
+      "rmsDbfs": -35.82372791270955,
+      "crestDb": 26.06653225633832,
+      "nearFullScaleSampleFraction": 0.0,
+      "quietWindowFractionBelowMinus65Dbfs": 0.0,
+      "windowRmsP95AboveMedianDb": 8.08657018062187,
+      "windowRmsMaxAboveMedianDb": 11.244823795603907,
+      "spectralEnergyFractions": {
+        "0-120Hz": 0.0003189446815812155,
+        "120-500Hz": 0.0012051893781588703,
+        "500-2000Hz": 0.024541324128271248,
+        "2000-6000Hz": 0.36795607807705794,
+        "6000-22050Hz": 0.6059784637349123
+      },
+      "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+      "encodedPeakCeilingDbfs": -4,
+      "encodedPeakCheck": "passed"
+    },
+    "assetKind": "mobile-derivative-of-genuine-model-output",
+    "sourceGeneration": "ash-settle-v20",
+    "sourceExcerptStartSeconds": 6,
+    "sourceExcerptEndSeconds": 24,
+    "sourceMasterSha256": "01f84b69504e123a00c4407e61b6e017293dcd076c05acea1638b7b968db9c04",
+    "processing": "Direct seconds 6\u201324 of the processed float derivative, mono downmix and 5 ms boundary guards; fixed normalization and a single 44.1 kHz/96 kbps MP3 encoding. No MP3-to-MP3 transcode."
+  },
+  "validation": {
+    "completeDecode": "passed",
+    "samplesPerChannel": 1323000,
+    "nonFiniteSamples": 0,
+    "peakAmplitude": 0.3190437853336334,
+    "peakDbfs": -9.922994211967769,
+    "rmsDbfs": -35.49839161345992,
+    "crestDb": 25.575397401492154,
+    "nearFullScaleSampleFraction": 0.0,
+    "quietWindowFractionBelowMinus65Dbfs": 0.01,
+    "windowRmsP95AboveMedianDb": 7.055487958062805,
+    "windowRmsMaxAboveMedianDb": 10.886129954158825,
+    "spectralEnergyFractions": {
+      "0-120Hz": 0.00032781813379828616,
+      "120-500Hz": 0.0014844071819029266,
+      "500-2000Hz": 0.025422482380747034,
+      "2000-6000Hz": 0.3639390730525479,
+      "6000-22050Hz": 0.608826219250958
+    },
+    "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+    "encodedPeakCeilingDbfs": -4,
+    "encodedPeakCheck": "passed"
+  },
+  "playbackBoundary": {
+    "fadeInSeconds": 0.005,
+    "fadeOutSeconds": 0.005,
+    "loopConditioning": "runtime-circular-overlap"
+  },
+  "sourceMasterUnchangedCheck": true,
+  "listeningReview": "Signal measurements only. No human listening certification; perceptual prompt adherence remains unverified.",
+  "completedAt": "2026-11-03T10:56:47.003930+00:00"
+}

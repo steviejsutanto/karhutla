@@ -1,0 +1,39 @@
+{
+  "validatedOn": "2026-10-31",
+  "tool": "FFmpeg/ffprobe",
+  "totalAudioBytes": 1146214,
+  "assets": [
+    {
+      "file": "audio-assets/fire-crackle.mp3",
+      "decodedWithoutErrors": true,
+      "meanDbfs": -44.8,
+      "peakDbfs": -3.9,
+      "sha256Verified": true,
+      "sourcePreviewCompleteBytes": 74304
+    },
+    {
+      "file": "audio-assets/fire-roar.mp3",
+      "decodedWithoutErrors": true,
+      "meanDbfs": -47.0,
+      "peakDbfs": -3.7,
+      "sha256Verified": true,
+      "sourcePreviewCompleteBytes": 777809
+    },
+    {
+      "file": "audio-assets/charcoal.mp3",
+      "decodedWithoutErrors": true,
+      "meanDbfs": -42.5,
+      "peakDbfs": -3.4,
+      "sha256Verified": true,
+      "sourcePreviewCompleteBytes": 242612
+    },
+    {
+      "file": "audio-assets/rain.mp3",
+      "decodedWithoutErrors": true,
+      "meanDbfs": -21.9,
+      "peakDbfs": -3.4,
+      "sha256Verified": true,
+      "sourcePreviewCompleteBytes": 5468620
+    }
+  ]
+}

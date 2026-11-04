@@ -1,0 +1,169 @@
+{
+  "id": "phone-crackle",
+  "seed": 2026103143,
+  "role": "Continuous warm muffled ground-ember bed; retry for steadier less bright phone texture",
+  "prompt": "TrackType: SFX, a continuous warm low and middle frequency granular bed of softly smouldering charcoal in a small patch of glowing ground embers, close muffled outdoor recording with dense overlapping mellow textures blended into a steady soft velvety rustle and gentle low combustion air, even volume and smoothly rounded organic variations throughout. Length: 45 seconds.",
+  "durationSeconds": 45,
+  "steps": 8,
+  "cfgScale": 1.0,
+  "sampler": "pingpong",
+  "pack": "scripts/stablegen-v3-textures-retry-prompts.json",
+  "model": "Stable Audio 3 Medium",
+  "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+  "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+  "license": "Stable Audio Community License",
+  "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+  "backend": "Official MLX local inference on Apple Silicon",
+  "runtimeRevision": "5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84",
+  "optimizedWeightsRevision": "30cb2644da54bfa63275d1bc7f1fa67fc718680f",
+  "generated": true,
+  "status": "generated",
+  "startedAt": "2026-10-31T05:27:34.742740+00:00",
+  "completedAt": "2026-10-31T05:28:27.954152+00:00",
+  "generationSeconds": 10.329,
+  "peakMetalAllocatedBytes": 7099210810,
+  "unclippedGeneratorPeak": 0.36900290846824646,
+  "unclippedGeneratorRms": 0.01448560676828119,
+  "unclippedGeneratorAboveFullScaleFraction": 0.0,
+  "unclippedGeneratorNearFullScaleFraction": 0.0,
+  "master": {
+    "file": "phone-crackle-master.wav",
+    "bytes": 15876088,
+    "sha256": "156faee1ba11b1f348d8c07046f0490b67081e0aa38fab60651321fce3d6404b"
+  },
+  "processing": "Original generated float WAV retained unchanged; MP3: 250ms fade-in, 500ms fade-out, raw master peak normalized near -4dBFS before encoding, stereo44.1kHz160kbps. Any codec overshoot is corrected by encoding again directly from the unchanged original master. Complete MP3 decode and encoded peak <= -3dBFS checks passed.",
+  "listeningReview": "Not certified by a human listener. Technical validation does not establish prompt adherence.",
+  "modelCard": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+  "adoptedAt": "2026-10-31T05:28:26.903897+00:00",
+  "batchRecord": "medium-retry-batch.json",
+  "verifiedWeights": {
+    "t5gemma_f16.npz": {
+      "bytes": 567443068,
+      "sha256": "8deb20489f36d9aec539f26c9c67321f99bc5fe300d470435ed6e76be4f16bbd"
+    },
+    "dit_medium_f16.npz": {
+      "bytes": 2907300946,
+      "sha256": "f9e5647ea3225818657d47d47ae4b34afa29c0568206ca89566c1a758944a38e"
+    },
+    "same_l_decoder_f32.npz": {
+      "bytes": 1704311976,
+      "sha256": "84924be2122d3a20fce443f40b782d9cd88e8e73707476326003ac47659a2287"
+    }
+  },
+  "device": {
+    "device_name": "Apple M1 Pro",
+    "max_recommended_working_set_size": 11453251584,
+    "memory_size": 17179869184,
+    "architecture": "applegpu_g13s",
+    "max_buffer_length": 8589934592,
+    "resource_limit": 499000
+  },
+  "wavMaster": {
+    "file": "phone-crackle-master.wav",
+    "bytes": 15876088,
+    "sha256": "156faee1ba11b1f348d8c07046f0490b67081e0aa38fab60651321fce3d6404b"
+  },
+  "browserAsset": {
+    "file": "phone-crackle.mp3",
+    "bytes": 901268,
+    "sha256": "c8640014a04f67f8c8641c0382311e66343f03ac2d68d882e1dd6929727f297c",
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "mp3",
+          "sample_rate": "44100",
+          "channels": 2
+        }
+      ],
+      "format": {
+        "duration": "45.035102",
+        "size": "901268"
+      }
+    }
+  },
+  "validation": {
+    "completeDecode": "passed",
+    "samplesPerChannel": 1984500,
+    "nonFiniteSamples": 0,
+    "peakAmplitude": 0.5595716834068298,
+    "peakDbfs": -5.042885413672556,
+    "rmsDbfs": -32.55688398216233,
+    "crestDb": 27.513998568489775,
+    "nearFullScaleSampleFraction": 0.0,
+    "quietWindowFractionBelowMinus65Dbfs": 0.01888888888888889,
+    "windowRmsP95AboveMedianDb": 3.820693997617692,
+    "windowRmsMaxAboveMedianDb": 6.419717472259602,
+    "spectralEnergyFractions": {
+      "0-120Hz": 0.05625156752276984,
+      "120-500Hz": 0.09096673319297234,
+      "500-2000Hz": 0.7127629752559411,
+      "2000-6000Hz": 0.07793869786476652,
+      "6000-22050Hz": 0.06208002616354706
+    },
+    "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+    "encodedPeakCeilingDbfs": -3,
+    "encodedPeakCheck": "passed"
+  },
+  "masterValidation": {
+    "completeDecode": "passed",
+    "samplesPerChannel": 1984500,
+    "nonFiniteSamples": 0,
+    "peakAmplitude": 0.36900290846824646,
+    "peakDbfs": -8.659404214665283,
+    "rmsDbfs": -36.78126616992624,
+    "crestDb": 28.121861955260957,
+    "nearFullScaleSampleFraction": 0.0,
+    "quietWindowFractionBelowMinus65Dbfs": 0.01888888888888889,
+    "windowRmsP95AboveMedianDb": 3.7985108834424537,
+    "windowRmsMaxAboveMedianDb": 6.419510156438289,
+    "spectralEnergyFractions": {
+      "0-120Hz": 0.056218293757204926,
+      "120-500Hz": 0.09124108795155085,
+      "500-2000Hz": 0.7146827654445886,
+      "2000-6000Hz": 0.07666057732197298,
+      "6000-22050Hz": 0.06119724562112393
+    },
+    "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content."
+  },
+  "normalization": {
+    "targetPeakDbfsBeforeEncoding": -4,
+    "appliedGainDb": 4.659404214665283,
+    "codecHeadroomCorrectionDb": 0
+  },
+  "mobile": {
+    "file": "audio-assets/v3/phone-crackle-mobile.mp3",
+    "bytes": 120833,
+    "sha256": "319c98f6e2256cf0d3278ee87e22b0b2b2d79d309e5ff7f683c370953c3eb351",
+    "durationSeconds": 15,
+    "channels": 1,
+    "sampleRate": 22050,
+    "bitrateKbps": 64,
+    "assetKind": "mobile-derivative-of-published-generated-asset",
+    "sourceFile": "audio-assets/v3/phone-crackle.mp3",
+    "sourceSha256": "c8640014a04f67f8c8641c0382311e66343f03ac2d68d882e1dd6929727f297c",
+    "processing": "Select seconds 8\u201323 of published browser asset, mono downmix, 22.05 kHz resample, 120 ms/300 ms boundary fades, 0.000000000 dB additional gain, 64 kbps MP3. No additional model generation.",
+    "validation": {
+      "completeDecode": "passed",
+      "samplesPerChannel": 661500,
+      "nonFiniteSamples": 0,
+      "peakAmplitude": 0.39131057262420654,
+      "peakDbfs": -8.149568359117904,
+      "rmsDbfs": -33.503919234736,
+      "crestDb": 25.3543508756181,
+      "nearFullScaleSampleFraction": 0.0,
+      "quietWindowFractionBelowMinus65Dbfs": 0.0,
+      "windowRmsP95AboveMedianDb": 3.8379044111722536,
+      "windowRmsMaxAboveMedianDb": 6.436911525251411,
+      "spectralEnergyFractions": {
+        "0-120Hz": 0.03537655883552516,
+        "120-500Hz": 0.0749111103055121,
+        "500-2000Hz": 0.7510258594296494,
+        "2000-6000Hz": 0.09584690317308818,
+        "6000-22050Hz": 0.04283956825621574
+      },
+      "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content."
+    }
+  }
+}

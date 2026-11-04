@@ -1,0 +1,93 @@
+{
+  "id": "cricket-far",
+  "kind": "crickets",
+  "title": "Distant summer chorus",
+  "description": "Soft distant cricket layers with a wider, denser natural chorus behind the nearby calls.",
+  "sourceKey": "cricket-far",
+  "freesoundId": 645329,
+  "sourceTitle": "Crickets - Warm Summer Night - Ambient.wav",
+  "author": "Speziax",
+  "sourcePreviewUrl": "https://cdn.freesound.org/previews/645/645329_988367-hq.mp3",
+  "sourceStartSeconds": 17,
+  "durationSeconds": 40,
+  "channels": 2,
+  "highpassHz": 1800,
+  "depth": 1,
+  "sourceDescriptionSummary": "The creator describes distant crickets on a quiet summer night and reports only approximately +6.3 dB original gain, without other processing.",
+  "status": "prepared",
+  "generated": false,
+  "fieldRecording": true,
+  "assetKind": "excerpt-of-cc0-field-recording-public-preview",
+  "retrievedOn": "2026-11-01",
+  "sourceUrl": "https://freesound.org/people/Speziax/sounds/645329/",
+  "license": "CC0 1.0 Universal",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "preview": true,
+  "access": "Public HQ MP3 preview, without login, account, or paid service; original WAV download requires Freesound login.",
+  "sourcePreview": {
+    "file": "audio-assets/v3/natural-sources/cricket-far-preview.mp3",
+    "bytes": 2778644,
+    "sha256": "f8aaa5fa4adc611ad654c2d2405fbcf13409937e96671c9726062ed950402397",
+    "url": "https://cdn.freesound.org/previews/645/645329_988367-hq.mp3"
+  },
+  "sourcePageEvidence": {
+    "file": "audio-assets/v3/natural-sources/cricket-far-page.html",
+    "bytes": 39015,
+    "sha256": "a1edaa76c85d84f2b2ac460e7fe4c3d0f8e9b813586a135c5926b8e89a883183",
+    "checkedLicense": "CC0 1.0 Universal"
+  },
+  "browserAsset": {
+    "file": "cricket-far.mp3",
+    "bytes": 961767,
+    "sha256": "221f31277a861d386eda6fc5b127bb3f0b2ff0ab93861d0b2a0ce06e000a8c25",
+    "durationSeconds": 40,
+    "sampleRate": 44100,
+    "channels": 2,
+    "bitrateKbps": 192
+  },
+  "processing": "Select source seconds 17\u201357; 1800 Hz two-pole high-pass to remove low background wash; fixed 20.251445 dB gain throughout, 5 ms click guards at both boundaries, 2-channel 44.1 kHz 192 kbps MP3. No added compression, AGC, limiting, noise gate, dynamic denoise, envelope riding, time/pitch change, artificial pulse, or added layer. Runtime circular overlap handles the loop seam. The downloaded public preview is retained byte-for-byte; original uncompressed source was not downloaded.",
+  "normalization": {
+    "targetPeakCeilingDbfsBeforeEncoding": -5,
+    "appliedConstantGainDb": 20.251444674082528,
+    "sharedSourceGain": false
+  },
+  "validation": {
+    "completeDecode": "passed",
+    "samplesPerChannel": 1764000,
+    "nonFiniteSamples": 0,
+    "peakAmplitude": 0.5444339513778687,
+    "peakDbfs": -5.281095992801703,
+    "rmsDbfs": -20.53197787609127,
+    "crestDb": 15.250881883289566,
+    "nearFullScaleSampleFraction": 0.0,
+    "quietWindowFractionBelowMinus65Dbfs": 0.0,
+    "windowRmsP95AboveMedianDb": 2.4096198429161255,
+    "windowRmsMaxAboveMedianDb": 3.9424376409180795,
+    "spectralEnergyFractions": {
+      "0-120Hz": 2.318889825982242e-10,
+      "120-500Hz": 1.654196805106781e-05,
+      "500-2000Hz": 0.00022183901968067613,
+      "2000-6000Hz": 0.5484107988728448,
+      "6000-22050Hz": 0.4513508199075258
+    },
+    "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+    "encodedPeakCeilingDbfs": -3,
+    "encodedPeakCheck": "passed",
+    "envelope": {
+      "windowSeconds": 0.5,
+      "windowRmsP95MinusP5Db": 1.0520185317028314,
+      "windowRmsStandardDeviationDb": 0.3413943311723004,
+      "windowRmsMaxMinusMinDb": 1.8235139423094502,
+      "envelope10msModulationIndex": 0.23922378516849455,
+      "largestEnvelopeAutocorrelationWithin0p2To2": 0.3844019083352042,
+      "largestEnvelopeAutocorrelationLagSecondsWithin0p2To2": 0.51,
+      "scope": "Signal amplitude evidence only. Natural rainfall intensity and insect pulse gaps may vary; these measurements do not identify sources or certify perceptual absence of pumping."
+    }
+  },
+  "playbackBoundary": {
+    "fadeInSeconds": 0.005,
+    "fadeOutSeconds": 0.005,
+    "loopConditioning": "runtime-circular-overlap"
+  },
+  "listeningReview": "Source-page descriptions, waveform and spectrogram inspection, and signal/envelope measurements; no human listening certification."
+}

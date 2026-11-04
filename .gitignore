@@ -1,0 +1,28 @@
+node_modules/
+.audio-model-cache/
+data/performance-state.json
+data/performance-state.json.*
+
+# Local runs, diagnostics and release build products
+.DS_Store
+.playwright-cli/
+output/
+artifacts/
+dist/
+.runtime-downloads/
+__pycache__/
+*.pyc
+*.log
+*.pid
+.env
+.env.*
+!.env.example
+
+# Creative masters remain in the separately backed-up working folder.
+audio-assets/**/*.wav
+audio-assets/**/*.zip
+audio-assets/v3/rejected/
+audio-assets/v3/natural-sources/
+
+# Settings files can contain venue Wi-Fi details.
+karhutla-settings*.json

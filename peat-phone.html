@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#000000">
+  <title>karhutla · rain</title>
+  <link rel="icon" href="/favicon.svg">
+  <link rel="stylesheet" href="/peat-phone.css">
+  <link rel="stylesheet" href="/sound-controls.css">
+  <script type="module" src="/peat-phone.js"></script>
+</head>
+<body data-pouring="false" data-scene="waiting">
+  <main id="peat-instrument" aria-label="Shared peat rain instrument" aria-describedby="accessible-instruction">
+    <section id="phone-map-stage" aria-label="Indonesia fire map">
+      <canvas id="phone-material" tabindex="0" role="img" aria-label="Fire locations across Indonesia. Hold over a fire to rain, drag to move, and lift to stop. Arrow keys move the rain target. Space holds rain; Escape stops."></canvas>
+      <div id="phone-map-loading" role="status">Preparing…</div>
+    </section>
+    <section id="phone-welcome" aria-labelledby="phone-welcome-title" hidden><h1 id="phone-welcome-title">karhutla</h1><p>Hold over a fire to rain.<br>Drag to move. Lift to stop.</p></section>
+    <div class="phone-status"><span id="connection-dot" data-status="connecting" aria-hidden="true"></span><span id="participant-identity" hidden>Rain <span id="participant-number">—</span></span><p id="connection-state" role="status" aria-live="polite">Connecting…</p></div>
+    <button id="phone-fullscreen" class="icon-button" type="button" aria-label="Enter fullscreen" title="Fullscreen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4H4v5m11-5h5v5M4 15v5h5m11-5v5h-5"/></svg></button>
+    <p id="hold-instruction" aria-hidden="true">Hold · drag · lift</p>
+    <div class="input-controls"><button id="rain-toggle" type="button" aria-pressed="false" aria-label="Start rain without holding" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path class="rain-icon" d="m7 6-2 6m8-8-2 6m8-3-2 6m-8 1-2 6m8-6-2 6"/><path class="stop-icon" d="M7 7h10v10H7Z"/></svg><span id="toggle-label">Rain</span></button></div>
+    <button id="phone-about" class="icon-button" type="button" aria-label="About the performance" aria-expanded="false">About</button>
+    <section id="phone-notes" aria-labelledby="phone-title" hidden>
+      <div class="phone-notes-content"><h1 id="phone-title">karhutla</h1><p id="phone-program-notes"></p>
+      <section id="phone-instructions" aria-label="Audience instructions" hidden><ol><li>Keep your phone on the venue Wi-Fi and this page open.</li><li>Turn off <strong>Silent Mode</strong>. Tap the <strong>speaker button</strong> below and set a comfortable media volume. Sound begins shortly. Light rain joins your phone sound while you hold. A C or G bell in the room marks the fires across your rain area going out.</li><li>When the landscape opens, hold over a fire to rain. Drag to move; lift to stop. You can also use the Rain button without holding.</li><li>Keep your phone awake and this page open, even when the screen goes dark.</li></ol><p id="phone-scene-instruction" class="phone-scene-message" role="status"></p></section><button id="phone-notes-close" type="button" hidden>Close</button></div>
+    </section>
+    <div id="phone-sound"></div>
+    <p id="phone-sound-guidance">Silent Mode off.<br>Set a comfortable media volume.</p>
+    <p id="phone-scene-caption" class="sr-only" role="status" aria-live="polite"></p>
+    <p id="local-input-state" class="sr-only" role="status" aria-live="polite" aria-atomic="true">Loading…</p>
+    <p id="accessible-instruction" class="sr-only">Turn off Silent Mode and tap the speaker button. Keep your phone’s media volume comfortable throughout the performance. Sound begins shortly. During Participation and Forest takeover, hold over a fire on the map to rain. Drag to move across Indonesia. Lift to stop, or use the Rain button to keep raining without holding. Arrow keys move the target; Space holds rain; Escape stops.</p>
+    <canvas id="phone-contact" aria-hidden="true" data-state="idle"></canvas>
+  </main>
+  <noscript>This rain instrument needs JavaScript to connect to the venue.</noscript>
+</body>
+</html>

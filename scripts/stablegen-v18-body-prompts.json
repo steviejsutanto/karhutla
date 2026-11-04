@@ -1,0 +1,27 @@
+{
+  "purpose": "Two independent full-bodied burning branch and leaf textures for the phone",
+  "preferredModel": "medium",
+  "durationSeconds": 30,
+  "steps": 8,
+  "cfgScale": 1.0,
+  "sampler": "pingpong",
+  "notes": "Genuine official Stable Audio 3 Medium local inference. Intended to supply low and middle woody body absent from the earlier very thin high-frequency phone texture. Derivative may mix two generated takes with documented equalization and fixed gains. No substitute synthesis.",
+  "assets": [
+    {
+      "id": "phone-branches-body-take1",
+      "kind": "phone-crackle",
+      "title": "Warm burning branches and leaves",
+      "seed": 202611021805,
+      "role": "Dense soft wood crackles with warm twig body and dry papery leaves",
+      "prompt": "TrackType: SFX, Close recording of a small steady fire burning dry woody branches and crisp dead leaves. Dense continuous rounded wood crackle in the low and middle frequencies, warm chunky little twig snaps overlapping with soft papery leaf rustles and fine dry burning grain. Full-bodied intimate texture with gentle small flame movement beneath many quiet wood crackles. Even stable activity, natural irregularity, flat dry open-air acoustics. Length: 30 seconds."
+    },
+    {
+      "id": "phone-branches-body-take2",
+      "kind": "phone-crackle",
+      "title": "Layered dry twig crackle",
+      "seed": 202611021806,
+      "role": "Soft thick woody twig texture with overlapping papery dry leaves",
+      "prompt": "TrackType: SFX, Intimate close dry small woodfire steadily consuming a loose pile of slender branches, woody sticks and papery dead leaves. Countless quiet overlapping twig snaps and rounded woody ticks form a thick tactile continuous crackle with audible warm middle-frequency wood body, softly crumpling leaf texture and a low gentle flame rush. Natural irregular small details throughout, restrained even intensity in flat open outdoor acoustics. Length: 30 seconds."
+    }
+  ]
+}

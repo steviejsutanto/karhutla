@@ -1,0 +1,212 @@
+{
+  "id": "haze-drift",
+  "kind": "haze",
+  "endpoint": "high",
+  "endpointPosition": 1,
+  "title": "Air drift",
+  "seed": 2026103152,
+  "role": "More air movement while remaining light, with no heavy rumbling layer",
+  "prompt": "TrackType: SFX, A soft light breeze drifting evenly across fine dry grass and slender leaves, delicate airy rustling swells with clearly audible soft leaf detail, thin weightless outdoor air in the middle frequencies, gentle continuous flutter and transparent open space, restrained smooth dynamics throughout. The recording contains only light breeze and fine leaves. Length: 45 seconds.",
+  "durationSeconds": 45,
+  "steps": 8,
+  "cfgScale": 1.0,
+  "sampler": "pingpong",
+  "pack": "scripts/stablegen-v4-palette-prompts.json",
+  "model": "Stable Audio 3 Medium",
+  "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+  "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+  "license": "Stable Audio Community License",
+  "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+  "backend": "Official MLX local inference on Apple Silicon",
+  "runtimeRevision": "5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84",
+  "optimizedWeightsRevision": "30cb2644da54bfa63275d1bc7f1fa67fc718680f",
+  "generated": true,
+  "status": "generated",
+  "startedAt": "2026-10-31T16:23:52.803349+00:00",
+  "completedAt": "2026-10-31T16:24:45.693994+00:00",
+  "generationSeconds": 10.53,
+  "peakMetalAllocatedBytes": 7102088810,
+  "unclippedGeneratorPeak": 0.1357426792383194,
+  "unclippedGeneratorRms": 0.007353704078968814,
+  "unclippedGeneratorAboveFullScaleFraction": 0.0,
+  "unclippedGeneratorNearFullScaleFraction": 0.0,
+  "master": {
+    "file": "haze-drift-master.wav",
+    "bytes": 15876088,
+    "sha256": "7c917ff6af73a727a6380c1b5f4b9ba539571c4f5e246db4427a174d63d385f8"
+  },
+  "processing": "180 Hz two-pole high-pass removes low rumbling weight while retaining airy detail. Unchanged raw float model master retained. Browser derivative: 250 ms fade-in, 500 ms fade-out, peak normalization before stereo 44.1 kHz 160 kbps MP3 encoding. Encoded peak <= -3 dBFS verified. No reverb, delay, external recording, music, or synthesized substitute added.",
+  "listeningReview": "Not certified by a human listener. Technical validation does not establish prompt adherence.",
+  "verifiedWeights": {
+    "t5gemma_f16.npz": {
+      "bytes": 567443068,
+      "sha256": "8deb20489f36d9aec539f26c9c67321f99bc5fe300d470435ed6e76be4f16bbd"
+    },
+    "dit_medium_f16.npz": {
+      "bytes": 2907300946,
+      "sha256": "f9e5647ea3225818657d47d47ae4b34afa29c0568206ca89566c1a758944a38e"
+    },
+    "same_l_decoder_f32.npz": {
+      "bytes": 1704311976,
+      "sha256": "84924be2122d3a20fce443f40b782d9cd88e8e73707476326003ac47659a2287"
+    }
+  },
+  "device": {
+    "device_name": "Apple M1 Pro",
+    "max_recommended_working_set_size": 11453251584,
+    "memory_size": 17179869184,
+    "architecture": "applegpu_g13s",
+    "max_buffer_length": 8589934592,
+    "resource_limit": 499000
+  },
+  "assetKind": "processed-derivative-of-genuine-model-output",
+  "rawModelOutput": false,
+  "derivedFromGenuineModelOutput": true,
+  "sourceGeneration": {
+    "id": "haze-drift",
+    "kind": "haze",
+    "endpoint": "high",
+    "endpointPosition": 1,
+    "title": "Air drift",
+    "seed": 2026103152,
+    "role": "More air movement while remaining light, with no heavy rumbling layer",
+    "prompt": "TrackType: SFX, A soft light breeze drifting evenly across fine dry grass and slender leaves, delicate airy rustling swells with clearly audible soft leaf detail, thin weightless outdoor air in the middle frequencies, gentle continuous flutter and transparent open space, restrained smooth dynamics throughout. The recording contains only light breeze and fine leaves. Length: 45 seconds.",
+    "durationSeconds": 45,
+    "steps": 8,
+    "cfgScale": 1.0,
+    "sampler": "pingpong",
+    "pack": "scripts/stablegen-v4-palette-prompts.json",
+    "model": "Stable Audio 3 Medium",
+    "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+    "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+    "license": "Stable Audio Community License",
+    "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+    "backend": "Official MLX local inference on Apple Silicon",
+    "runtimeRevision": "5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84",
+    "optimizedWeightsRevision": "30cb2644da54bfa63275d1bc7f1fa67fc718680f",
+    "generated": true,
+    "status": "generated",
+    "startedAt": "2026-10-31T16:23:52.803349+00:00",
+    "completedAt": "2026-10-31T16:24:03.334130+00:00",
+    "generationSeconds": 10.53,
+    "peakMetalAllocatedBytes": 7102088810,
+    "unclippedGeneratorPeak": 0.1357426792383194,
+    "unclippedGeneratorRms": 0.007353704078968814,
+    "unclippedGeneratorAboveFullScaleFraction": 0.0,
+    "unclippedGeneratorNearFullScaleFraction": 0.0,
+    "master": {
+      "file": "haze-drift-master.wav",
+      "bytes": 15876088,
+      "sha256": "7c917ff6af73a727a6380c1b5f4b9ba539571c4f5e246db4427a174d63d385f8"
+    },
+    "processing": "Official pipeline output preserved as stereo44100Hz32-bit float WAV without clipping or normalization. No reverb, compression, mixing or post-effects added. Browser copy normalized separately.",
+    "listeningReview": "Technical validity checked. Perceptual prompt adherence requires audition."
+  },
+  "rawGeneratedMaster": {
+    "file": "haze-drift-master.wav",
+    "bytes": 15876088,
+    "sha256": "7c917ff6af73a727a6380c1b5f4b9ba539571c4f5e246db4427a174d63d385f8"
+  },
+  "rawMasterValidation": {
+    "completeDecode": "passed",
+    "samplesPerChannel": 1984500,
+    "nonFiniteSamples": 0,
+    "peakAmplitude": 0.1357426792383194,
+    "peakDbfs": -17.345671662352572,
+    "rmsDbfs": -42.66987701193415,
+    "crestDb": 25.324205349581575,
+    "nearFullScaleSampleFraction": 0.0,
+    "quietWindowFractionBelowMinus65Dbfs": 0.01888888888888889,
+    "windowRmsP95AboveMedianDb": 4.880832393274936,
+    "windowRmsMaxAboveMedianDb": 18.617958858157365,
+    "spectralEnergyFractions": {
+      "0-120Hz": 0.32873812587540907,
+      "120-500Hz": 0.19020727267869764,
+      "500-2000Hz": 0.1110524930266137,
+      "2000-6000Hz": 0.1290528329188099,
+      "6000-22050Hz": 0.24094916340862307
+    },
+    "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content."
+  },
+  "derivation": {
+    "source": "haze-drift-master.wav",
+    "filters": "highpass=f=180:p=2",
+    "description": "180 Hz two-pole high-pass removes low rumbling weight while retaining airy detail."
+  },
+  "wavMaster": {
+    "file": "haze-drift-processed-master.wav",
+    "bytes": 15876092,
+    "sha256": "a339890d56c0e50ac0b43cc79299be9028d9cff9af1d6eaef15745be2ca8d8a7"
+  },
+  "browserAsset": {
+    "file": "haze-drift.mp3",
+    "bytes": 901268,
+    "sha256": "6868e1f1dfef655ae4ddeb8a8de8c781fcce91b429b01c14eb8ffe881064fb9a",
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "mp3",
+          "sample_rate": "44100",
+          "channels": 2
+        }
+      ],
+      "format": {
+        "duration": "45.035102",
+        "size": "901268"
+      }
+    }
+  },
+  "validation": {
+    "completeDecode": "passed",
+    "samplesPerChannel": 1984500,
+    "nonFiniteSamples": 0,
+    "peakAmplitude": 0.6133587956428528,
+    "peakDbfs": -4.245708050148504,
+    "rmsDbfs": -30.958478442001987,
+    "crestDb": 26.712770391853482,
+    "nearFullScaleSampleFraction": 0.0,
+    "quietWindowFractionBelowMinus65Dbfs": 0.01888888888888889,
+    "windowRmsP95AboveMedianDb": 4.986807289190342,
+    "windowRmsMaxAboveMedianDb": 8.942871211807493,
+    "spectralEnergyFractions": {
+      "0-120Hz": 0.01855376372596587,
+      "120-500Hz": 0.19479638166590496,
+      "500-2000Hz": 0.17868638724975705,
+      "2000-6000Hz": 0.2141524083947819,
+      "6000-22050Hz": 0.39381105896357765
+    },
+    "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+    "encodedPeakCeilingDbfs": -3,
+    "encodedPeakCheck": "passed"
+  },
+  "masterValidation": {
+    "completeDecode": "passed",
+    "samplesPerChannel": 1984500,
+    "nonFiniteSamples": 0,
+    "peakAmplitude": 0.12075512856245041,
+    "peakDbfs": -18.361888307334564,
+    "rmsDbfs": -44.912786153294945,
+    "crestDb": 26.55089784596038,
+    "nearFullScaleSampleFraction": 0.0,
+    "quietWindowFractionBelowMinus65Dbfs": 0.01888888888888889,
+    "windowRmsP95AboveMedianDb": 4.98512029285763,
+    "windowRmsMaxAboveMedianDb": 8.982987384634036,
+    "spectralEnergyFractions": {
+      "0-120Hz": 0.018812306291571147,
+      "120-500Hz": 0.19735307431802349,
+      "500-2000Hz": 0.18044094160553653,
+      "2000-6000Hz": 0.21045584544358334,
+      "6000-22050Hz": 0.39293764954287425
+    },
+    "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content."
+  },
+  "normalization": {
+    "targetPeakDbfsBeforeEncoding": -4,
+    "appliedGainDb": 14.361888307334564,
+    "codecHeadroomCorrectionDb": 0
+  },
+  "sourceMasterUnchangedCheck": true,
+  "generationBatchRecord": "medium-palette-batch.json"
+}

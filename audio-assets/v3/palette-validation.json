@@ -1,0 +1,466 @@
+{
+  "model": "Stable Audio 3 Medium",
+  "assets": {
+    "crickets-pulse": {
+      "kind": "crickets",
+      "sourceFloatMasterSha256Verified": true,
+      "browserSha256Verified": true,
+      "browser": {
+        "completeDecode": "passed",
+        "samplesPerChannel": 1984500,
+        "nonFiniteSamples": 0,
+        "peakAmplitude": 0.614946186542511,
+        "peakDbfs": -4.223257746611789,
+        "rmsDbfs": -28.76695016078198,
+        "crestDb": 24.54369241417019,
+        "nearFullScaleSampleFraction": 0.0,
+        "quietWindowFractionBelowMinus65Dbfs": 0.5855555555555556,
+        "windowRmsP95AboveMedianDb": 57.45096483066598,
+        "windowRmsMaxAboveMedianDb": 61.58511235991247,
+        "spectralEnergyFractions": {
+          "0-120Hz": 1.696720641604049e-09,
+          "120-500Hz": 7.095452444298635e-07,
+          "500-2000Hz": 0.0003436037505135584,
+          "2000-6000Hz": 0.9988845271808312,
+          "6000-22050Hz": 0.0007711578266857121
+        },
+        "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content."
+      },
+      "envelope": {
+        "envelopeWindowMs": 10,
+        "envelopeModulationIndex": 2.415920368199521,
+        "quietGapFractionBelowP90Minus18Db": 0.7737209302325582,
+        "envelopeP90MinusP10Db": 58.30838085962064,
+        "largestEnvelopeAutocorrelationLagSecondsWithin0p2To2": 0.43,
+        "largestEnvelopeAutocorrelationWithin0p2To2": 0.47670256017190304,
+        "positive10msEnvelopeRiseP99Db": 38.51594267045588,
+        "scope": "Signal envelope evidence only. A correlation peak does not prove a regular natural cricket call, and spectral energy does not identify a source."
+      },
+      "rawSourceEnvelope": {
+        "envelopeWindowMs": 10,
+        "envelopeModulationIndex": 2.418953967846699,
+        "quietGapFractionBelowP90Minus18Db": 0.7746511627906977,
+        "envelopeP90MinusP10Db": 55.7521854045986,
+        "largestEnvelopeAutocorrelationLagSecondsWithin0p2To2": 0.43,
+        "largestEnvelopeAutocorrelationWithin0p2To2": 0.4740708062303144,
+        "positive10msEnvelopeRiseP99Db": 37.14131939789845,
+        "scope": "Signal envelope evidence only. A correlation peak does not prove a regular natural cricket call, and spectral energy does not identify a source."
+      }
+    },
+    "crickets-chorus": {
+      "kind": "crickets",
+      "sourceFloatMasterSha256Verified": true,
+      "browserSha256Verified": true,
+      "browser": {
+        "completeDecode": "passed",
+        "samplesPerChannel": 1984500,
+        "nonFiniteSamples": 0,
+        "peakAmplitude": 0.6086230278015137,
+        "peakDbfs": -4.313032394866603,
+        "rmsDbfs": -25.07725629222501,
+        "crestDb": 20.764223897358406,
+        "nearFullScaleSampleFraction": 0.0,
+        "quietWindowFractionBelowMinus65Dbfs": 0.45222222222222225,
+        "windowRmsP95AboveMedianDb": 39.57250375328071,
+        "windowRmsMaxAboveMedianDb": 41.177431285885554,
+        "spectralEnergyFractions": {
+          "0-120Hz": 2.139910571608049e-09,
+          "120-500Hz": 6.659389390779319e-07,
+          "500-2000Hz": 0.0003891669446234227,
+          "2000-6000Hz": 0.9987278569007086,
+          "6000-22050Hz": 0.0008823080758174421
+        },
+        "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content."
+      },
+      "envelope": {
+        "envelopeWindowMs": 10,
+        "envelopeModulationIndex": 1.7766502345314887,
+        "quietGapFractionBelowP90Minus18Db": 0.6932558139534883,
+        "envelopeP90MinusP10Db": 54.574316327234826,
+        "largestEnvelopeAutocorrelationLagSecondsWithin0p2To2": 0.45,
+        "largestEnvelopeAutocorrelationWithin0p2To2": 0.5216768256957979,
+        "positive10msEnvelopeRiseP99Db": 35.665843899265454,
+        "scope": "Signal envelope evidence only. A correlation peak does not prove a regular natural cricket call, and spectral energy does not identify a source."
+      },
+      "rawSourceEnvelope": {
+        "envelopeWindowMs": 10,
+        "envelopeModulationIndex": 1.7770753749990478,
+        "quietGapFractionBelowP90Minus18Db": 0.6948837209302325,
+        "envelopeP90MinusP10Db": 53.104951866444964,
+        "largestEnvelopeAutocorrelationLagSecondsWithin0p2To2": 0.45,
+        "largestEnvelopeAutocorrelationWithin0p2To2": 0.5202962454183028,
+        "positive10msEnvelopeRiseP99Db": 35.43852087136727,
+        "scope": "Signal envelope evidence only. A correlation peak does not prove a regular natural cricket call, and spectral energy does not identify a source."
+      }
+    },
+    "haze-light": {
+      "kind": "haze",
+      "sourceFloatMasterSha256Verified": true,
+      "browserSha256Verified": true,
+      "browser": {
+        "completeDecode": "passed",
+        "samplesPerChannel": 1984500,
+        "nonFiniteSamples": 0,
+        "peakAmplitude": 0.43497201800346375,
+        "peakDbfs": -7.230773611140182,
+        "rmsDbfs": -26.73452397539432,
+        "crestDb": 19.503750364254138,
+        "nearFullScaleSampleFraction": 0.0,
+        "quietWindowFractionBelowMinus65Dbfs": 0.0,
+        "windowRmsP95AboveMedianDb": 4.266768783575472,
+        "windowRmsMaxAboveMedianDb": 7.04137986676016,
+        "spectralEnergyFractions": {
+          "0-120Hz": 0.001243664824880783,
+          "120-500Hz": 0.05288770928460774,
+          "500-2000Hz": 0.8852723496605818,
+          "2000-6000Hz": 0.014528925548627242,
+          "6000-22050Hz": 0.046067350681296325
+        },
+        "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content."
+      },
+      "envelope": {
+        "envelopeWindowMs": 10,
+        "envelopeModulationIndex": 0.3273919534558524,
+        "quietGapFractionBelowP90Minus18Db": 0.0,
+        "envelopeP90MinusP10Db": 6.940033745359003,
+        "largestEnvelopeAutocorrelationLagSecondsWithin0p2To2": 0.21,
+        "largestEnvelopeAutocorrelationWithin0p2To2": 0.6518974539014938,
+        "positive10msEnvelopeRiseP99Db": 4.742470202848406,
+        "scope": "Signal envelope evidence only. A correlation peak does not prove a regular natural cricket call, and spectral energy does not identify a source."
+      },
+      "rawSourceEnvelope": {
+        "envelopeWindowMs": 10,
+        "envelopeModulationIndex": 0.3133614882112272,
+        "quietGapFractionBelowP90Minus18Db": 0.0,
+        "envelopeP90MinusP10Db": 6.588725576465492,
+        "largestEnvelopeAutocorrelationLagSecondsWithin0p2To2": 0.21,
+        "largestEnvelopeAutocorrelationWithin0p2To2": 0.643668774220908,
+        "positive10msEnvelopeRiseP99Db": 4.611536018073881,
+        "scope": "Signal envelope evidence only. A correlation peak does not prove a regular natural cricket call, and spectral energy does not identify a source."
+      }
+    },
+    "haze-drift": {
+      "kind": "haze",
+      "sourceFloatMasterSha256Verified": true,
+      "browserSha256Verified": true,
+      "browser": {
+        "completeDecode": "passed",
+        "samplesPerChannel": 1984500,
+        "nonFiniteSamples": 0,
+        "peakAmplitude": 0.6133587956428528,
+        "peakDbfs": -4.245708050148504,
+        "rmsDbfs": -30.958478442001987,
+        "crestDb": 26.712770391853482,
+        "nearFullScaleSampleFraction": 0.0,
+        "quietWindowFractionBelowMinus65Dbfs": 0.01888888888888889,
+        "windowRmsP95AboveMedianDb": 4.986807289190342,
+        "windowRmsMaxAboveMedianDb": 8.942871211807493,
+        "spectralEnergyFractions": {
+          "0-120Hz": 0.01855376372596587,
+          "120-500Hz": 0.19479638166590496,
+          "500-2000Hz": 0.17868638724975705,
+          "2000-6000Hz": 0.2141524083947819,
+          "6000-22050Hz": 0.39381105896357765
+        },
+        "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content."
+      },
+      "envelope": {
+        "envelopeWindowMs": 10,
+        "envelopeModulationIndex": 0.2792280550597658,
+        "quietGapFractionBelowP90Minus18Db": 0.0,
+        "envelopeP90MinusP10Db": 5.627687698507792,
+        "largestEnvelopeAutocorrelationLagSecondsWithin0p2To2": 0.23,
+        "largestEnvelopeAutocorrelationWithin0p2To2": 0.7002979431869039,
+        "positive10msEnvelopeRiseP99Db": 4.365303133913357,
+        "scope": "Signal envelope evidence only. A correlation peak does not prove a regular natural cricket call, and spectral energy does not identify a source."
+      },
+      "rawSourceEnvelope": {
+        "envelopeWindowMs": 10,
+        "envelopeModulationIndex": 0.5740086119326263,
+        "quietGapFractionBelowP90Minus18Db": 0.0,
+        "envelopeP90MinusP10Db": 5.881723091821478,
+        "largestEnvelopeAutocorrelationLagSecondsWithin0p2To2": 0.2,
+        "largestEnvelopeAutocorrelationWithin0p2To2": 0.47126772856858196,
+        "positive10msEnvelopeRiseP99Db": 5.197288631300743,
+        "scope": "Signal envelope evidence only. A correlation peak does not prove a regular natural cricket call, and spectral energy does not identify a source."
+      }
+    },
+    "ash-fine": {
+      "kind": "ash",
+      "sourceFloatMasterSha256Verified": true,
+      "browserSha256Verified": true,
+      "browser": {
+        "completeDecode": "passed",
+        "samplesPerChannel": 1984500,
+        "nonFiniteSamples": 0,
+        "peakAmplitude": 0.6277576684951782,
+        "peakDbfs": -4.044159467488411,
+        "rmsDbfs": -35.667110304257264,
+        "crestDb": 31.62295083676885,
+        "nearFullScaleSampleFraction": 0.0,
+        "quietWindowFractionBelowMinus65Dbfs": 0.0077777777777777776,
+        "windowRmsP95AboveMedianDb": 3.3726179553604894,
+        "windowRmsMaxAboveMedianDb": 7.072013621339487,
+        "spectralEnergyFractions": {
+          "0-120Hz": 0.00047759749172734543,
+          "120-500Hz": 0.0028572998491766598,
+          "500-2000Hz": 0.07098495916077581,
+          "2000-6000Hz": 0.33220877263911874,
+          "6000-22050Hz": 0.5934713708591965
+        },
+        "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content."
+      },
+      "envelope": {
+        "envelopeWindowMs": 10,
+        "envelopeModulationIndex": 0.36588574363143894,
+        "quietGapFractionBelowP90Minus18Db": 0.0,
+        "envelopeP90MinusP10Db": 5.861709018910922,
+        "largestEnvelopeAutocorrelationLagSecondsWithin0p2To2": 0.31,
+        "largestEnvelopeAutocorrelationWithin0p2To2": 0.07049793347358209,
+        "positive10msEnvelopeRiseP99Db": 9.960238583683656,
+        "scope": "Signal envelope evidence only. A correlation peak does not prove a regular natural cricket call, and spectral energy does not identify a source."
+      },
+      "rawSourceEnvelope": {
+        "envelopeWindowMs": 10,
+        "envelopeModulationIndex": 0.3673665556348349,
+        "quietGapFractionBelowP90Minus18Db": 0.0,
+        "envelopeP90MinusP10Db": 5.898658045852194,
+        "largestEnvelopeAutocorrelationLagSecondsWithin0p2To2": 0.31,
+        "largestEnvelopeAutocorrelationWithin0p2To2": 0.07056574072604566,
+        "positive10msEnvelopeRiseP99Db": 9.894838206542728,
+        "scope": "Signal envelope evidence only. A correlation peak does not prove a regular natural cricket call, and spectral energy does not identify a source."
+      }
+    },
+    "ash-scatter": {
+      "kind": "ash",
+      "sourceFloatMasterSha256Verified": true,
+      "browserSha256Verified": true,
+      "browser": {
+        "completeDecode": "passed",
+        "samplesPerChannel": 1984500,
+        "nonFiniteSamples": 0,
+        "peakAmplitude": 0.6320523023605347,
+        "peakDbfs": -3.9849396467976623,
+        "rmsDbfs": -35.226315447312516,
+        "crestDb": 31.241375800514852,
+        "nearFullScaleSampleFraction": 0.0,
+        "quietWindowFractionBelowMinus65Dbfs": 0.017777777777777778,
+        "windowRmsP95AboveMedianDb": 3.7971451150532403,
+        "windowRmsMaxAboveMedianDb": 7.897161294274884,
+        "spectralEnergyFractions": {
+          "0-120Hz": 0.00072891268678067,
+          "120-500Hz": 0.005301629798270087,
+          "500-2000Hz": 0.19682078664594718,
+          "2000-6000Hz": 0.4246445558760037,
+          "6000-22050Hz": 0.3725041149929737
+        },
+        "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content."
+      },
+      "envelope": {
+        "envelopeWindowMs": 10,
+        "envelopeModulationIndex": 0.38440298135170936,
+        "quietGapFractionBelowP90Minus18Db": 0.0,
+        "envelopeP90MinusP10Db": 6.159531706495322,
+        "largestEnvelopeAutocorrelationLagSecondsWithin0p2To2": 0.4,
+        "largestEnvelopeAutocorrelationWithin0p2To2": 0.1410477679682875,
+        "positive10msEnvelopeRiseP99Db": 9.256286280779891,
+        "scope": "Signal envelope evidence only. A correlation peak does not prove a regular natural cricket call, and spectral energy does not identify a source."
+      },
+      "rawSourceEnvelope": {
+        "envelopeWindowMs": 10,
+        "envelopeModulationIndex": 0.38483142028268286,
+        "quietGapFractionBelowP90Minus18Db": 0.0,
+        "envelopeP90MinusP10Db": 6.152248128079854,
+        "largestEnvelopeAutocorrelationLagSecondsWithin0p2To2": 0.4,
+        "largestEnvelopeAutocorrelationWithin0p2To2": 0.14099710826276313,
+        "positive10msEnvelopeRiseP99Db": 9.27329164805219,
+        "scope": "Signal envelope evidence only. A correlation peak does not prove a regular natural cricket call, and spectral energy does not identify a source."
+      }
+    },
+    "rain-light": {
+      "kind": "rain",
+      "sourceFloatMasterSha256Verified": true,
+      "browserSha256Verified": true,
+      "browser": {
+        "completeDecode": "passed",
+        "samplesPerChannel": 1984500,
+        "nonFiniteSamples": 0,
+        "peakAmplitude": 0.6622575521469116,
+        "peakDbfs": -3.579461609288723,
+        "rmsDbfs": -28.68674853612912,
+        "crestDb": 25.107286926840395,
+        "nearFullScaleSampleFraction": 0.0,
+        "quietWindowFractionBelowMinus65Dbfs": 0.008888888888888889,
+        "windowRmsP95AboveMedianDb": 3.7152656234008603,
+        "windowRmsMaxAboveMedianDb": 8.12339109639747,
+        "spectralEnergyFractions": {
+          "0-120Hz": 0.3334299207054328,
+          "120-500Hz": 0.009264713828352053,
+          "500-2000Hz": 0.12707167320537638,
+          "2000-6000Hz": 0.260122278127144,
+          "6000-22050Hz": 0.2701114141336872
+        },
+        "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content."
+      },
+      "envelope": {
+        "envelopeWindowMs": 10,
+        "envelopeModulationIndex": 0.44540473412782916,
+        "quietGapFractionBelowP90Minus18Db": 0.00023255813953488373,
+        "envelopeP90MinusP10Db": 9.539424971241814,
+        "largestEnvelopeAutocorrelationLagSecondsWithin0p2To2": 0.46,
+        "largestEnvelopeAutocorrelationWithin0p2To2": 0.10366718763915296,
+        "positive10msEnvelopeRiseP99Db": 8.915609584459627,
+        "scope": "Signal envelope evidence only. A correlation peak does not prove a regular natural cricket call, and spectral energy does not identify a source."
+      },
+      "rawSourceEnvelope": {
+        "envelopeWindowMs": 10,
+        "envelopeModulationIndex": 0.7719798600241773,
+        "quietGapFractionBelowP90Minus18Db": 0.0,
+        "envelopeP90MinusP10Db": 9.541656392446356,
+        "largestEnvelopeAutocorrelationLagSecondsWithin0p2To2": 1.49,
+        "largestEnvelopeAutocorrelationWithin0p2To2": 0.0711276608476896,
+        "positive10msEnvelopeRiseP99Db": 14.170692167043631,
+        "scope": "Signal envelope evidence only. A correlation peak does not prove a regular natural cricket call, and spectral energy does not identify a source."
+      }
+    },
+    "rain-steady": {
+      "kind": "rain",
+      "sourceFloatMasterSha256Verified": true,
+      "browserSha256Verified": true,
+      "browser": {
+        "completeDecode": "passed",
+        "samplesPerChannel": 1984500,
+        "nonFiniteSamples": 0,
+        "peakAmplitude": 0.6190436482429504,
+        "peakDbfs": -4.16557456328908,
+        "rmsDbfs": -26.648165427091502,
+        "crestDb": 22.48259086380242,
+        "nearFullScaleSampleFraction": 0.0,
+        "quietWindowFractionBelowMinus65Dbfs": 0.0011111111111111111,
+        "windowRmsP95AboveMedianDb": 1.2668398364422373,
+        "windowRmsMaxAboveMedianDb": 3.7774759126581507,
+        "spectralEnergyFractions": {
+          "0-120Hz": 0.005550292826214166,
+          "120-500Hz": 0.022484240908751407,
+          "500-2000Hz": 0.21671077223728624,
+          "2000-6000Hz": 0.47781115299087673,
+          "6000-22050Hz": 0.2774435410368641
+        },
+        "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content."
+      },
+      "envelope": {
+        "envelopeWindowMs": 10,
+        "envelopeModulationIndex": 0.268077097477053,
+        "quietGapFractionBelowP90Minus18Db": 0.0,
+        "envelopeP90MinusP10Db": 5.853357806599501,
+        "largestEnvelopeAutocorrelationLagSecondsWithin0p2To2": 0.47,
+        "largestEnvelopeAutocorrelationWithin0p2To2": 0.05252487053400463,
+        "positive10msEnvelopeRiseP99Db": 6.609910317446273,
+        "scope": "Signal envelope evidence only. A correlation peak does not prove a regular natural cricket call, and spectral energy does not identify a source."
+      },
+      "rawSourceEnvelope": {
+        "envelopeWindowMs": 10,
+        "envelopeModulationIndex": 0.48191143785462076,
+        "quietGapFractionBelowP90Minus18Db": 0.0,
+        "envelopeP90MinusP10Db": 5.593014604352447,
+        "largestEnvelopeAutocorrelationLagSecondsWithin0p2To2": 0.47,
+        "largestEnvelopeAutocorrelationWithin0p2To2": 0.056240303859638234,
+        "positive10msEnvelopeRiseP99Db": 11.46954459577775,
+        "scope": "Signal envelope evidence only. A correlation peak does not prove a regular natural cricket call, and spectral energy does not identify a source."
+      }
+    },
+    "moisture-seep": {
+      "kind": "moisture",
+      "sourceFloatMasterSha256Verified": true,
+      "browserSha256Verified": true,
+      "browser": {
+        "completeDecode": "passed",
+        "samplesPerChannel": 1984500,
+        "nonFiniteSamples": 0,
+        "peakAmplitude": 0.5979214310646057,
+        "peakDbfs": -4.467117601063567,
+        "rmsDbfs": -27.095618232978463,
+        "crestDb": 22.628500631914896,
+        "nearFullScaleSampleFraction": 0.0,
+        "quietWindowFractionBelowMinus65Dbfs": 0.02,
+        "windowRmsP95AboveMedianDb": 3.329059840964451,
+        "windowRmsMaxAboveMedianDb": 8.567354424801945,
+        "spectralEnergyFractions": {
+          "0-120Hz": 0.0016540924132861547,
+          "120-500Hz": 0.003372239805964703,
+          "500-2000Hz": 0.28594228898577295,
+          "2000-6000Hz": 0.5765652923760343,
+          "6000-22050Hz": 0.13246608641893776
+        },
+        "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content."
+      },
+      "envelope": {
+        "envelopeWindowMs": 10,
+        "envelopeModulationIndex": 0.5094252156650064,
+        "quietGapFractionBelowP90Minus18Db": 0.0013953488372093023,
+        "envelopeP90MinusP10Db": 11.046208485175406,
+        "largestEnvelopeAutocorrelationLagSecondsWithin0p2To2": 0.46,
+        "largestEnvelopeAutocorrelationWithin0p2To2": 0.046606726226509916,
+        "positive10msEnvelopeRiseP99Db": 13.544693984226557,
+        "scope": "Signal envelope evidence only. A correlation peak does not prove a regular natural cricket call, and spectral energy does not identify a source."
+      },
+      "rawSourceEnvelope": {
+        "envelopeWindowMs": 10,
+        "envelopeModulationIndex": 0.8199873369606848,
+        "quietGapFractionBelowP90Minus18Db": 0.00023255813953488373,
+        "envelopeP90MinusP10Db": 12.30713607035662,
+        "largestEnvelopeAutocorrelationLagSecondsWithin0p2To2": 0.46,
+        "largestEnvelopeAutocorrelationWithin0p2To2": 0.08079449198531952,
+        "positive10msEnvelopeRiseP99Db": 15.891393106517064,
+        "scope": "Signal envelope evidence only. A correlation peak does not prove a regular natural cricket call, and spectral energy does not identify a source."
+      }
+    },
+    "moisture-trickle": {
+      "kind": "moisture",
+      "sourceFloatMasterSha256Verified": true,
+      "browserSha256Verified": true,
+      "browser": {
+        "completeDecode": "passed",
+        "samplesPerChannel": 1984500,
+        "nonFiniteSamples": 0,
+        "peakAmplitude": 0.5998139381408691,
+        "peakDbfs": -4.439668931338576,
+        "rmsDbfs": -26.835664396928223,
+        "crestDb": 22.395995465589646,
+        "nearFullScaleSampleFraction": 0.0,
+        "quietWindowFractionBelowMinus65Dbfs": 0.005555555555555556,
+        "windowRmsP95AboveMedianDb": 4.231733906188655,
+        "windowRmsMaxAboveMedianDb": 8.155645347192745,
+        "spectralEnergyFractions": {
+          "0-120Hz": 0.0008735446891399368,
+          "120-500Hz": 0.0020210204304300615,
+          "500-2000Hz": 0.5672811010834017,
+          "2000-6000Hz": 0.36824623082494584,
+          "6000-22050Hz": 0.06157810297207117
+        },
+        "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content."
+      },
+      "envelope": {
+        "envelopeWindowMs": 10,
+        "envelopeModulationIndex": 0.5395022435405642,
+        "quietGapFractionBelowP90Minus18Db": 0.0037209302325581397,
+        "envelopeP90MinusP10Db": 11.787074136905424,
+        "largestEnvelopeAutocorrelationLagSecondsWithin0p2To2": 0.87,
+        "largestEnvelopeAutocorrelationWithin0p2To2": 0.038519906713503166,
+        "positive10msEnvelopeRiseP99Db": 12.867211483322086,
+        "scope": "Signal envelope evidence only. A correlation peak does not prove a regular natural cricket call, and spectral energy does not identify a source."
+      },
+      "rawSourceEnvelope": {
+        "envelopeWindowMs": 10,
+        "envelopeModulationIndex": 0.8991324313558856,
+        "quietGapFractionBelowP90Minus18Db": 0.0011627906976744186,
+        "envelopeP90MinusP10Db": 13.1048884059906,
+        "largestEnvelopeAutocorrelationLagSecondsWithin0p2To2": 0.87,
+        "largestEnvelopeAutocorrelationWithin0p2To2": 0.03883055449138833,
+        "positive10msEnvelopeRiseP99Db": 16.18834814068954,
+        "scope": "Signal envelope evidence only. A correlation peak does not prove a regular natural cricket call, and spectral energy does not identify a source."
+      }
+    }
+  },
+  "limitations": "Complete decoding, source hashes, headroom, spectral energy and envelope measurements verified. Human perceptual prompt adherence is not certified."
+}

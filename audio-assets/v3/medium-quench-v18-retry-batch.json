@@ -1,0 +1,114 @@
+{
+  "model": "Stable Audio 3 Medium",
+  "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+  "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+  "license": "Stable Audio Community License",
+  "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+  "backend": "Official MLX local inference on Apple Silicon",
+  "runtimeRevision": "5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84",
+  "optimizedWeightsRepository": "https://huggingface.co/stabilityai/stable-audio-3-optimized",
+  "optimizedWeightsRevision": "30cb2644da54bfa63275d1bc7f1fa67fc718680f",
+  "verifiedWeights": {
+    "t5gemma_f16.npz": {
+      "bytes": 567443068,
+      "sha256": "8deb20489f36d9aec539f26c9c67321f99bc5fe300d470435ed6e76be4f16bbd"
+    },
+    "dit_medium_f16.npz": {
+      "bytes": 2907300946,
+      "sha256": "f9e5647ea3225818657d47d47ae4b34afa29c0568206ca89566c1a758944a38e"
+    },
+    "same_l_decoder_f32.npz": {
+      "bytes": 1704311976,
+      "sha256": "84924be2122d3a20fce443f40b782d9cd88e8e73707476326003ac47659a2287"
+    }
+  },
+  "device": {
+    "device_name": "Apple M1 Pro",
+    "max_recommended_working_set_size": 11453251584,
+    "memory_size": 17179869184,
+    "architecture": "applegpu_g13s",
+    "max_buffer_length": 8589934592,
+    "resource_limit": 499000
+  },
+  "startedAt": "2026-11-02T16:55:37.096315+00:00",
+  "status": "complete",
+  "assets": {
+    "phone-quench-ember-warm": {
+      "id": "phone-quench-ember-warm",
+      "kind": "phone-quench",
+      "title": "Water onto embers",
+      "seed": 202611021807,
+      "role": "A short rounded steam hiss as a little water quenches glowing wood embers",
+      "prompt": "TrackType: SFX, Fire extinguishing sound: a little water poured onto a small glowing wood fire makes one short continuous soft sizzling steam hiss, pssshhh. A warm breathy midrange sizzle with tiny wet woody sputters underneath, a small splash followed by gentle sustained hissing steam that quickly dies away. Close clear dry flat outdoor sound, quiet restrained intensity. Length: 5 seconds.",
+      "durationSeconds": 5,
+      "steps": 8,
+      "cfgScale": 1.0,
+      "sampler": "pingpong",
+      "pack": "scripts/stablegen-v18-quench-retry-prompts.json",
+      "model": "Stable Audio 3 Medium",
+      "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+      "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+      "license": "Stable Audio Community License",
+      "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+      "backend": "Official MLX local inference on Apple Silicon",
+      "runtimeRevision": "5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84",
+      "optimizedWeightsRevision": "30cb2644da54bfa63275d1bc7f1fa67fc718680f",
+      "generated": true,
+      "status": "generated",
+      "startedAt": "2026-11-02T16:55:41.108703+00:00",
+      "completedAt": "2026-11-02T16:55:44.970403+00:00",
+      "generationSeconds": 3.857,
+      "peakMetalAllocatedBytes": 6402043410,
+      "unclippedGeneratorPeak": 0.585485577583313,
+      "unclippedGeneratorRms": 0.019278012944567016,
+      "unclippedGeneratorAboveFullScaleFraction": 0.0,
+      "unclippedGeneratorNearFullScaleFraction": 0.0,
+      "master": {
+        "file": "phone-quench-ember-warm-master.wav",
+        "bytes": 1764088,
+        "sha256": "784320d0f34af636cb31a9752861aee1b47d1f7cbaf64ccf7ada9d65597aae0b"
+      },
+      "processing": "Official pipeline output preserved as stereo44100Hz32-bit float WAV without clipping or normalization. No reverb, compression, mixing or post-effects added. Browser copy normalized separately.",
+      "listeningReview": "Technical validity checked. Perceptual prompt adherence requires audition."
+    },
+    "phone-quench-wood-soft": {
+      "id": "phone-quench-wood-soft",
+      "kind": "phone-quench",
+      "title": "Water onto charred wood",
+      "seed": 202611021808,
+      "role": "A soft continuous watery sizzle over hot charred wood, followed by quiet",
+      "prompt": "TrackType: SFX, Close gentle water-on-fire quenching. A spoonful of water splashes onto a hot piece of charred burning wood, making a short continuous rounded fsssh of steam with a softly bubbling wet wood sizzle. The soft airy hiss has warm body and delicate fine irregular sputter and decays naturally into quiet. Intimate flat dry open-air sound, one restrained event. Length: 5 seconds.",
+      "durationSeconds": 5,
+      "steps": 8,
+      "cfgScale": 1.0,
+      "sampler": "pingpong",
+      "pack": "scripts/stablegen-v18-quench-retry-prompts.json",
+      "model": "Stable Audio 3 Medium",
+      "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+      "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+      "license": "Stable Audio Community License",
+      "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+      "backend": "Official MLX local inference on Apple Silicon",
+      "runtimeRevision": "5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84",
+      "optimizedWeightsRevision": "30cb2644da54bfa63275d1bc7f1fa67fc718680f",
+      "generated": true,
+      "status": "generated",
+      "startedAt": "2026-11-02T16:55:45.017233+00:00",
+      "completedAt": "2026-11-02T16:55:47.352636+00:00",
+      "generationSeconds": 2.335,
+      "peakMetalAllocatedBytes": 6407258334,
+      "unclippedGeneratorPeak": 0.1620255410671234,
+      "unclippedGeneratorRms": 0.009982660777325977,
+      "unclippedGeneratorAboveFullScaleFraction": 0.0,
+      "unclippedGeneratorNearFullScaleFraction": 0.0,
+      "master": {
+        "file": "phone-quench-wood-soft-master.wav",
+        "bytes": 1764088,
+        "sha256": "ad8f13700dd1746335a9a31556e718e73cafca541f9f3614ec446e6bd082c182"
+      },
+      "processing": "Official pipeline output preserved as stereo44100Hz32-bit float WAV without clipping or normalization. No reverb, compression, mixing or post-effects added. Browser copy normalized separately.",
+      "listeningReview": "Technical validity checked. Perceptual prompt adherence requires audition."
+    }
+  },
+  "completedAt": "2026-11-02T16:55:47.367850+00:00"
+}

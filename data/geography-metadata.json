@@ -1,0 +1,43 @@
+{
+  "name": "Natural Earth Admin 0 Countries",
+  "sourceUrl": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_admin_0_countries.geojson",
+  "repositoryUrl": "https://github.com/nvkelso/natural-earth-vector",
+  "license": "Public domain",
+  "licenseUrl": "https://www.naturalearthdata.com/about/terms-of-use/",
+  "attribution": "Made with Natural Earth.",
+  "fetchedAt": "2026-10-28T05:51:48.889045Z",
+  "indonesia": {
+    "file": "indonesia.geojson",
+    "geometryType": "MultiPolygon",
+    "scale": "1:10m",
+    "polygonCount": 264,
+    "sha256": "4ccc74ae3fac004d95ec9733501a6b1430bff25c451b0535cbe40f8436943d20"
+  },
+  "context": {
+    "file": "surrounding-land.geojson",
+    "scale": "1:50m",
+    "sourceUrl": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_admin_0_countries.geojson",
+    "countries": [
+      "Vietnam",
+      "Federated States of Micronesia",
+      "East Timor",
+      "Thailand",
+      "Singapore",
+      "Philippines",
+      "Papua New Guinea",
+      "Palau",
+      "Malaysia",
+      "India",
+      "Myanmar",
+      "Brunei",
+      "Australia",
+      "Indian Ocean Territories",
+      "Ashmore and Cartier Islands"
+    ]
+  },
+  "notes": [
+    "Generalized cartographic country boundaries; suitable for prototype display and approximate filtering, not survey-grade national or coastline boundaries.",
+    "Small islands or detections near generalized coastlines can be excluded by polygon filtering.",
+    "Context countries retain complete geometry; clip the SVG to the display viewport."
+  ]
+}

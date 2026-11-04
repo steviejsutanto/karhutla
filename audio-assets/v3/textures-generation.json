@@ -1,0 +1,859 @@
+{
+  "provider": "Stability AI official public Hugging Face Space or official local MLX runtime; per-asset request records exact route",
+  "sourceUrl": "https://huggingface.co/spaces/stabilityai/stable-audio-3",
+  "modelLicense": "Stable Audio Community License",
+  "notes": "Genuine text-to-audio only. No field recordings or synthesized replacements are presented as model outputs. Failed requests are retained as failures.",
+  "assets": {
+    "rain": {
+      "id": "rain",
+      "seed": 2026103133,
+      "role": "Pure water on leaves; separate from fire and animals",
+      "prompt": "TrackType: SFX, natural steady gentle rain falling onto broad leaves and soft soil in a close dry outdoor field recording, countless small rounded water drops pattering irregularly and softly with tiny leaf drips, a continuous pure water texture with restrained stable dynamics, soft mellow detail and a quiet forest floor perspective. Length: 45 seconds.",
+      "durationSeconds": 45,
+      "steps": 8,
+      "cfgScale": 1.0,
+      "sampler": "pingpong",
+      "pack": "scripts/stablegen-v3-textures-prompts.json",
+      "model": "Stable Audio 3 Medium",
+      "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+      "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+      "license": "Stable Audio Community License",
+      "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+      "backend": "Official MLX local inference on Apple Silicon",
+      "runtimeRevision": "5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84",
+      "optimizedWeightsRevision": "30cb2644da54bfa63275d1bc7f1fa67fc718680f",
+      "generated": true,
+      "status": "generated",
+      "startedAt": "2026-10-31T05:23:31.801417+00:00",
+      "completedAt": "2026-10-31T05:24:18.658912+00:00",
+      "generationSeconds": 9.835,
+      "peakMetalAllocatedBytes": 7102088762,
+      "unclippedGeneratorPeak": 0.2989044487476349,
+      "unclippedGeneratorRms": 0.008499165632479483,
+      "unclippedGeneratorAboveFullScaleFraction": 0.0,
+      "unclippedGeneratorNearFullScaleFraction": 0.0,
+      "master": {
+        "file": "rain-master.wav",
+        "bytes": 15876088,
+        "sha256": "0e6a731573dd7d9172affb0f06541254e363b0cfb69fc5f8c6b018c255399156"
+      },
+      "processing": "Original generated float WAV retained unchanged; MP3: 250ms fade-in, 500ms fade-out, raw master peak normalized near -4dBFS before encoding, stereo44.1kHz160kbps. Any codec overshoot is corrected by encoding again directly from the unchanged original master. Complete MP3 decode and encoded peak <= -3dBFS checks passed.",
+      "listeningReview": "Not certified by a human listener. Technical validation does not establish prompt adherence.",
+      "modelCard": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+      "adoptedAt": "2026-10-31T05:24:17.300715+00:00",
+      "verifiedWeights": {
+        "t5gemma_f16.npz": {
+          "bytes": 567443068,
+          "sha256": "8deb20489f36d9aec539f26c9c67321f99bc5fe300d470435ed6e76be4f16bbd"
+        },
+        "dit_medium_f16.npz": {
+          "bytes": 2907300946,
+          "sha256": "f9e5647ea3225818657d47d47ae4b34afa29c0568206ca89566c1a758944a38e"
+        },
+        "same_l_decoder_f32.npz": {
+          "bytes": 1704311976,
+          "sha256": "84924be2122d3a20fce443f40b782d9cd88e8e73707476326003ac47659a2287"
+        }
+      },
+      "device": {
+        "device_name": "Apple M1 Pro",
+        "max_recommended_working_set_size": 11453251584,
+        "memory_size": 17179869184,
+        "architecture": "applegpu_g13s",
+        "max_buffer_length": 8589934592,
+        "resource_limit": 499000
+      },
+      "wavMaster": {
+        "file": "rain-master.wav",
+        "bytes": 15876088,
+        "sha256": "0e6a731573dd7d9172affb0f06541254e363b0cfb69fc5f8c6b018c255399156"
+      },
+      "browserAsset": {
+        "file": "rain.mp3",
+        "bytes": 901268,
+        "sha256": "bcd204807919ded4e41f058e260097461b0e6d11cc0bc6ca9552ca768bc39982",
+        "probe": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "codec_name": "mp3",
+              "sample_rate": "44100",
+              "channels": 2
+            }
+          ],
+          "format": {
+            "duration": "45.035102",
+            "size": "901268"
+          }
+        }
+      },
+      "validation": {
+        "completeDecode": "passed",
+        "samplesPerChannel": 1984500,
+        "nonFiniteSamples": 0,
+        "peakAmplitude": 0.5754451155662537,
+        "peakDbfs": -4.799921838368929,
+        "rmsDbfs": -35.229513685478594,
+        "crestDb": 30.429591847109663,
+        "nearFullScaleSampleFraction": 0.0,
+        "quietWindowFractionBelowMinus65Dbfs": 0.01,
+        "windowRmsP95AboveMedianDb": 3.2658297491879082,
+        "windowRmsMaxAboveMedianDb": 8.942921404097774,
+        "spectralEnergyFractions": {
+          "0-120Hz": 0.004603952980689372,
+          "120-500Hz": 0.0053399223864830465,
+          "500-2000Hz": 0.1716047373600172,
+          "2000-6000Hz": 0.506366626762707,
+          "6000-22050Hz": 0.3120847605100993
+        },
+        "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+        "encodedPeakCeilingDbfs": -3,
+        "encodedPeakCheck": "passed"
+      },
+      "masterValidation": {
+        "completeDecode": "passed",
+        "samplesPerChannel": 1984500,
+        "nonFiniteSamples": 0,
+        "peakAmplitude": 0.2989044487476349,
+        "peakDbfs": -10.489352421718825,
+        "rmsDbfs": -41.41247414217545,
+        "crestDb": 30.92312172045662,
+        "nearFullScaleSampleFraction": 0.0,
+        "quietWindowFractionBelowMinus65Dbfs": 0.011111111111111112,
+        "windowRmsP95AboveMedianDb": 3.353398387908065,
+        "windowRmsMaxAboveMedianDb": 9.111268947551402,
+        "spectralEnergyFractions": {
+          "0-120Hz": 0.004772196454722285,
+          "120-500Hz": 0.005528892619233197,
+          "500-2000Hz": 0.17636663611557424,
+          "2000-6000Hz": 0.5081288540813105,
+          "6000-22050Hz": 0.30520327722350377
+        },
+        "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content."
+      },
+      "normalization": {
+        "targetPeakDbfsBeforeEncoding": -4,
+        "appliedGainDb": 6.489352421718825,
+        "codecHeadroomCorrectionDb": 0
+      }
+    },
+    "ash": {
+      "id": "ash",
+      "title": "Soft ash flutter \u00b7 shaped Medium texture",
+      "role": "Continuous soft midrange ash detail",
+      "assetKind": "processed-derivative-of-genuine-model-output",
+      "rawModelOutput": false,
+      "derivedFromGenuineModelOutput": true,
+      "model": "Stable Audio 3 Medium",
+      "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+      "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+      "license": "Stable Audio Community License",
+      "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+      "backend": "Official MLX local inference on Apple Silicon",
+      "runtimeRevision": "5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84",
+      "optimizedWeightsRevision": "30cb2644da54bfa63275d1bc7f1fa67fc718680f",
+      "seed": 2026103142,
+      "prompt": "TrackType: SFX, a continuous soft midrange layer of many fine papery leaf flakes gently rubbing and fluttering over dry soil, dense overlapping delicate rustles blending into one steady mellow fabric-like flutter, close dry outdoor perspective with softly rounded edges, very even quiet movement and unbroken stable texture throughout. Length: 45 seconds.",
+      "durationSeconds": 45,
+      "modelCard": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+      "sourceGeneration": {
+        "id": "ash",
+        "seed": 2026103142,
+        "role": "Continuous soft midrange flake flutter; retry for steadier less bright texture",
+        "prompt": "TrackType: SFX, a continuous soft midrange layer of many fine papery leaf flakes gently rubbing and fluttering over dry soil, dense overlapping delicate rustles blending into one steady mellow fabric-like flutter, close dry outdoor perspective with softly rounded edges, very even quiet movement and unbroken stable texture throughout. Length: 45 seconds.",
+        "durationSeconds": 45,
+        "steps": 8,
+        "cfgScale": 1.0,
+        "sampler": "pingpong",
+        "pack": "scripts/stablegen-v3-textures-retry-prompts.json",
+        "model": "Stable Audio 3 Medium",
+        "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+        "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+        "license": "Stable Audio Community License",
+        "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+        "backend": "Official MLX local inference on Apple Silicon",
+        "runtimeRevision": "5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84",
+        "optimizedWeightsRevision": "30cb2644da54bfa63275d1bc7f1fa67fc718680f",
+        "generated": true,
+        "status": "generated",
+        "startedAt": "2026-10-31T05:27:24.308776+00:00",
+        "completedAt": "2026-10-31T05:27:34.702216+00:00",
+        "generationSeconds": 10.393,
+        "peakMetalAllocatedBytes": 7099210806,
+        "unclippedGeneratorPeak": 0.9715337753295898,
+        "unclippedGeneratorRms": 0.015770060404193383,
+        "unclippedGeneratorAboveFullScaleFraction": 0.0,
+        "unclippedGeneratorNearFullScaleFraction": 0.0,
+        "master": {
+          "file": "ash-master.wav",
+          "bytes": 15876088,
+          "sha256": "85c1a53a3a1789b3affba9ada60ea8ad7d5d273cb48c43ef818d685998f3588f"
+        },
+        "processing": "Official pipeline output preserved as stereo44100Hz32-bit float WAV without clipping or normalization. No reverb, compression, mixing or post-effects added. Browser copy normalized separately.",
+        "listeningReview": "Technical validity checked. Perceptual prompt adherence requires audition."
+      },
+      "verifiedWeights": {
+        "t5gemma_f16.npz": {
+          "bytes": 567443068,
+          "sha256": "8deb20489f36d9aec539f26c9c67321f99bc5fe300d470435ed6e76be4f16bbd"
+        },
+        "dit_medium_f16.npz": {
+          "bytes": 2907300946,
+          "sha256": "f9e5647ea3225818657d47d47ae4b34afa29c0568206ca89566c1a758944a38e"
+        },
+        "same_l_decoder_f32.npz": {
+          "bytes": 1704311976,
+          "sha256": "84924be2122d3a20fce443f40b782d9cd88e8e73707476326003ac47659a2287"
+        }
+      },
+      "device": {
+        "device_name": "Apple M1 Pro",
+        "max_recommended_working_set_size": 11453251584,
+        "memory_size": 17179869184,
+        "architecture": "applegpu_g13s",
+        "max_buffer_length": 8589934592,
+        "resource_limit": 499000
+      },
+      "rawGeneratedMaster": {
+        "file": "ash-master.wav",
+        "bytes": 15876088,
+        "sha256": "85c1a53a3a1789b3affba9ada60ea8ad7d5d273cb48c43ef818d685998f3588f"
+      },
+      "rawBrowserStudy": {
+        "file": "rejected/ash-retry-raw.mp3",
+        "sha256": "b6cf2b7306b9f83d00f6976ec11b3f422e828c2e1fcc8ead1ecaf5827c670ffc"
+      },
+      "processingStartedAt": "2026-10-31T05:31:06.708078+00:00",
+      "derivation": {
+        "source": "Only the unchanged genuine Medium ash retry; no other recording or generated noise was added",
+        "loopSeamCrossfadeSeconds": 0.45,
+        "phaseOffsetsSeconds": [
+          0.0,
+          11.13748299319728,
+          22.27498866213152,
+          33.41249433106576
+        ],
+        "streamGainEach": 0.25,
+        "filters": "highpass=f=100,lowpass=f=2800:p=2,lowpass=f=2800:p=2,acompressor=threshold=0.008:ratio=4:attack=8:release=180:makeup=1:knee=2.828:detection=rms:link=average",
+        "description": "Four phase-offset layers of the same ash source fill gaps; 100Hz high-pass and two 2800Hz low-pass stages soften the bright edge; gentle RMS compression reduces isolated transients. Dry processing only: no reverb, delay, music, external sounds, or additional model generation."
+      },
+      "status": "generated",
+      "completedAt": "2026-10-31T05:31:07.629830+00:00",
+      "wavMaster": {
+        "file": "ash-processed-master.wav",
+        "bytes": 15876092,
+        "sha256": "5615bd645dbf6d0cd89a0caa4a8cd8f85f9795b75caf243bbb66651b0eefd2ba"
+      },
+      "browserAsset": {
+        "file": "ash.mp3",
+        "bytes": 901268,
+        "sha256": "c4d21717977d10fe17de0c9ff5aa375f237c24c4afbffef1316a02a609f05c86",
+        "probe": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "codec_name": "mp3",
+              "sample_rate": "44100",
+              "channels": 2
+            }
+          ],
+          "format": {
+            "duration": "45.035102",
+            "size": "901268"
+          }
+        }
+      },
+      "validation": {
+        "completeDecode": "passed",
+        "samplesPerChannel": 1984500,
+        "nonFiniteSamples": 0,
+        "peakAmplitude": 0.5997234582901001,
+        "peakDbfs": -4.4409792664762335,
+        "rmsDbfs": -27.5013108940251,
+        "crestDb": 23.060331627548866,
+        "nearFullScaleSampleFraction": 0.0,
+        "quietWindowFractionBelowMinus65Dbfs": 0.0,
+        "windowRmsP95AboveMedianDb": 8.513945209839303,
+        "windowRmsMaxAboveMedianDb": 11.403780638852144,
+        "spectralEnergyFractions": {
+          "0-120Hz": 0.00033478368420779086,
+          "120-500Hz": 0.029216497822394223,
+          "500-2000Hz": 0.6562473236482617,
+          "2000-6000Hz": 0.3140070230724927,
+          "6000-22050Hz": 0.00019437177263239154
+        },
+        "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+        "encodedPeakCeilingDbfs": -3,
+        "encodedPeakCheck": "passed"
+      },
+      "masterValidation": {
+        "completeDecode": "passed",
+        "samplesPerChannel": 1984500,
+        "nonFiniteSamples": 0,
+        "peakAmplitude": 0.039862629026174545,
+        "peakDbfs": -27.9886812407044,
+        "rmsDbfs": -51.03282958698298,
+        "crestDb": 23.04414834627858,
+        "nearFullScaleSampleFraction": 0.0,
+        "quietWindowFractionBelowMinus65Dbfs": 0.0811111111111111,
+        "windowRmsP95AboveMedianDb": 8.478725744817922,
+        "windowRmsMaxAboveMedianDb": 11.370598911021233,
+        "spectralEnergyFractions": {
+          "0-120Hz": 0.00033435632951574304,
+          "120-500Hz": 0.02921229284895212,
+          "500-2000Hz": 0.65618363216041,
+          "2000-6000Hz": 0.3140784800706908,
+          "6000-22050Hz": 0.0001912385903663068
+        },
+        "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content."
+      },
+      "processing": "Four phase-offset layers of the same ash source fill gaps; 100Hz high-pass and two 2800Hz low-pass stages soften the bright edge; gentle RMS compression reduces isolated transients. Dry processing only: no reverb, delay, music, external sounds, or additional model generation. Final browser copy: 250ms/500ms boundary fades and measured peak normalization near -4dBFS, stereo44.1kHz160kbps MP3; encoded peak <= -3dBFS verified. Raw generated float master is preserved unchanged.",
+      "normalization": {
+        "targetPeakDbfsBeforeEncoding": -4,
+        "appliedGainDb": 23.9886812407044,
+        "codecHeadroomCorrectionDb": 0
+      },
+      "listeningReview": "Not certified by a human listener. Technical validation does not establish prompt adherence.",
+      "sourceMasterUnchangedCheck": true
+    },
+    "haze": {
+      "id": "haze",
+      "seed": 2026103131,
+      "role": "Soft low air layer; no fire or animals",
+      "prompt": "TrackType: SFX, a continuous quiet low air wash moving slowly through sparse forest stems, close dry outdoor field recording with soft low and middle frequency wind breath, gentle irregular swells and a little restrained leaf movement, dark muffled natural detail, stable low volume and soft rounded dynamics. Length: 45 seconds.",
+      "durationSeconds": 45,
+      "steps": 8,
+      "cfgScale": 1.0,
+      "sampler": "pingpong",
+      "pack": "scripts/stablegen-v3-textures-prompts.json",
+      "model": "Stable Audio 3 Medium",
+      "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+      "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+      "license": "Stable Audio Community License",
+      "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+      "backend": "Official MLX local inference on Apple Silicon",
+      "runtimeRevision": "5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84",
+      "optimizedWeightsRevision": "30cb2644da54bfa63275d1bc7f1fa67fc718680f",
+      "generated": true,
+      "status": "generated",
+      "startedAt": "2026-10-31T05:23:51.713065+00:00",
+      "completedAt": "2026-10-31T05:24:21.484755+00:00",
+      "generationSeconds": 10.4,
+      "peakMetalAllocatedBytes": 7102088810,
+      "unclippedGeneratorPeak": 0.3004555106163025,
+      "unclippedGeneratorRms": 0.04374939136959705,
+      "unclippedGeneratorAboveFullScaleFraction": 0.0,
+      "unclippedGeneratorNearFullScaleFraction": 0.0,
+      "master": {
+        "file": "haze-master.wav",
+        "bytes": 15876088,
+        "sha256": "a7bd95f4df6f575a5a506d877e15d37c37941cdf9ab0809343d86c3bd02c6ee2"
+      },
+      "processing": "Original generated float WAV retained unchanged; MP3: 250ms fade-in, 500ms fade-out, raw master peak normalized near -4dBFS before encoding, stereo44.1kHz160kbps. Any codec overshoot is corrected by encoding again directly from the unchanged original master. Complete MP3 decode and encoded peak <= -3dBFS checks passed.",
+      "listeningReview": "Not certified by a human listener. Technical validation does not establish prompt adherence.",
+      "modelCard": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+      "adoptedAt": "2026-10-31T05:24:19.916468+00:00",
+      "verifiedWeights": {
+        "t5gemma_f16.npz": {
+          "bytes": 567443068,
+          "sha256": "8deb20489f36d9aec539f26c9c67321f99bc5fe300d470435ed6e76be4f16bbd"
+        },
+        "dit_medium_f16.npz": {
+          "bytes": 2907300946,
+          "sha256": "f9e5647ea3225818657d47d47ae4b34afa29c0568206ca89566c1a758944a38e"
+        },
+        "same_l_decoder_f32.npz": {
+          "bytes": 1704311976,
+          "sha256": "84924be2122d3a20fce443f40b782d9cd88e8e73707476326003ac47659a2287"
+        }
+      },
+      "device": {
+        "device_name": "Apple M1 Pro",
+        "max_recommended_working_set_size": 11453251584,
+        "memory_size": 17179869184,
+        "architecture": "applegpu_g13s",
+        "max_buffer_length": 8589934592,
+        "resource_limit": 499000
+      },
+      "wavMaster": {
+        "file": "haze-master.wav",
+        "bytes": 15876088,
+        "sha256": "a7bd95f4df6f575a5a506d877e15d37c37941cdf9ab0809343d86c3bd02c6ee2"
+      },
+      "browserAsset": {
+        "file": "haze.mp3",
+        "bytes": 901268,
+        "sha256": "f0f23d9a96ca74bdc99595db8fc5742deba98104a6de2062b1bd6344c3e212cd",
+        "probe": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "codec_name": "mp3",
+              "sample_rate": "44100",
+              "channels": 2
+            }
+          ],
+          "format": {
+            "duration": "45.035102",
+            "size": "901268"
+          }
+        }
+      },
+      "validation": {
+        "completeDecode": "passed",
+        "samplesPerChannel": 1984500,
+        "nonFiniteSamples": 0,
+        "peakAmplitude": 0.5965687036514282,
+        "peakDbfs": -4.486790674457332,
+        "rmsDbfs": -21.200780018617266,
+        "crestDb": 16.713989344159934,
+        "nearFullScaleSampleFraction": 0.0,
+        "quietWindowFractionBelowMinus65Dbfs": 0.0022222222222222222,
+        "windowRmsP95AboveMedianDb": 6.628234907338559,
+        "windowRmsMaxAboveMedianDb": 11.848250170811287,
+        "spectralEnergyFractions": {
+          "0-120Hz": 0.9263124540797453,
+          "120-500Hz": 0.018818764554561312,
+          "500-2000Hz": 0.037724949100642814,
+          "2000-6000Hz": 0.01152502917115456,
+          "6000-22050Hz": 0.0056188030938938965
+        },
+        "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+        "encodedPeakCeilingDbfs": -3,
+        "encodedPeakCheck": "passed"
+      },
+      "masterValidation": {
+        "completeDecode": "passed",
+        "samplesPerChannel": 1984500,
+        "nonFiniteSamples": 0,
+        "peakAmplitude": 0.3004555106163025,
+        "peakDbfs": -10.444396524756907,
+        "rmsDbfs": -27.180559687879814,
+        "crestDb": 16.736163163122907,
+        "nearFullScaleSampleFraction": 0.0,
+        "quietWindowFractionBelowMinus65Dbfs": 0.0011111111111111111,
+        "windowRmsP95AboveMedianDb": 6.613156568803323,
+        "windowRmsMaxAboveMedianDb": 11.815245077217355,
+        "spectralEnergyFractions": {
+          "0-120Hz": 0.9269539722390491,
+          "120-500Hz": 0.01879266228533614,
+          "500-2000Hz": 0.03768098578096501,
+          "2000-6000Hz": 0.01122669217152693,
+          "6000-22050Hz": 0.005345676151258717
+        },
+        "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content."
+      },
+      "normalization": {
+        "targetPeakDbfsBeforeEncoding": -4,
+        "appliedGainDb": 6.4443965247569075,
+        "codecHeadroomCorrectionDb": 0
+      }
+    },
+    "moisture": {
+      "id": "moisture",
+      "seed": 2026103134,
+      "role": "Damped close soil seep and small water movement",
+      "prompt": "TrackType: SFX, a very close quiet recording of a little water gently soaking through damp forest soil and moss, soft tiny trickles and subtle wet granular movement, restrained intermittent little droplets absorbed into earth, mellow low and middle frequency detail, a dry intimate outdoor perspective and continuous subtle damp texture with stable low volume. Length: 45 seconds.",
+      "durationSeconds": 45,
+      "steps": 8,
+      "cfgScale": 1.0,
+      "sampler": "pingpong",
+      "pack": "scripts/stablegen-v3-textures-prompts.json",
+      "model": "Stable Audio 3 Medium",
+      "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+      "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+      "license": "Stable Audio Community License",
+      "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+      "backend": "Official MLX local inference on Apple Silicon",
+      "runtimeRevision": "5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84",
+      "optimizedWeightsRevision": "30cb2644da54bfa63275d1bc7f1fa67fc718680f",
+      "generated": true,
+      "status": "generated",
+      "startedAt": "2026-10-31T05:24:02.161696+00:00",
+      "completedAt": "2026-10-31T05:24:59.468539+00:00",
+      "generationSeconds": 9.941,
+      "peakMetalAllocatedBytes": 7102088810,
+      "unclippedGeneratorPeak": 0.3265701234340668,
+      "unclippedGeneratorRms": 0.010642807844009464,
+      "unclippedGeneratorAboveFullScaleFraction": 0.0,
+      "unclippedGeneratorNearFullScaleFraction": 0.0,
+      "master": {
+        "file": "moisture-master.wav",
+        "bytes": 15876088,
+        "sha256": "646fa56ccbb3b697a0fef4468f2c60bb0550d9c05c6b50bd714016a586ee0333"
+      },
+      "processing": "Original generated float WAV retained unchanged; MP3: 250ms fade-in, 500ms fade-out, raw master peak normalized near -4dBFS before encoding, stereo44.1kHz160kbps. Any codec overshoot is corrected by encoding again directly from the unchanged original master. Complete MP3 decode and encoded peak <= -3dBFS checks passed.",
+      "listeningReview": "Not certified by a human listener. Technical validation does not establish prompt adherence.",
+      "modelCard": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+      "adoptedAt": "2026-10-31T05:24:58.378726+00:00",
+      "verifiedWeights": {
+        "t5gemma_f16.npz": {
+          "bytes": 567443068,
+          "sha256": "8deb20489f36d9aec539f26c9c67321f99bc5fe300d470435ed6e76be4f16bbd"
+        },
+        "dit_medium_f16.npz": {
+          "bytes": 2907300946,
+          "sha256": "f9e5647ea3225818657d47d47ae4b34afa29c0568206ca89566c1a758944a38e"
+        },
+        "same_l_decoder_f32.npz": {
+          "bytes": 1704311976,
+          "sha256": "84924be2122d3a20fce443f40b782d9cd88e8e73707476326003ac47659a2287"
+        }
+      },
+      "device": {
+        "device_name": "Apple M1 Pro",
+        "max_recommended_working_set_size": 11453251584,
+        "memory_size": 17179869184,
+        "architecture": "applegpu_g13s",
+        "max_buffer_length": 8589934592,
+        "resource_limit": 499000
+      },
+      "wavMaster": {
+        "file": "moisture-master.wav",
+        "bytes": 15876088,
+        "sha256": "646fa56ccbb3b697a0fef4468f2c60bb0550d9c05c6b50bd714016a586ee0333"
+      },
+      "browserAsset": {
+        "file": "moisture.mp3",
+        "bytes": 901268,
+        "sha256": "5754ae47a4de01cc193a65056660a078d9273a032a51ed0ddf6e4861598feeea",
+        "probe": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "codec_name": "mp3",
+              "sample_rate": "44100",
+              "channels": 2
+            }
+          ],
+          "format": {
+            "duration": "45.035102",
+            "size": "901268"
+          }
+        }
+      },
+      "validation": {
+        "completeDecode": "passed",
+        "samplesPerChannel": 1984500,
+        "nonFiniteSamples": 0,
+        "peakAmplitude": 0.5987220406532288,
+        "peakDbfs": -4.455495079014349,
+        "rmsDbfs": -34.20741079284541,
+        "crestDb": 29.75191571383106,
+        "nearFullScaleSampleFraction": 0.0,
+        "quietWindowFractionBelowMinus65Dbfs": 0.0077777777777777776,
+        "windowRmsP95AboveMedianDb": 12.009307658111869,
+        "windowRmsMaxAboveMedianDb": 21.258388152702953,
+        "spectralEnergyFractions": {
+          "0-120Hz": 0.0002432269799632845,
+          "120-500Hz": 0.0017999939584520952,
+          "500-2000Hz": 0.6565076490043434,
+          "2000-6000Hz": 0.27680192139454773,
+          "6000-22050Hz": 0.06464720866269051
+        },
+        "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+        "encodedPeakCeilingDbfs": -3,
+        "encodedPeakCheck": "passed"
+      },
+      "masterValidation": {
+        "completeDecode": "passed",
+        "samplesPerChannel": 1984500,
+        "nonFiniteSamples": 0,
+        "peakAmplitude": 0.3265701234340668,
+        "peakDbfs": -9.72047099218482,
+        "rmsDbfs": -39.45887557937826,
+        "crestDb": 29.738404587193436,
+        "nearFullScaleSampleFraction": 0.0,
+        "quietWindowFractionBelowMinus65Dbfs": 0.008888888888888889,
+        "windowRmsP95AboveMedianDb": 11.999385424877559,
+        "windowRmsMaxAboveMedianDb": 21.158056131681484,
+        "spectralEnergyFractions": {
+          "0-120Hz": 0.00024286700869605895,
+          "120-500Hz": 0.0017874151419847236,
+          "500-2000Hz": 0.654914527627789,
+          "2000-6000Hz": 0.2760773528695239,
+          "6000-22050Hz": 0.06697638374232939
+        },
+        "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content."
+      },
+      "normalization": {
+        "targetPeakDbfsBeforeEncoding": -4,
+        "appliedGainDb": 5.72047099218482,
+        "codecHeadroomCorrectionDb": 0
+      }
+    },
+    "phone-crackle": {
+      "id": "phone-crackle",
+      "seed": 2026103143,
+      "role": "Continuous warm muffled ground-ember bed; retry for steadier less bright phone texture",
+      "prompt": "TrackType: SFX, a continuous warm low and middle frequency granular bed of softly smouldering charcoal in a small patch of glowing ground embers, close muffled outdoor recording with dense overlapping mellow textures blended into a steady soft velvety rustle and gentle low combustion air, even volume and smoothly rounded organic variations throughout. Length: 45 seconds.",
+      "durationSeconds": 45,
+      "steps": 8,
+      "cfgScale": 1.0,
+      "sampler": "pingpong",
+      "pack": "scripts/stablegen-v3-textures-retry-prompts.json",
+      "model": "Stable Audio 3 Medium",
+      "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+      "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+      "license": "Stable Audio Community License",
+      "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+      "backend": "Official MLX local inference on Apple Silicon",
+      "runtimeRevision": "5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84",
+      "optimizedWeightsRevision": "30cb2644da54bfa63275d1bc7f1fa67fc718680f",
+      "generated": true,
+      "status": "generated",
+      "startedAt": "2026-10-31T05:27:34.742740+00:00",
+      "completedAt": "2026-10-31T05:28:27.954152+00:00",
+      "generationSeconds": 10.329,
+      "peakMetalAllocatedBytes": 7099210810,
+      "unclippedGeneratorPeak": 0.36900290846824646,
+      "unclippedGeneratorRms": 0.01448560676828119,
+      "unclippedGeneratorAboveFullScaleFraction": 0.0,
+      "unclippedGeneratorNearFullScaleFraction": 0.0,
+      "master": {
+        "file": "phone-crackle-master.wav",
+        "bytes": 15876088,
+        "sha256": "156faee1ba11b1f348d8c07046f0490b67081e0aa38fab60651321fce3d6404b"
+      },
+      "processing": "Original generated float WAV retained unchanged; MP3: 250ms fade-in, 500ms fade-out, raw master peak normalized near -4dBFS before encoding, stereo44.1kHz160kbps. Any codec overshoot is corrected by encoding again directly from the unchanged original master. Complete MP3 decode and encoded peak <= -3dBFS checks passed.",
+      "listeningReview": "Not certified by a human listener. Technical validation does not establish prompt adherence.",
+      "modelCard": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+      "adoptedAt": "2026-10-31T05:28:26.903897+00:00",
+      "batchRecord": "medium-retry-batch.json",
+      "verifiedWeights": {
+        "t5gemma_f16.npz": {
+          "bytes": 567443068,
+          "sha256": "8deb20489f36d9aec539f26c9c67321f99bc5fe300d470435ed6e76be4f16bbd"
+        },
+        "dit_medium_f16.npz": {
+          "bytes": 2907300946,
+          "sha256": "f9e5647ea3225818657d47d47ae4b34afa29c0568206ca89566c1a758944a38e"
+        },
+        "same_l_decoder_f32.npz": {
+          "bytes": 1704311976,
+          "sha256": "84924be2122d3a20fce443f40b782d9cd88e8e73707476326003ac47659a2287"
+        }
+      },
+      "device": {
+        "device_name": "Apple M1 Pro",
+        "max_recommended_working_set_size": 11453251584,
+        "memory_size": 17179869184,
+        "architecture": "applegpu_g13s",
+        "max_buffer_length": 8589934592,
+        "resource_limit": 499000
+      },
+      "wavMaster": {
+        "file": "phone-crackle-master.wav",
+        "bytes": 15876088,
+        "sha256": "156faee1ba11b1f348d8c07046f0490b67081e0aa38fab60651321fce3d6404b"
+      },
+      "browserAsset": {
+        "file": "phone-crackle.mp3",
+        "bytes": 901268,
+        "sha256": "c8640014a04f67f8c8641c0382311e66343f03ac2d68d882e1dd6929727f297c",
+        "probe": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "codec_name": "mp3",
+              "sample_rate": "44100",
+              "channels": 2
+            }
+          ],
+          "format": {
+            "duration": "45.035102",
+            "size": "901268"
+          }
+        }
+      },
+      "validation": {
+        "completeDecode": "passed",
+        "samplesPerChannel": 1984500,
+        "nonFiniteSamples": 0,
+        "peakAmplitude": 0.5595716834068298,
+        "peakDbfs": -5.042885413672556,
+        "rmsDbfs": -32.55688398216233,
+        "crestDb": 27.513998568489775,
+        "nearFullScaleSampleFraction": 0.0,
+        "quietWindowFractionBelowMinus65Dbfs": 0.01888888888888889,
+        "windowRmsP95AboveMedianDb": 3.820693997617692,
+        "windowRmsMaxAboveMedianDb": 6.419717472259602,
+        "spectralEnergyFractions": {
+          "0-120Hz": 0.05625156752276984,
+          "120-500Hz": 0.09096673319297234,
+          "500-2000Hz": 0.7127629752559411,
+          "2000-6000Hz": 0.07793869786476652,
+          "6000-22050Hz": 0.06208002616354706
+        },
+        "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+        "encodedPeakCeilingDbfs": -3,
+        "encodedPeakCheck": "passed"
+      },
+      "masterValidation": {
+        "completeDecode": "passed",
+        "samplesPerChannel": 1984500,
+        "nonFiniteSamples": 0,
+        "peakAmplitude": 0.36900290846824646,
+        "peakDbfs": -8.659404214665283,
+        "rmsDbfs": -36.78126616992624,
+        "crestDb": 28.121861955260957,
+        "nearFullScaleSampleFraction": 0.0,
+        "quietWindowFractionBelowMinus65Dbfs": 0.01888888888888889,
+        "windowRmsP95AboveMedianDb": 3.7985108834424537,
+        "windowRmsMaxAboveMedianDb": 6.419510156438289,
+        "spectralEnergyFractions": {
+          "0-120Hz": 0.056218293757204926,
+          "120-500Hz": 0.09124108795155085,
+          "500-2000Hz": 0.7146827654445886,
+          "2000-6000Hz": 0.07666057732197298,
+          "6000-22050Hz": 0.06119724562112393
+        },
+        "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content."
+      },
+      "normalization": {
+        "targetPeakDbfsBeforeEncoding": -4,
+        "appliedGainDb": 4.659404214665283,
+        "codecHeadroomCorrectionDb": 0
+      }
+    },
+    "crickets": {
+      "id": "crickets",
+      "seed": 2026103135,
+      "role": "Quiet aftermath only, enabled after confirmed extinction",
+      "prompt": "TrackType: SFX, a quiet natural chorus of small night crickets in still forest air after rain, gentle delicate individual chirps at slightly different irregular times, several soft close insects over a quiet open-air background, low density with restful gaps and stable low volume, realistic restrained outdoor field recording with dry clear detail. Length: 45 seconds.",
+      "durationSeconds": 45,
+      "steps": 8,
+      "cfgScale": 1.0,
+      "sampler": "pingpong",
+      "pack": "scripts/stablegen-v3-textures-prompts.json",
+      "model": "Stable Audio 3 Medium",
+      "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+      "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+      "license": "Stable Audio Community License",
+      "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+      "backend": "Official MLX local inference on Apple Silicon",
+      "runtimeRevision": "5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84",
+      "optimizedWeightsRevision": "30cb2644da54bfa63275d1bc7f1fa67fc718680f",
+      "generated": true,
+      "status": "generated",
+      "startedAt": "2026-10-31T05:24:22.072794+00:00",
+      "completedAt": "2026-10-31T05:25:01.668596+00:00",
+      "generationSeconds": 9.767,
+      "peakMetalAllocatedBytes": 7102088810,
+      "unclippedGeneratorPeak": 0.06103801727294922,
+      "unclippedGeneratorRms": 0.003537274649365689,
+      "unclippedGeneratorAboveFullScaleFraction": 0.0,
+      "unclippedGeneratorNearFullScaleFraction": 0.0,
+      "master": {
+        "file": "crickets-master.wav",
+        "bytes": 15876088,
+        "sha256": "7637061185160524f60f7cf3a041d29c7b401d774d017035044eb6b3e2dfc7c8"
+      },
+      "processing": "Original generated float WAV retained unchanged; MP3: 250ms fade-in, 500ms fade-out, raw master peak normalized near -4dBFS before encoding, stereo44.1kHz160kbps. Any codec overshoot is corrected by encoding again directly from the unchanged original master. Complete MP3 decode and encoded peak <= -3dBFS checks passed.",
+      "listeningReview": "Not certified by a human listener. Technical validation does not establish prompt adherence.",
+      "modelCard": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+      "adoptedAt": "2026-10-31T05:25:00.616091+00:00",
+      "verifiedWeights": {
+        "t5gemma_f16.npz": {
+          "bytes": 567443068,
+          "sha256": "8deb20489f36d9aec539f26c9c67321f99bc5fe300d470435ed6e76be4f16bbd"
+        },
+        "dit_medium_f16.npz": {
+          "bytes": 2907300946,
+          "sha256": "f9e5647ea3225818657d47d47ae4b34afa29c0568206ca89566c1a758944a38e"
+        },
+        "same_l_decoder_f32.npz": {
+          "bytes": 1704311976,
+          "sha256": "84924be2122d3a20fce443f40b782d9cd88e8e73707476326003ac47659a2287"
+        }
+      },
+      "device": {
+        "device_name": "Apple M1 Pro",
+        "max_recommended_working_set_size": 11453251584,
+        "memory_size": 17179869184,
+        "architecture": "applegpu_g13s",
+        "max_buffer_length": 8589934592,
+        "resource_limit": 499000
+      },
+      "wavMaster": {
+        "file": "crickets-master.wav",
+        "bytes": 15876088,
+        "sha256": "7637061185160524f60f7cf3a041d29c7b401d774d017035044eb6b3e2dfc7c8"
+      },
+      "browserAsset": {
+        "file": "crickets.mp3",
+        "bytes": 901268,
+        "sha256": "1bf64cb8fae8fd937fe8485b91cce94b765f4ceece4e54021549162fb01c8993",
+        "probe": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "codec_name": "mp3",
+              "sample_rate": "44100",
+              "channels": 2
+            }
+          ],
+          "format": {
+            "duration": "45.035102",
+            "size": "901268"
+          }
+        }
+      },
+      "validation": {
+        "completeDecode": "passed",
+        "samplesPerChannel": 1984500,
+        "nonFiniteSamples": 0,
+        "peakAmplitude": 0.588529646396637,
+        "peakDbfs": -4.604633105274988,
+        "rmsDbfs": -29.104980183999768,
+        "crestDb": 24.50034707872478,
+        "nearFullScaleSampleFraction": 0.0,
+        "quietWindowFractionBelowMinus65Dbfs": 0.013333333333333334,
+        "windowRmsP95AboveMedianDb": 3.3281230848289987,
+        "windowRmsMaxAboveMedianDb": 4.537435930896564,
+        "spectralEnergyFractions": {
+          "0-120Hz": 0.03444777535909813,
+          "120-500Hz": 0.02623885371757026,
+          "500-2000Hz": 0.042078965760742895,
+          "2000-6000Hz": 0.014193466386568166,
+          "6000-22050Hz": 0.8830409387759839
+        },
+        "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+        "encodedPeakCeilingDbfs": -3,
+        "encodedPeakCheck": "passed"
+      },
+      "masterValidation": {
+        "completeDecode": "passed",
+        "samplesPerChannel": 1984500,
+        "nonFiniteSamples": 0,
+        "peakAmplitude": 0.06103801727294922,
+        "peakDbfs": -24.287991644380256,
+        "rmsDbfs": -49.02662436732839,
+        "crestDb": 24.738632722948132,
+        "nearFullScaleSampleFraction": 0.0,
+        "quietWindowFractionBelowMinus65Dbfs": 0.015555555555555555,
+        "windowRmsP95AboveMedianDb": 3.39874054597999,
+        "windowRmsMaxAboveMedianDb": 4.632936387501282,
+        "spectralEnergyFractions": {
+          "0-120Hz": 0.03495903271961972,
+          "120-500Hz": 0.02667631342325355,
+          "500-2000Hz": 0.04291374060838236,
+          "2000-6000Hz": 0.01354551365306152,
+          "6000-22050Hz": 0.8819053050173684
+        },
+        "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content."
+      },
+      "normalization": {
+        "targetPeakDbfsBeforeEncoding": -4,
+        "appliedGainDb": 20.287991644380256,
+        "codecHeadroomCorrectionDb": 0
+      }
+    }
+  }
+}

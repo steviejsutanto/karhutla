@@ -1,0 +1,31 @@
+{
+  "purpose": "Dry continuous fire alternatives without impact-driven events",
+  "preferredModel": "medium",
+  "durationSeconds": 45,
+  "steps": 8,
+  "cfgScale": 1.0,
+  "sampler": "pingpong",
+  "assets": [
+    {
+      "id": "fire-dry-brush",
+      "title": "Dry brush",
+      "role": "Dense fine dry crackle and close flame bed",
+      "seed": 2026103121,
+      "prompt": "TrackType: SFX, Close dry outdoor recording of densely burning fine brush and leaf litter, a continuous thick bed of tiny soft-edged irregular crackles fused with a steady low flame rush, flat intimate open-air acoustics, warm rounded grain, restrained transients and steady sustained full-strength activity. Length: 45 seconds."
+    },
+    {
+      "id": "fire-wind-flames",
+      "title": "Wind through flames",
+      "role": "Continuous wind-driven flame rush with muted fine crackle",
+      "seed": 2026103122,
+      "prompt": "TrackType: SFX, Close outdoor wildfire flames driven by steady wind, dense low and middle frequency rushing air with rolling turbulent flame noise and fine muted crackle woven continuously underneath, dry flat open-air sound, broad irregular slow surges, rounded grain and sustained vigorous burning. Length: 45 seconds."
+    },
+    {
+      "id": "fire-ground-embers",
+      "title": "Ground embers",
+      "role": "Dense close ground-level ember grain with rounded detail",
+      "seed": 2026103123,
+      "prompt": "TrackType: SFX, Close ground-level burning forest litter and glowing embers, countless minute dry granular crackles overlapping into a dense continuous texture with warm low fire hiss and softly breathing flame rush, dark rounded soft-edged detail, intimate flat outdoor acoustics and naturally irregular sustained activity. Length: 45 seconds."
+    }
+  ]
+}

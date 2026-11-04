@@ -1,0 +1,749 @@
+{
+  "completedAt": "2026-11-03T10:56:54.027675+00:00",
+  "catalogRevision": 10,
+  "activeAssetCount": 31,
+  "model": "Stable Audio 3 Medium",
+  "backend": "Official MLX local inference on Apple Silicon",
+  "newIds": [
+    "phone-branches-dry-v20",
+    "ash-flutter-v20",
+    "ash-settle-v20",
+    "moisture-moss-v20",
+    "moisture-earth-v20",
+    "haze-grass-v20",
+    "haze-leaves-v20"
+  ],
+  "phoneDefault": "phone-branches-dry-v20",
+  "selectedPhoneGeneration": "phone-branches-dry-v20",
+  "retainedUnselectedPhoneGenerationIds": [
+    "phone-branches-dry-v20-study2",
+    "phone-wood-body-v20-study3",
+    "phone-wood-body-v20-study4"
+  ],
+  "residueVariations": {
+    "ash": [
+      "ash-fine",
+      "ash-scatter",
+      "ash-flutter-v20",
+      "ash-settle-v20"
+    ],
+    "moisture": [
+      "moisture-seep",
+      "moisture-trickle",
+      "moisture-moss-v20",
+      "moisture-earth-v20"
+    ],
+    "haze": [
+      "haze-light",
+      "haze-drift",
+      "haze-grass-v20",
+      "haze-leaves-v20"
+    ]
+  },
+  "globalMorphsUnchanged": true,
+  "independence": "Six new residue variations have distinct prompts, seeds and genuinely independently inferred float masters. No offset, time-stretched, pitch-shifted or repeated copies were used as extra variations.",
+  "decodedWaveformCorrelation": {
+    "ash": [
+      {
+        "left": "ash-fine",
+        "right": "ash-scatter",
+        "zeroLagCorrelation": 0.018547948346862894
+      },
+      {
+        "left": "ash-fine",
+        "right": "ash-flutter-v20",
+        "zeroLagCorrelation": 0.012958070336017641
+      },
+      {
+        "left": "ash-fine",
+        "right": "ash-settle-v20",
+        "zeroLagCorrelation": 0.010352136024624875
+      },
+      {
+        "left": "ash-scatter",
+        "right": "ash-flutter-v20",
+        "zeroLagCorrelation": 0.008698134202085088
+      },
+      {
+        "left": "ash-scatter",
+        "right": "ash-settle-v20",
+        "zeroLagCorrelation": 0.005540878335841528
+      },
+      {
+        "left": "ash-flutter-v20",
+        "right": "ash-settle-v20",
+        "zeroLagCorrelation": 0.007344185167116849
+      }
+    ],
+    "moisture": [
+      {
+        "left": "moisture-seep",
+        "right": "moisture-trickle",
+        "zeroLagCorrelation": 0.013978126068976311
+      },
+      {
+        "left": "moisture-seep",
+        "right": "moisture-moss-v20",
+        "zeroLagCorrelation": 0.0013177109497216283
+      },
+      {
+        "left": "moisture-seep",
+        "right": "moisture-earth-v20",
+        "zeroLagCorrelation": 0.006781123569743901
+      },
+      {
+        "left": "moisture-trickle",
+        "right": "moisture-moss-v20",
+        "zeroLagCorrelation": 0.004490049689446601
+      },
+      {
+        "left": "moisture-trickle",
+        "right": "moisture-earth-v20",
+        "zeroLagCorrelation": 0.006114603072267748
+      },
+      {
+        "left": "moisture-moss-v20",
+        "right": "moisture-earth-v20",
+        "zeroLagCorrelation": 0.0008266621642981127
+      }
+    ],
+    "haze": [
+      {
+        "left": "haze-light",
+        "right": "haze-drift",
+        "zeroLagCorrelation": 0.013345626503827077
+      },
+      {
+        "left": "haze-light",
+        "right": "haze-grass-v20",
+        "zeroLagCorrelation": 0.005510113272371826
+      },
+      {
+        "left": "haze-light",
+        "right": "haze-leaves-v20",
+        "zeroLagCorrelation": -9.615612991925719e-05
+      },
+      {
+        "left": "haze-drift",
+        "right": "haze-grass-v20",
+        "zeroLagCorrelation": 0.01657941765131036
+      },
+      {
+        "left": "haze-drift",
+        "right": "haze-leaves-v20",
+        "zeroLagCorrelation": 0.007868147605413031
+      },
+      {
+        "left": "haze-grass-v20",
+        "right": "haze-leaves-v20",
+        "zeroLagCorrelation": 0.006527031939974447
+      }
+    ]
+  },
+  "correlationScope": "First 18 s, mono11025Hz, mean removed, equal-position normalized dot product. A low value rejects directly duplicated concurrent waveforms; it does not certify perceived diversity or prompt adherence.",
+  "assets": {
+    "phone-branches-dry-v20": {
+      "generationId": "phone-branches-dry-v20",
+      "rawMasterHashUnchanged": true,
+      "browser": {
+        "file": "phone-branches-dry-v20.mp3",
+        "bytes": 601382,
+        "sha256": "12cdd8dd828336d8f674a629764aa03a6034528deb65790992ecb153065fe17e",
+        "durationSeconds": 30,
+        "channels": 2,
+        "sampleRate": 44100,
+        "bitrateKbps": 160,
+        "normalization": {
+          "targetRmsDbfs": -29.5,
+          "peakCeilingDbfs": -7,
+          "appliedGainDb": 23.35763685592332,
+          "codecHeadroomCorrectionDb": 0.0
+        },
+        "validation": {
+          "completeDecode": "passed",
+          "samplesPerChannel": 1323000,
+          "nonFiniteSamples": 0,
+          "peakAmplitude": 0.3975198566913605,
+          "peakDbfs": -8.0128234565728,
+          "rmsDbfs": -31.115433622581566,
+          "crestDb": 23.102610166008766,
+          "nearFullScaleSampleFraction": 0.0,
+          "quietWindowFractionBelowMinus65Dbfs": 0.011666666666666667,
+          "windowRmsP95AboveMedianDb": 4.745650170857822,
+          "windowRmsMaxAboveMedianDb": 7.6212084157003055,
+          "spectralEnergyFractions": {
+            "0-120Hz": 0.000126848416183265,
+            "120-500Hz": 0.0038049714460658534,
+            "500-2000Hz": 0.23892660574667163,
+            "2000-6000Hz": 0.5577382755273487,
+            "6000-22050Hz": 0.19940329886372196
+          },
+          "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+          "encodedPeakCeilingDbfs": -7,
+          "encodedPeakCheck": "passed"
+        }
+      },
+      "mobile": {
+        "file": "phone-branches-dry-v20-mobile.mp3",
+        "bytes": 216964,
+        "sha256": "4da3dfea8d5c8ae9c485548763651cfbd144144f5c742158cb71e52db5658941",
+        "durationSeconds": 18,
+        "channels": 1,
+        "sampleRate": 44100,
+        "bitrateKbps": 96,
+        "normalization": {
+          "targetRmsDbfs": -29.5,
+          "peakCeilingDbfs": -7,
+          "appliedGainDb": 23.762443095477156,
+          "codecHeadroomCorrectionDb": 0.0
+        },
+        "validation": {
+          "completeDecode": "passed",
+          "samplesPerChannel": 793800,
+          "nonFiniteSamples": 0,
+          "peakAmplitude": 0.41344889998435974,
+          "peakDbfs": -7.671563184196964,
+          "rmsDbfs": -30.85124225324643,
+          "crestDb": 23.179679069049463,
+          "nearFullScaleSampleFraction": 0.0,
+          "quietWindowFractionBelowMinus65Dbfs": 0.0,
+          "windowRmsP95AboveMedianDb": 5.2775473710490175,
+          "windowRmsMaxAboveMedianDb": 8.32974305041693,
+          "spectralEnergyFractions": {
+            "0-120Hz": 0.00011901396821728797,
+            "120-500Hz": 0.0037489941322651514,
+            "500-2000Hz": 0.2463750173578967,
+            "2000-6000Hz": 0.5524286766312777,
+            "6000-22050Hz": 0.19732829791032377
+          },
+          "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+          "encodedPeakCeilingDbfs": -7,
+          "encodedPeakCheck": "passed"
+        },
+        "assetKind": "mobile-derivative-of-genuine-model-output",
+        "sourceGeneration": "phone-branches-dry-v20",
+        "sourceExcerptStartSeconds": 6,
+        "sourceExcerptEndSeconds": 24,
+        "sourceMasterSha256": "228c97e19585e3e145aba91a4c7e190a3789a30ff03cc6a7fa62c7967a49b75d",
+        "processing": "Direct seconds 6\u201324 of the processed float derivative, mono downmix and 5 ms boundary guards; fixed normalization and a single 44.1 kHz/96 kbps MP3 encoding. No MP3-to-MP3 transcode."
+      }
+    },
+    "ash-flutter-v20": {
+      "generationId": "ash-flutter-v20",
+      "rawMasterHashUnchanged": true,
+      "browser": {
+        "file": "ash-flutter-v20.mp3",
+        "bytes": 1202720,
+        "sha256": "b80f36d11df3492f290b49f49d15b400782754010f7de6c286cf552340454618",
+        "durationSeconds": 30,
+        "channels": 2,
+        "sampleRate": 44100,
+        "bitrateKbps": 320,
+        "normalization": {
+          "targetRmsDbfs": -35.5,
+          "peakCeilingDbfs": -4,
+          "appliedGainDb": 7.678441925724059,
+          "codecHeadroomCorrectionDb": 0.0
+        },
+        "validation": {
+          "completeDecode": "passed",
+          "samplesPerChannel": 1323000,
+          "nonFiniteSamples": 0,
+          "peakAmplitude": 0.5304034948348999,
+          "peakDbfs": -5.507872460447572,
+          "rmsDbfs": -35.47842480998175,
+          "crestDb": 29.97055234953418,
+          "nearFullScaleSampleFraction": 0.0,
+          "quietWindowFractionBelowMinus65Dbfs": 0.023333333333333334,
+          "windowRmsP95AboveMedianDb": 9.196416201542092,
+          "windowRmsMaxAboveMedianDb": 13.453802910017416,
+          "spectralEnergyFractions": {
+            "0-120Hz": 0.00038068362633861616,
+            "120-500Hz": 0.0007147880494420102,
+            "500-2000Hz": 0.00324417096129557,
+            "2000-6000Hz": 0.1274865770707396,
+            "6000-22050Hz": 0.868173780292177
+          },
+          "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+          "encodedPeakCeilingDbfs": -4,
+          "encodedPeakCheck": "passed"
+        }
+      },
+      "mobile": {
+        "file": "ash-flutter-v20-mobile.mp3",
+        "bytes": 216964,
+        "sha256": "7c4f17aefceddeca46c975ec8acef636bc50860398f871ac20dd0398c3aaebc7",
+        "durationSeconds": 18,
+        "channels": 1,
+        "sampleRate": 44100,
+        "bitrateKbps": 96,
+        "normalization": {
+          "targetRmsDbfs": -35.5,
+          "peakCeilingDbfs": -4,
+          "appliedGainDb": 12.019539642537012,
+          "codecHeadroomCorrectionDb": 0.0
+        },
+        "validation": {
+          "completeDecode": "passed",
+          "samplesPerChannel": 793800,
+          "nonFiniteSamples": 0,
+          "peakAmplitude": 0.3886668086051941,
+          "peakDbfs": -8.208450913903773,
+          "rmsDbfs": -35.79703817804103,
+          "crestDb": 27.588587264137253,
+          "nearFullScaleSampleFraction": 0.0,
+          "quietWindowFractionBelowMinus65Dbfs": 0.0,
+          "windowRmsP95AboveMedianDb": 7.731635934732061,
+          "windowRmsMaxAboveMedianDb": 10.062972907185134,
+          "spectralEnergyFractions": {
+            "0-120Hz": 0.0008411594770925075,
+            "120-500Hz": 0.001319245455410748,
+            "500-2000Hz": 0.004819695475426313,
+            "2000-6000Hz": 0.19906263905453483,
+            "6000-22050Hz": 0.7939572605375205
+          },
+          "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+          "encodedPeakCeilingDbfs": -4,
+          "encodedPeakCheck": "passed"
+        },
+        "assetKind": "mobile-derivative-of-genuine-model-output",
+        "sourceGeneration": "ash-flutter-v20",
+        "sourceExcerptStartSeconds": 6,
+        "sourceExcerptEndSeconds": 24,
+        "sourceMasterSha256": "a06cec5af488638f47cc947641f2c3c322b950d0cff736b9c3356ba4b3776401",
+        "processing": "Direct seconds 6\u201324 of the processed float derivative, mono downmix and 5 ms boundary guards; fixed normalization and a single 44.1 kHz/96 kbps MP3 encoding. No MP3-to-MP3 transcode."
+      }
+    },
+    "ash-settle-v20": {
+      "generationId": "ash-settle-v20",
+      "rawMasterHashUnchanged": true,
+      "browser": {
+        "file": "ash-settle-v20.mp3",
+        "bytes": 1202720,
+        "sha256": "2b6e40d3c2a0c1f9beb1ea9fee8aa4c50b14d21eea9bd74ec53747ebde795e3b",
+        "durationSeconds": 30,
+        "channels": 2,
+        "sampleRate": 44100,
+        "bitrateKbps": 320,
+        "normalization": {
+          "targetRmsDbfs": -35.5,
+          "peakCeilingDbfs": -4,
+          "appliedGainDb": 6.986161999259949,
+          "codecHeadroomCorrectionDb": 0.0
+        },
+        "validation": {
+          "completeDecode": "passed",
+          "samplesPerChannel": 1323000,
+          "nonFiniteSamples": 0,
+          "peakAmplitude": 0.3190437853336334,
+          "peakDbfs": -9.922994211967769,
+          "rmsDbfs": -35.49839161345992,
+          "crestDb": 25.575397401492154,
+          "nearFullScaleSampleFraction": 0.0,
+          "quietWindowFractionBelowMinus65Dbfs": 0.01,
+          "windowRmsP95AboveMedianDb": 7.055487958062805,
+          "windowRmsMaxAboveMedianDb": 10.886129954158825,
+          "spectralEnergyFractions": {
+            "0-120Hz": 0.00032781813379828616,
+            "120-500Hz": 0.0014844071819029266,
+            "500-2000Hz": 0.025422482380747034,
+            "2000-6000Hz": 0.3639390730525479,
+            "6000-22050Hz": 0.608826219250958
+          },
+          "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+          "encodedPeakCeilingDbfs": -4,
+          "encodedPeakCheck": "passed"
+        }
+      },
+      "mobile": {
+        "file": "ash-settle-v20-mobile.mp3",
+        "bytes": 216964,
+        "sha256": "c449f78a864cf6d0bf29a086829f39f28018b343436cddc93b0b8a49f815bffa",
+        "durationSeconds": 18,
+        "channels": 1,
+        "sampleRate": 44100,
+        "bitrateKbps": 96,
+        "normalization": {
+          "targetRmsDbfs": -35.5,
+          "peakCeilingDbfs": -4,
+          "appliedGainDb": 7.086721674865153,
+          "codecHeadroomCorrectionDb": 0.0
+        },
+        "validation": {
+          "completeDecode": "passed",
+          "samplesPerChannel": 793800,
+          "nonFiniteSamples": 0,
+          "peakAmplitude": 0.32519227266311646,
+          "peakDbfs": -9.75719565637123,
+          "rmsDbfs": -35.82372791270955,
+          "crestDb": 26.06653225633832,
+          "nearFullScaleSampleFraction": 0.0,
+          "quietWindowFractionBelowMinus65Dbfs": 0.0,
+          "windowRmsP95AboveMedianDb": 8.08657018062187,
+          "windowRmsMaxAboveMedianDb": 11.244823795603907,
+          "spectralEnergyFractions": {
+            "0-120Hz": 0.0003189446815812155,
+            "120-500Hz": 0.0012051893781588703,
+            "500-2000Hz": 0.024541324128271248,
+            "2000-6000Hz": 0.36795607807705794,
+            "6000-22050Hz": 0.6059784637349123
+          },
+          "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+          "encodedPeakCeilingDbfs": -4,
+          "encodedPeakCheck": "passed"
+        },
+        "assetKind": "mobile-derivative-of-genuine-model-output",
+        "sourceGeneration": "ash-settle-v20",
+        "sourceExcerptStartSeconds": 6,
+        "sourceExcerptEndSeconds": 24,
+        "sourceMasterSha256": "01f84b69504e123a00c4407e61b6e017293dcd076c05acea1638b7b968db9c04",
+        "processing": "Direct seconds 6\u201324 of the processed float derivative, mono downmix and 5 ms boundary guards; fixed normalization and a single 44.1 kHz/96 kbps MP3 encoding. No MP3-to-MP3 transcode."
+      }
+    },
+    "moisture-moss-v20": {
+      "generationId": "moisture-moss-v20",
+      "rawMasterHashUnchanged": true,
+      "browser": {
+        "file": "moisture-moss-v20.mp3",
+        "bytes": 601382,
+        "sha256": "1db254a4036a2f1a874d870e2c8a3c0bc9856d8a2fd418314aa056d0472f9b39",
+        "durationSeconds": 30,
+        "channels": 2,
+        "sampleRate": 44100,
+        "bitrateKbps": 160,
+        "normalization": {
+          "targetRmsDbfs": -27.2,
+          "peakCeilingDbfs": -4,
+          "appliedGainDb": 15.57319251531792,
+          "codecHeadroomCorrectionDb": 0.0
+        },
+        "validation": {
+          "completeDecode": "passed",
+          "samplesPerChannel": 1323000,
+          "nonFiniteSamples": 0,
+          "peakAmplitude": 0.5436094999313354,
+          "peakDbfs": -5.294259245865663,
+          "rmsDbfs": -28.900174087730367,
+          "crestDb": 23.605914841864703,
+          "nearFullScaleSampleFraction": 0.0,
+          "quietWindowFractionBelowMinus65Dbfs": 0.02666666666666667,
+          "windowRmsP95AboveMedianDb": 4.942384188430758,
+          "windowRmsMaxAboveMedianDb": 8.612979414603437,
+          "spectralEnergyFractions": {
+            "0-120Hz": 0.0004994705995656745,
+            "120-500Hz": 0.0022363007148333606,
+            "500-2000Hz": 0.23092123448235202,
+            "2000-6000Hz": 0.5603272533129854,
+            "6000-22050Hz": 0.20601574089022903
+          },
+          "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+          "encodedPeakCeilingDbfs": -4,
+          "encodedPeakCheck": "passed"
+        }
+      },
+      "mobile": {
+        "file": "moisture-moss-v20-mobile.mp3",
+        "bytes": 216964,
+        "sha256": "25e6ffd2af2384f110b494adbbf7f906d6827ff9b2b7433b7c8b3665f3f59400",
+        "durationSeconds": 18,
+        "channels": 1,
+        "sampleRate": 44100,
+        "bitrateKbps": 96,
+        "normalization": {
+          "targetRmsDbfs": -27.2,
+          "peakCeilingDbfs": -4,
+          "appliedGainDb": 15.574092629359583,
+          "codecHeadroomCorrectionDb": 0.0
+        },
+        "validation": {
+          "completeDecode": "passed",
+          "samplesPerChannel": 793800,
+          "nonFiniteSamples": 0,
+          "peakAmplitude": 0.5554875135421753,
+          "peakDbfs": -5.106513976970973,
+          "rmsDbfs": -28.56944270926057,
+          "crestDb": 23.462928732289598,
+          "nearFullScaleSampleFraction": 0.0,
+          "quietWindowFractionBelowMinus65Dbfs": 0.0,
+          "windowRmsP95AboveMedianDb": 4.887625987391946,
+          "windowRmsMaxAboveMedianDb": 8.363040096107664,
+          "spectralEnergyFractions": {
+            "0-120Hz": 0.0004632712130077204,
+            "120-500Hz": 0.0023706812717272014,
+            "500-2000Hz": 0.2153628385550236,
+            "2000-6000Hz": 0.5688890061403378,
+            "6000-22050Hz": 0.21291420281987788
+          },
+          "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+          "encodedPeakCeilingDbfs": -4,
+          "encodedPeakCheck": "passed"
+        },
+        "assetKind": "mobile-derivative-of-genuine-model-output",
+        "sourceGeneration": "moisture-moss-v20",
+        "sourceExcerptStartSeconds": 6,
+        "sourceExcerptEndSeconds": 24,
+        "sourceMasterSha256": "022f492150370ceea24a6a85f0efe6c649ac1e920fe3881cfc6b4e0582bb0640",
+        "processing": "Direct seconds 6\u201324 of the processed float derivative, mono downmix and 5 ms boundary guards; fixed normalization and a single 44.1 kHz/96 kbps MP3 encoding. No MP3-to-MP3 transcode."
+      }
+    },
+    "moisture-earth-v20": {
+      "generationId": "moisture-earth-v20",
+      "rawMasterHashUnchanged": true,
+      "browser": {
+        "file": "moisture-earth-v20.mp3",
+        "bytes": 601382,
+        "sha256": "90d8b36092ffb271aeb9c790a70826dd2ebb185514da09d3adaa1e8d9c53e990",
+        "durationSeconds": 30,
+        "channels": 2,
+        "sampleRate": 44100,
+        "bitrateKbps": 160,
+        "normalization": {
+          "targetRmsDbfs": -27.2,
+          "peakCeilingDbfs": -4,
+          "appliedGainDb": 15.87926592436899,
+          "codecHeadroomCorrectionDb": 0.0
+        },
+        "validation": {
+          "completeDecode": "passed",
+          "samplesPerChannel": 1323000,
+          "nonFiniteSamples": 0,
+          "peakAmplitude": 0.5393591523170471,
+          "peakDbfs": -5.362438947615957,
+          "rmsDbfs": -29.250364067946318,
+          "crestDb": 23.88792512033036,
+          "nearFullScaleSampleFraction": 0.0,
+          "quietWindowFractionBelowMinus65Dbfs": 0.013333333333333334,
+          "windowRmsP95AboveMedianDb": 4.241102865236005,
+          "windowRmsMaxAboveMedianDb": 7.374405702289213,
+          "spectralEnergyFractions": {
+            "0-120Hz": 0.0005792820568179975,
+            "120-500Hz": 0.003016075392789039,
+            "500-2000Hz": 0.5867392161103371,
+            "2000-6000Hz": 0.2451212565254185,
+            "6000-22050Hz": 0.16454416991462645
+          },
+          "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+          "encodedPeakCeilingDbfs": -4,
+          "encodedPeakCheck": "passed"
+        }
+      },
+      "mobile": {
+        "file": "moisture-earth-v20-mobile.mp3",
+        "bytes": 216964,
+        "sha256": "4fa6134d5f8ade8012d9853e419362d5b83583a2a3d30e234e8c7fbc19adcbc3",
+        "durationSeconds": 18,
+        "channels": 1,
+        "sampleRate": 44100,
+        "bitrateKbps": 96,
+        "normalization": {
+          "targetRmsDbfs": -27.2,
+          "peakCeilingDbfs": -4,
+          "appliedGainDb": 18.814428791777285,
+          "codecHeadroomCorrectionDb": 0.0
+        },
+        "validation": {
+          "completeDecode": "passed",
+          "samplesPerChannel": 793800,
+          "nonFiniteSamples": 0,
+          "peakAmplitude": 0.5004693865776062,
+          "peakDbfs": -6.012449658280287,
+          "rmsDbfs": -27.61604079035669,
+          "crestDb": 21.603591132076403,
+          "nearFullScaleSampleFraction": 0.0,
+          "quietWindowFractionBelowMinus65Dbfs": 0.0,
+          "windowRmsP95AboveMedianDb": 5.404830263371,
+          "windowRmsMaxAboveMedianDb": 8.729318870964473,
+          "spectralEnergyFractions": {
+            "0-120Hz": 0.0006987089033254791,
+            "120-500Hz": 0.002927755895144597,
+            "500-2000Hz": 0.6947489987542376,
+            "2000-6000Hz": 0.20853919924505063,
+            "6000-22050Hz": 0.0930853372022281
+          },
+          "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+          "encodedPeakCeilingDbfs": -4,
+          "encodedPeakCheck": "passed"
+        },
+        "assetKind": "mobile-derivative-of-genuine-model-output",
+        "sourceGeneration": "moisture-earth-v20",
+        "sourceExcerptStartSeconds": 6,
+        "sourceExcerptEndSeconds": 24,
+        "sourceMasterSha256": "ee5005a6f32ba64190e4beed043914ecde781ac124741f8a369170fc91efd11d",
+        "processing": "Direct seconds 6\u201324 of the processed float derivative, mono downmix and 5 ms boundary guards; fixed normalization and a single 44.1 kHz/96 kbps MP3 encoding. No MP3-to-MP3 transcode."
+      }
+    },
+    "haze-grass-v20": {
+      "generationId": "haze-grass-v20",
+      "rawMasterHashUnchanged": true,
+      "browser": {
+        "file": "haze-grass-v20.mp3",
+        "bytes": 601382,
+        "sha256": "4100eefb4b8340ace244fa0e19e5d8872f603dcc3fc098389ed372dcc1e8c041",
+        "durationSeconds": 30,
+        "channels": 2,
+        "sampleRate": 44100,
+        "bitrateKbps": 160,
+        "normalization": {
+          "targetRmsDbfs": -29,
+          "peakCeilingDbfs": -4,
+          "appliedGainDb": 15.706639133932946,
+          "codecHeadroomCorrectionDb": 0.0
+        },
+        "validation": {
+          "completeDecode": "passed",
+          "samplesPerChannel": 1323000,
+          "nonFiniteSamples": 0,
+          "peakAmplitude": 0.5705527663230896,
+          "peakDbfs": -4.874083692286348,
+          "rmsDbfs": -29.933375034047337,
+          "crestDb": 25.05929134176099,
+          "nearFullScaleSampleFraction": 0.0,
+          "quietWindowFractionBelowMinus65Dbfs": 0.025,
+          "windowRmsP95AboveMedianDb": 3.611170820993994,
+          "windowRmsMaxAboveMedianDb": 8.757713666024983,
+          "spectralEnergyFractions": {
+            "0-120Hz": 0.00017907215933225232,
+            "120-500Hz": 0.04007441016670362,
+            "500-2000Hz": 0.08281832223900615,
+            "2000-6000Hz": 0.09811120819992612,
+            "6000-22050Hz": 0.7788169872350126
+          },
+          "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+          "encodedPeakCeilingDbfs": -4,
+          "encodedPeakCheck": "passed"
+        }
+      },
+      "mobile": {
+        "file": "haze-grass-v20-mobile.mp3",
+        "bytes": 216964,
+        "sha256": "b77deec9deb0726db2ee86583b55ec9a5e20b418d3c278238a363d73fb10f53d",
+        "durationSeconds": 18,
+        "channels": 1,
+        "sampleRate": 44100,
+        "bitrateKbps": 96,
+        "normalization": {
+          "targetRmsDbfs": -29,
+          "peakCeilingDbfs": -4,
+          "appliedGainDb": 18.49813861399555,
+          "codecHeadroomCorrectionDb": 0.0
+        },
+        "validation": {
+          "completeDecode": "passed",
+          "samplesPerChannel": 793800,
+          "nonFiniteSamples": 0,
+          "peakAmplitude": 0.38227903842926025,
+          "peakDbfs": -8.352390301407901,
+          "rmsDbfs": -29.326816094413978,
+          "crestDb": 20.974425793006077,
+          "nearFullScaleSampleFraction": 0.0,
+          "quietWindowFractionBelowMinus65Dbfs": 0.0,
+          "windowRmsP95AboveMedianDb": 4.313613280371833,
+          "windowRmsMaxAboveMedianDb": 7.482300214904029,
+          "spectralEnergyFractions": {
+            "0-120Hz": 0.00028644974228860605,
+            "120-500Hz": 0.09539355665374086,
+            "500-2000Hz": 0.14067709899528463,
+            "2000-6000Hz": 0.13441773063446216,
+            "6000-22050Hz": 0.6292251639742142
+          },
+          "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+          "encodedPeakCeilingDbfs": -4,
+          "encodedPeakCheck": "passed"
+        },
+        "assetKind": "mobile-derivative-of-genuine-model-output",
+        "sourceGeneration": "haze-grass-v20",
+        "sourceExcerptStartSeconds": 6,
+        "sourceExcerptEndSeconds": 24,
+        "sourceMasterSha256": "082935d77f70cf21e004f32ce95937296b9b18136aab94687cd297a806a9a791",
+        "processing": "Direct seconds 6\u201324 of the processed float derivative, mono downmix and 5 ms boundary guards; fixed normalization and a single 44.1 kHz/96 kbps MP3 encoding. No MP3-to-MP3 transcode."
+      }
+    },
+    "haze-leaves-v20": {
+      "generationId": "haze-leaves-v20",
+      "rawMasterHashUnchanged": true,
+      "browser": {
+        "file": "haze-leaves-v20.mp3",
+        "bytes": 601382,
+        "sha256": "caa1dc2728aa44cdbdc772ee743326e6b4b489df752f18b4ea417dba99f825ae",
+        "durationSeconds": 30,
+        "channels": 2,
+        "sampleRate": 44100,
+        "bitrateKbps": 160,
+        "normalization": {
+          "targetRmsDbfs": -29,
+          "peakCeilingDbfs": -4,
+          "appliedGainDb": 17.310978324225744,
+          "codecHeadroomCorrectionDb": 0.0
+        },
+        "validation": {
+          "completeDecode": "passed",
+          "samplesPerChannel": 1323000,
+          "nonFiniteSamples": 0,
+          "peakAmplitude": 0.33044812083244324,
+          "peakDbfs": -9.617934269995457,
+          "rmsDbfs": -29.46160217525521,
+          "crestDb": 19.84366790525975,
+          "nearFullScaleSampleFraction": 0.0,
+          "quietWindowFractionBelowMinus65Dbfs": 0.016666666666666666,
+          "windowRmsP95AboveMedianDb": 2.7996523953425587,
+          "windowRmsMaxAboveMedianDb": 5.579314739869627,
+          "spectralEnergyFractions": {
+            "0-120Hz": 0.0018359890308595923,
+            "120-500Hz": 0.1424343827482512,
+            "500-2000Hz": 0.8007587562095096,
+            "2000-6000Hz": 0.0257872920224665,
+            "6000-22050Hz": 0.02918357998891115
+          },
+          "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+          "encodedPeakCeilingDbfs": -4,
+          "encodedPeakCheck": "passed"
+        }
+      },
+      "mobile": {
+        "file": "haze-leaves-v20-mobile.mp3",
+        "bytes": 216964,
+        "sha256": "f7fb20007266a75e15085f344b50c2660f6910b901d6796fc743beeb851f9850",
+        "durationSeconds": 18,
+        "channels": 1,
+        "sampleRate": 44100,
+        "bitrateKbps": 96,
+        "normalization": {
+          "targetRmsDbfs": -29,
+          "peakCeilingDbfs": -4,
+          "appliedGainDb": 17.50733296741329,
+          "codecHeadroomCorrectionDb": 0.0
+        },
+        "validation": {
+          "completeDecode": "passed",
+          "samplesPerChannel": 793800,
+          "nonFiniteSamples": 0,
+          "peakAmplitude": 0.2443825751543045,
+          "peakDbfs": -12.238595263525408,
+          "rmsDbfs": -29.427015815967966,
+          "crestDb": 17.188420552442558,
+          "nearFullScaleSampleFraction": 0.0,
+          "quietWindowFractionBelowMinus65Dbfs": 0.0,
+          "windowRmsP95AboveMedianDb": 2.468231147510174,
+          "windowRmsMaxAboveMedianDb": 4.812351127917498,
+          "spectralEnergyFractions": {
+            "0-120Hz": 0.0018504955825596105,
+            "120-500Hz": 0.15476371931989427,
+            "500-2000Hz": 0.7782604125206376,
+            "2000-6000Hz": 0.02679893366570906,
+            "6000-22050Hz": 0.03832643891119543
+          },
+          "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+          "encodedPeakCeilingDbfs": -4,
+          "encodedPeakCheck": "passed"
+        },
+        "assetKind": "mobile-derivative-of-genuine-model-output",
+        "sourceGeneration": "haze-leaves-v20",
+        "sourceExcerptStartSeconds": 6,
+        "sourceExcerptEndSeconds": 24,
+        "sourceMasterSha256": "c35522ad25a6c5bda0b7bce1084b65c344648b2cd2c15de8986763a7d5afd4c9",
+        "processing": "Direct seconds 6\u201324 of the processed float derivative, mono downmix and 5 ms boundary guards; fixed normalization and a single 44.1 kHz/96 kbps MP3 encoding. No MP3-to-MP3 transcode."
+      }
+    }
+  },
+  "listeningReview": "Not certified by a human listener. Technical validation does not establish prompt adherence."
+}

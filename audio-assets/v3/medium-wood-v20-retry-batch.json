@@ -1,0 +1,114 @@
+{
+  "model": "Stable Audio 3 Medium",
+  "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+  "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+  "license": "Stable Audio Community License",
+  "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+  "backend": "Official MLX local inference on Apple Silicon",
+  "runtimeRevision": "5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84",
+  "optimizedWeightsRepository": "https://huggingface.co/stabilityai/stable-audio-3-optimized",
+  "optimizedWeightsRevision": "30cb2644da54bfa63275d1bc7f1fa67fc718680f",
+  "verifiedWeights": {
+    "t5gemma_f16.npz": {
+      "bytes": 567443068,
+      "sha256": "8deb20489f36d9aec539f26c9c67321f99bc5fe300d470435ed6e76be4f16bbd"
+    },
+    "dit_medium_f16.npz": {
+      "bytes": 2907300946,
+      "sha256": "f9e5647ea3225818657d47d47ae4b34afa29c0568206ca89566c1a758944a38e"
+    },
+    "same_l_decoder_f32.npz": {
+      "bytes": 1704311976,
+      "sha256": "84924be2122d3a20fce443f40b782d9cd88e8e73707476326003ac47659a2287"
+    }
+  },
+  "device": {
+    "device_name": "Apple M1 Pro",
+    "max_recommended_working_set_size": 11453251584,
+    "memory_size": 17179869184,
+    "architecture": "applegpu_g13s",
+    "max_buffer_length": 8589934592,
+    "resource_limit": 499000
+  },
+  "startedAt": "2026-11-03T10:51:40.354183+00:00",
+  "status": "complete",
+  "assets": {
+    "phone-wood-body-v20-study3": {
+      "id": "phone-wood-body-v20-study3",
+      "kind": "phone-crackle",
+      "title": "Dry wooden branch fire",
+      "seed": 202611032009,
+      "role": "Fuller dry middle-frequency wooden branch crackling",
+      "prompt": "TrackType: SFX, Close dry recording of a small steady wood fire consuming a pile of dry wooden branches and sticks. A dense continuous crunchy wood crackle, warm hollow wooden snapping and soft thick twig crunches with a clear rounded middle-frequency body. Quiet dry papery leaves crackle gently around the burning branches. Many small overlapping woody sounds make an even intimate natural texture, stable restrained dynamics in flat open outdoor acoustics throughout. Length: 30 seconds.",
+      "durationSeconds": 30,
+      "steps": 8,
+      "cfgScale": 1.0,
+      "sampler": "pingpong",
+      "pack": "scripts/stablegen-v20-wood-retry-prompts.json",
+      "model": "Stable Audio 3 Medium",
+      "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+      "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+      "license": "Stable Audio Community License",
+      "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+      "backend": "Official MLX local inference on Apple Silicon",
+      "runtimeRevision": "5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84",
+      "optimizedWeightsRevision": "30cb2644da54bfa63275d1bc7f1fa67fc718680f",
+      "generated": true,
+      "status": "generated",
+      "startedAt": "2026-11-03T10:51:43.441774+00:00",
+      "completedAt": "2026-11-03T10:51:51.075121+00:00",
+      "generationSeconds": 7.633,
+      "peakMetalAllocatedBytes": 6887888474,
+      "unclippedGeneratorPeak": 0.9902998208999634,
+      "unclippedGeneratorRms": 0.012959734395641118,
+      "unclippedGeneratorAboveFullScaleFraction": 0.0,
+      "unclippedGeneratorNearFullScaleFraction": 0.0,
+      "master": {
+        "file": "phone-wood-body-v20-study3-master.wav",
+        "bytes": 10584088,
+        "sha256": "19698f3987deb0042173a917ae2ad1d4e1ff07cecfffea3c0f657df03c538b10"
+      },
+      "processing": "Official pipeline output preserved as stereo44100Hz32-bit float WAV without clipping or normalization. No reverb, compression, mixing or post-effects added. Browser copy normalized separately.",
+      "listeningReview": "Technical validity checked. Perceptual prompt adherence requires audition."
+    },
+    "phone-wood-body-v20-study4": {
+      "id": "phone-wood-body-v20-study4",
+      "kind": "phone-crackle",
+      "title": "Wooden kindling fire",
+      "seed": 202611032010,
+      "role": "Dry textured wood fire with softer close branch body",
+      "prompt": "TrackType: SFX, A close natural recording of dry kindling and wooden branches steadily burning in a small outdoor campfire. Countless gentle soft-edged wooden crackles overlapping, thick warm twig snaps, quiet crunchy wood grain and a soft dry leaf rustle. The wooden crackling has rounded rich middle-frequency body with a stable quiet intimate presence, gently irregular small sounds and even continuous activity in dry flat open-air acoustics. Length: 30 seconds.",
+      "durationSeconds": 30,
+      "steps": 8,
+      "cfgScale": 1.0,
+      "sampler": "pingpong",
+      "pack": "scripts/stablegen-v20-wood-retry-prompts.json",
+      "model": "Stable Audio 3 Medium",
+      "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+      "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+      "license": "Stable Audio Community License",
+      "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+      "backend": "Official MLX local inference on Apple Silicon",
+      "runtimeRevision": "5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84",
+      "optimizedWeightsRevision": "30cb2644da54bfa63275d1bc7f1fa67fc718680f",
+      "generated": true,
+      "status": "generated",
+      "startedAt": "2026-11-03T10:51:51.106852+00:00",
+      "completedAt": "2026-11-03T10:51:58.997100+00:00",
+      "generationSeconds": 7.89,
+      "peakMetalAllocatedBytes": 6887888522,
+      "unclippedGeneratorPeak": 0.5521594285964966,
+      "unclippedGeneratorRms": 0.00552851544760492,
+      "unclippedGeneratorAboveFullScaleFraction": 0.0,
+      "unclippedGeneratorNearFullScaleFraction": 0.0,
+      "master": {
+        "file": "phone-wood-body-v20-study4-master.wav",
+        "bytes": 10584088,
+        "sha256": "cbca9fbcc8f27519da01fcec15b8d205ab39ef83b0410dd2f6d03d545845d54b"
+      },
+      "processing": "Official pipeline output preserved as stereo44100Hz32-bit float WAV without clipping or normalization. No reverb, compression, mixing or post-effects added. Browser copy normalized separately.",
+      "listeningReview": "Technical validity checked. Perceptual prompt adherence requires audition."
+    }
+  },
+  "completedAt": "2026-11-03T10:51:59.025684+00:00"
+}

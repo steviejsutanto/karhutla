@@ -1,0 +1,205 @@
+{
+  "id": "phone-branches-leaves-take1",
+  "kind": "phone-crackle",
+  "title": "Branches and leaves \u2014 take 1",
+  "seed": 2026110101,
+  "role": "Dry crisp continuous burning fine branches and leaves, papery rustle and soft fine wood snaps",
+  "prompt": "TrackType: SFX, Close detailed recording of dry slender branches, tiny twigs and brittle dead leaves steadily burning in a small open outdoor fire. Continuous crisp papery leaf crackle and delicate dry rustling, fine irregular soft twig snaps and finely textured burning wood grain, countless small overlapping crackles blending into a steady natural dry texture. Restrained flame movement under the clearly audible dry leaves and thin branches, intimate flat open-air acoustics, stable close activity throughout the entire recording. The sound consists exclusively of burning dry leaves and small woody branches. Length: 45 seconds.",
+  "durationSeconds": 45,
+  "steps": 8,
+  "cfgScale": 1.0,
+  "sampler": "pingpong",
+  "pack": "scripts/stablegen-v5-branches-leaves-prompts.json",
+  "model": "Stable Audio 3 Medium",
+  "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+  "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+  "license": "Stable Audio Community License",
+  "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+  "backend": "Official MLX local inference on Apple Silicon",
+  "runtimeRevision": "5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84",
+  "optimizedWeightsRevision": "30cb2644da54bfa63275d1bc7f1fa67fc718680f",
+  "generated": true,
+  "status": "generated",
+  "startedAt": "2026-11-01T12:25:04.676116+00:00",
+  "completedAt": "2026-11-01T12:25:13.734586+00:00",
+  "generationSeconds": 9.058,
+  "peakMetalAllocatedBytes": 7098783286,
+  "unclippedGeneratorPeak": 0.7933974266052246,
+  "unclippedGeneratorRms": 0.006545384146087814,
+  "unclippedGeneratorAboveFullScaleFraction": 0.0,
+  "unclippedGeneratorNearFullScaleFraction": 0.0,
+  "master": {
+    "file": "phone-branches-leaves-take1-master.wav",
+    "bytes": 15876088,
+    "sha256": "0e4e6e9013959630c5572ac440779f81ddb77ae23da773950e913821bc86bb60"
+  },
+  "processing": "Genuine stereo 44.1 kHz float model master retained unchanged. Desktop copy: 5 ms fade at each edge solely as a click guard, peak normalization near -4 dBFS, stereo 44.1 kHz 160 kbps MP3. Encoded peak no higher than -3 dBFS verified. No filtering, compression, reverb, layering, or synthesized substitute. Runtime circular overlap prepares the phone loop.",
+  "listeningReview": "Not certified by a human listener. Signal measurements support take comparison but do not establish dry leaf/branch identity or absence of liquid character.",
+  "generationId": "phone-branches-leaves-take1",
+  "assetKind": "generated-model-output",
+  "rawModelOutput": true,
+  "sourceGeneration": {
+    "id": "phone-branches-leaves-take1",
+    "kind": "phone-crackle",
+    "title": "Branches and leaves \u2014 take 1",
+    "seed": 2026110101,
+    "role": "Dry crisp continuous burning fine branches and leaves, papery rustle and soft fine wood snaps",
+    "prompt": "TrackType: SFX, Close detailed recording of dry slender branches, tiny twigs and brittle dead leaves steadily burning in a small open outdoor fire. Continuous crisp papery leaf crackle and delicate dry rustling, fine irregular soft twig snaps and finely textured burning wood grain, countless small overlapping crackles blending into a steady natural dry texture. Restrained flame movement under the clearly audible dry leaves and thin branches, intimate flat open-air acoustics, stable close activity throughout the entire recording. The sound consists exclusively of burning dry leaves and small woody branches. Length: 45 seconds.",
+    "durationSeconds": 45,
+    "steps": 8,
+    "cfgScale": 1.0,
+    "sampler": "pingpong",
+    "pack": "scripts/stablegen-v5-branches-leaves-prompts.json",
+    "model": "Stable Audio 3 Medium",
+    "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+    "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+    "license": "Stable Audio Community License",
+    "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+    "backend": "Official MLX local inference on Apple Silicon",
+    "runtimeRevision": "5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84",
+    "optimizedWeightsRevision": "30cb2644da54bfa63275d1bc7f1fa67fc718680f",
+    "generated": true,
+    "status": "generated",
+    "startedAt": "2026-11-01T12:25:04.676116+00:00",
+    "completedAt": "2026-11-01T12:25:13.734586+00:00",
+    "generationSeconds": 9.058,
+    "peakMetalAllocatedBytes": 7098783286,
+    "unclippedGeneratorPeak": 0.7933974266052246,
+    "unclippedGeneratorRms": 0.006545384146087814,
+    "unclippedGeneratorAboveFullScaleFraction": 0.0,
+    "unclippedGeneratorNearFullScaleFraction": 0.0,
+    "master": {
+      "file": "phone-branches-leaves-take1-master.wav",
+      "bytes": 15876088,
+      "sha256": "0e4e6e9013959630c5572ac440779f81ddb77ae23da773950e913821bc86bb60"
+    },
+    "processing": "Official pipeline output preserved as stereo44100Hz32-bit float WAV without clipping or normalization. No reverb, compression, mixing or post-effects added. Browser copy normalized separately.",
+    "listeningReview": "Technical validity checked. Perceptual prompt adherence requires audition."
+  },
+  "verifiedWeights": {
+    "t5gemma_f16.npz": {
+      "bytes": 567443068,
+      "sha256": "8deb20489f36d9aec539f26c9c67321f99bc5fe300d470435ed6e76be4f16bbd"
+    },
+    "dit_medium_f16.npz": {
+      "bytes": 2907300946,
+      "sha256": "f9e5647ea3225818657d47d47ae4b34afa29c0568206ca89566c1a758944a38e"
+    },
+    "same_l_decoder_f32.npz": {
+      "bytes": 1704311976,
+      "sha256": "84924be2122d3a20fce443f40b782d9cd88e8e73707476326003ac47659a2287"
+    }
+  },
+  "device": {
+    "device_name": "Apple M1 Pro",
+    "max_recommended_working_set_size": 11453251584,
+    "memory_size": 17179869184,
+    "architecture": "applegpu_g13s",
+    "max_buffer_length": 8589934592,
+    "resource_limit": 499000
+  },
+  "generationBatchRecord": "medium-branches-leaves-batch.json",
+  "wavMaster": {
+    "file": "phone-branches-leaves-take1-master.wav",
+    "bytes": 15876088,
+    "sha256": "0e4e6e9013959630c5572ac440779f81ddb77ae23da773950e913821bc86bb60"
+  },
+  "masterValidation": {
+    "completeDecode": "passed",
+    "samplesPerChannel": 1984500,
+    "nonFiniteSamples": 0,
+    "peakAmplitude": 0.7933974266052246,
+    "peakDbfs": -2.010184249986627,
+    "rmsDbfs": -43.681297195769716,
+    "crestDb": 41.671112945783086,
+    "nearFullScaleSampleFraction": 0.0,
+    "quietWindowFractionBelowMinus65Dbfs": 0.008888888888888889,
+    "windowRmsP95AboveMedianDb": 11.325219517333593,
+    "windowRmsMaxAboveMedianDb": 24.56352559525764,
+    "spectralEnergyFractions": {
+      "0-120Hz": 0.006722352441441293,
+      "120-500Hz": 0.0034190713343742766,
+      "500-2000Hz": 0.021953954585216793,
+      "2000-6000Hz": 0.3814982921054724,
+      "6000-22050Hz": 0.5864062371115322
+    },
+    "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content."
+  },
+  "browserAsset": {
+    "file": "phone-branches-leaves-take1.mp3",
+    "bytes": 901268,
+    "sha256": "72b708127e6c72d58771af3bb0f11e6e6295eea387f80a7efda313c2f73bd42c",
+    "durationSeconds": 45,
+    "channels": 2,
+    "sampleRate": 44100,
+    "bitrateKbps": 160,
+    "validation": {
+      "completeDecode": "passed",
+      "samplesPerChannel": 1984500,
+      "nonFiniteSamples": 0,
+      "peakAmplitude": 0.5962096452713013,
+      "peakDbfs": -4.492020047643768,
+      "rmsDbfs": -46.08349244723425,
+      "crestDb": 41.59147239959048,
+      "nearFullScaleSampleFraction": 0.0,
+      "quietWindowFractionBelowMinus65Dbfs": 0.013333333333333334,
+      "windowRmsP95AboveMedianDb": 11.244277445343691,
+      "windowRmsMaxAboveMedianDb": 24.457814639517682,
+      "spectralEnergyFractions": {
+        "0-120Hz": 0.006670490704045627,
+        "120-500Hz": 0.0033999065599009557,
+        "500-2000Hz": 0.02160939028419783,
+        "2000-6000Hz": 0.3818463264934942,
+        "6000-22050Hz": 0.586473885958354
+      },
+      "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+      "encodedPeakCeilingDbfs": -3,
+      "encodedPeakCheck": "passed"
+    },
+    "normalization": {
+      "targetPeakDbfsBeforeEncoding": -4,
+      "appliedGainDb": -1.9898157500133729,
+      "codecHeadroomCorrectionDb": 0.0
+    },
+    "playbackBoundary": {
+      "fadeInSeconds": 0.005,
+      "fadeOutSeconds": 0.005,
+      "loopConditioning": "runtime-circular-overlap"
+    }
+  },
+  "validation": {
+    "completeDecode": "passed",
+    "samplesPerChannel": 1984500,
+    "nonFiniteSamples": 0,
+    "peakAmplitude": 0.5962096452713013,
+    "peakDbfs": -4.492020047643768,
+    "rmsDbfs": -46.08349244723425,
+    "crestDb": 41.59147239959048,
+    "nearFullScaleSampleFraction": 0.0,
+    "quietWindowFractionBelowMinus65Dbfs": 0.013333333333333334,
+    "windowRmsP95AboveMedianDb": 11.244277445343691,
+    "windowRmsMaxAboveMedianDb": 24.457814639517682,
+    "spectralEnergyFractions": {
+      "0-120Hz": 0.006670490704045627,
+      "120-500Hz": 0.0033999065599009557,
+      "500-2000Hz": 0.02160939028419783,
+      "2000-6000Hz": 0.3818463264934942,
+      "6000-22050Hz": 0.586473885958354
+    },
+    "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+    "encodedPeakCeilingDbfs": -3,
+    "encodedPeakCheck": "passed"
+  },
+  "normalization": {
+    "targetPeakDbfsBeforeEncoding": -4,
+    "appliedGainDb": -1.9898157500133729,
+    "codecHeadroomCorrectionDb": 0.0
+  },
+  "playbackBoundary": {
+    "fadeInSeconds": 0.005,
+    "fadeOutSeconds": 0.005,
+    "loopConditioning": "runtime-circular-overlap"
+  },
+  "sourceMasterUnchangedCheck": true,
+  "finishedAt": "2026-11-01T12:26:22.172001+00:00"
+}

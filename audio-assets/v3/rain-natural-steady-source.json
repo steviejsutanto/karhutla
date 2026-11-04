@@ -1,0 +1,94 @@
+{
+  "id": "rain-natural-steady",
+  "kind": "rain",
+  "title": "Fuller countryside rain",
+  "description": "A fuller natural rain bed from a separate, non-overlapping passage of the same countryside recording.",
+  "sourceKey": "rain-country",
+  "freesoundId": 688896,
+  "sourceTitle": "Soft rain in the countryside",
+  "author": "EduFigueres",
+  "sourcePreviewUrl": "https://cdn.freesound.org/previews/688/688896_2454586-hq.mp3",
+  "sourceStartSeconds": 4,
+  "durationSeconds": 40,
+  "channels": 2,
+  "constantGainDb": 16,
+  "endpoint": "high",
+  "endpointPosition": 1,
+  "sourceDescriptionSummary": "The creator describes soft rain in the countryside. This is a different passage, not a second field recording. Upstream processing is not disclosed; this export adds no dynamic processing.",
+  "status": "prepared",
+  "generated": false,
+  "fieldRecording": true,
+  "assetKind": "excerpt-of-cc0-field-recording-public-preview",
+  "retrievedOn": "2026-11-01",
+  "sourceUrl": "https://freesound.org/people/EduFigueres/sounds/688896/",
+  "license": "CC0 1.0 Universal",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "preview": true,
+  "access": "Public HQ MP3 preview, without login, account, or paid service; original WAV download requires Freesound login.",
+  "sourcePreview": {
+    "file": "audio-assets/v3/natural-sources/rain-country-preview.mp3",
+    "bytes": 2062298,
+    "sha256": "5527d0104b896184313a2be534169cda3e3d1a460cb34edbbecb6778a7ade129",
+    "url": "https://cdn.freesound.org/previews/688/688896_2454586-hq.mp3"
+  },
+  "sourcePageEvidence": {
+    "file": "audio-assets/v3/natural-sources/rain-country-page.html",
+    "bytes": 43150,
+    "sha256": "99651ee6215fe5b1d06f6e598fb41aa6d3e0f8e91796bd2a40a05be4f8520653",
+    "checkedLicense": "CC0 1.0 Universal"
+  },
+  "browserAsset": {
+    "file": "rain-natural-steady.mp3",
+    "bytes": 961767,
+    "sha256": "cda4ecc0b5e45d65d6adbebf3ff70709c00a896f692a5be149c908d9533cb63f",
+    "durationSeconds": 40,
+    "sampleRate": 44100,
+    "channels": 2,
+    "bitrateKbps": 192
+  },
+  "processing": "Select source seconds 4\u201344; fixed 16.000000 dB gain throughout, 5 ms click guards at both boundaries, 2-channel 44.1 kHz 192 kbps MP3. No added compression, AGC, limiting, noise gate, dynamic denoise, envelope riding, time/pitch change, artificial pulse, or added layer. Runtime circular overlap handles the loop seam. The downloaded public preview is retained byte-for-byte; original uncompressed source was not downloaded.",
+  "normalization": {
+    "targetPeakCeilingDbfsBeforeEncoding": -5,
+    "appliedConstantGainDb": 16,
+    "sharedSourceGain": true
+  },
+  "validation": {
+    "completeDecode": "passed",
+    "samplesPerChannel": 1764000,
+    "nonFiniteSamples": 0,
+    "peakAmplitude": 0.5265126824378967,
+    "peakDbfs": -5.571823264633186,
+    "rmsDbfs": -28.90618313830185,
+    "crestDb": 23.334359873668664,
+    "nearFullScaleSampleFraction": 0.0,
+    "quietWindowFractionBelowMinus65Dbfs": 0.0,
+    "windowRmsP95AboveMedianDb": 2.769415490019796,
+    "windowRmsMaxAboveMedianDb": 7.085796601747187,
+    "spectralEnergyFractions": {
+      "0-120Hz": 0.10548633137539536,
+      "120-500Hz": 0.07268857600498327,
+      "500-2000Hz": 0.27784126050189195,
+      "2000-6000Hz": 0.2694122592740841,
+      "6000-22050Hz": 0.2745715728436408
+    },
+    "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+    "encodedPeakCeilingDbfs": -3,
+    "encodedPeakCheck": "passed",
+    "envelope": {
+      "windowSeconds": 0.5,
+      "windowRmsP95MinusP5Db": 4.705918613247103,
+      "windowRmsStandardDeviationDb": 1.6155417215776897,
+      "windowRmsMaxMinusMinDb": 5.45941473843817,
+      "envelope10msModulationIndex": 0.238783159329829,
+      "largestEnvelopeAutocorrelationWithin0p2To2": 0.5691144560616589,
+      "largestEnvelopeAutocorrelationLagSecondsWithin0p2To2": 0.21,
+      "scope": "Signal amplitude evidence only. Natural rainfall intensity and insect pulse gaps may vary; these measurements do not identify sources or certify perceptual absence of pumping."
+    }
+  },
+  "playbackBoundary": {
+    "fadeInSeconds": 0.005,
+    "fadeOutSeconds": 0.005,
+    "loopConditioning": "runtime-circular-overlap"
+  },
+  "listeningReview": "Source-page descriptions, waveform and spectrogram inspection, and signal/envelope measurements; no human listening certification."
+}

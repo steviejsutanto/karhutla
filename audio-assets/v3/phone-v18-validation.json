@@ -1,0 +1,230 @@
+{
+  "status": "complete",
+  "createdAt": "2026-11-02T16:56:26.822797+00:00",
+  "generationBatch": "medium-phone-v18-batch.json",
+  "additionalGenerationBatches": [
+    "medium-quench-v18-retry-batch.json"
+  ],
+  "model": "Stable Audio 3 Medium",
+  "backend": "Official MLX local inference on Apple Silicon",
+  "quench": [
+    {
+      "id": "phone-quench-ember",
+      "file": "phone-quench-ember.mp3",
+      "bytes": 24181,
+      "sha256": "e6f9823a5c58d94f8b80c8c8d1b4978c83e79424b1a8b4d38abb3fbf846323dc",
+      "durationSeconds": 1.95,
+      "channels": 1,
+      "sampleRate": 44100,
+      "bitrateKbps": 96,
+      "normalization": {
+        "targetRmsDbfs": -28,
+        "peakCeilingDbfs": -9,
+        "appliedGainDb": 17.07337401213615,
+        "codecHeadroomCorrectionDb": 0.0
+      },
+      "validation": {
+        "completeDecode": "passed",
+        "samplesPerChannel": 85995,
+        "nonFiniteSamples": 0,
+        "peakAmplitude": 0.22245129942893982,
+        "peakDbfs": -13.05530106033987,
+        "rmsDbfs": -28.357469718340322,
+        "crestDb": 15.302168658000452,
+        "nearFullScaleSampleFraction": 0.0,
+        "quietWindowFractionBelowMinus65Dbfs": 0.0,
+        "windowRmsP95AboveMedianDb": 1.3856468361126204,
+        "windowRmsMaxAboveMedianDb": 1.780611382114845,
+        "spectralEnergyFractions": {
+          "0-120Hz": 2.6507926887234597e-05,
+          "120-500Hz": 0.001679257126585312,
+          "500-2000Hz": 0.03457231925303139,
+          "2000-6000Hz": 0.4726860755078091,
+          "6000-22050Hz": 0.4910358401855782
+        },
+        "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+        "encodedPeakCeilingDbfs": -9,
+        "encodedPeakCheck": "passed"
+      }
+    },
+    {
+      "id": "phone-quench-wood",
+      "file": "phone-quench-wood.mp3",
+      "bytes": 26062,
+      "sha256": "f5b5747ca969a2c95746137ab0367fca383ec9be335eabffd1ff0d0e885f97f2",
+      "durationSeconds": 2.1,
+      "channels": 1,
+      "sampleRate": 44100,
+      "bitrateKbps": 96,
+      "normalization": {
+        "targetRmsDbfs": -28,
+        "peakCeilingDbfs": -9,
+        "appliedGainDb": 19.037434816998207,
+        "codecHeadroomCorrectionDb": 0.0
+      },
+      "validation": {
+        "completeDecode": "passed",
+        "samplesPerChannel": 92610,
+        "nonFiniteSamples": 0,
+        "peakAmplitude": 0.27242258191108704,
+        "peakDbfs": -11.295137906338438,
+        "rmsDbfs": -28.365782370732433,
+        "crestDb": 17.070644464393993,
+        "nearFullScaleSampleFraction": 0.0,
+        "quietWindowFractionBelowMinus65Dbfs": 0.0,
+        "windowRmsP95AboveMedianDb": 1.9806759647812768,
+        "windowRmsMaxAboveMedianDb": 3.215599678752806,
+        "spectralEnergyFractions": {
+          "0-120Hz": 3.774279293715389e-05,
+          "120-500Hz": 0.002574211363177977,
+          "500-2000Hz": 0.0979068894916549,
+          "2000-6000Hz": 0.5184738874555933,
+          "6000-22050Hz": 0.3810072688964726
+        },
+        "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+        "encodedPeakCeilingDbfs": -9,
+        "encodedPeakCheck": "passed"
+      }
+    },
+    {
+      "id": "phone-quench-leaf",
+      "file": "phone-quench-leaf.mp3",
+      "bytes": 27942,
+      "sha256": "6019a4b50526d71523de8b8d0481ae4de7b7324cba78798602a9b20b592064b9",
+      "durationSeconds": 2.25,
+      "channels": 1,
+      "sampleRate": 44100,
+      "bitrateKbps": 96,
+      "normalization": {
+        "targetRmsDbfs": -28,
+        "peakCeilingDbfs": -9,
+        "appliedGainDb": 15.368777071977298,
+        "codecHeadroomCorrectionDb": 0.0
+      },
+      "validation": {
+        "completeDecode": "passed",
+        "samplesPerChannel": 99225,
+        "nonFiniteSamples": 0,
+        "peakAmplitude": 0.3020178973674774,
+        "peakDbfs": -10.399346405914716,
+        "rmsDbfs": -28.39281791273439,
+        "crestDb": 17.993471506819674,
+        "nearFullScaleSampleFraction": 0.0,
+        "quietWindowFractionBelowMinus65Dbfs": 0.0,
+        "windowRmsP95AboveMedianDb": 1.722723572130615,
+        "windowRmsMaxAboveMedianDb": 2.365218770667415,
+        "spectralEnergyFractions": {
+          "0-120Hz": 3.4144984888015046e-05,
+          "120-500Hz": 0.0020826253099857014,
+          "500-2000Hz": 0.07795984102190524,
+          "2000-6000Hz": 0.604114730548475,
+          "6000-22050Hz": 0.31580865813471876
+        },
+        "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+        "encodedPeakCeilingDbfs": -9,
+        "encodedPeakCheck": "passed"
+      }
+    },
+    {
+      "id": "phone-quench-steam",
+      "file": "phone-quench-steam.mp3",
+      "bytes": 29510,
+      "sha256": "8a03d89037d4596432d7e5e98e016a08e707ddbf93bc92412bd26430d65723af",
+      "durationSeconds": 2.4,
+      "channels": 1,
+      "sampleRate": 44100,
+      "bitrateKbps": 96,
+      "normalization": {
+        "targetRmsDbfs": -28,
+        "peakCeilingDbfs": -9,
+        "appliedGainDb": 16.28757043144043,
+        "codecHeadroomCorrectionDb": 0.0
+      },
+      "validation": {
+        "completeDecode": "passed",
+        "samplesPerChannel": 105840,
+        "nonFiniteSamples": 0,
+        "peakAmplitude": 0.2958340644836426,
+        "peakDbfs": -10.579036392752991,
+        "rmsDbfs": -29.215838980849714,
+        "crestDb": 18.63680258809672,
+        "nearFullScaleSampleFraction": 0.0,
+        "quietWindowFractionBelowMinus65Dbfs": 0.020833333333333332,
+        "windowRmsP95AboveMedianDb": 3.7875134216867927,
+        "windowRmsMaxAboveMedianDb": 4.133633342063021,
+        "spectralEnergyFractions": {
+          "0-120Hz": 7.076574999355484e-05,
+          "120-500Hz": 0.004761383560009911,
+          "500-2000Hz": 0.19448280118835798,
+          "2000-6000Hz": 0.5903782043476656,
+          "6000-22050Hz": 0.21030684515395556
+        },
+        "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+        "encodedPeakCeilingDbfs": -9,
+        "encodedPeakCheck": "passed"
+      }
+    }
+  ],
+  "crackle": {
+    "id": "phone-branches-full",
+    "mobile": {
+      "file": "phone-branches-full-mobile.mp3",
+      "bytes": 216964,
+      "sha256": "539002e8bb70c67285c52810b575c00b9d8d1cc66377da722875d9bf9adb17ad",
+      "durationSeconds": 18,
+      "channels": 1,
+      "sampleRate": 44100,
+      "bitrateKbps": 96,
+      "normalization": {
+        "targetRmsDbfs": -27.5,
+        "peakCeilingDbfs": -7,
+        "appliedGainDb": 23.62370175141598,
+        "codecHeadroomCorrectionDb": 0.0
+      },
+      "validation": {
+        "completeDecode": "passed",
+        "samplesPerChannel": 793800,
+        "nonFiniteSamples": 0,
+        "peakAmplitude": 0.39476439356803894,
+        "peakDbfs": -8.073240523000704,
+        "rmsDbfs": -30.772307549768794,
+        "crestDb": 22.69906702676809,
+        "nearFullScaleSampleFraction": 0.0,
+        "quietWindowFractionBelowMinus65Dbfs": 0.0,
+        "windowRmsP95AboveMedianDb": 3.8773247536925695,
+        "windowRmsMaxAboveMedianDb": 6.716816956984797,
+        "spectralEnergyFractions": {
+          "0-120Hz": 0.019553789593849142,
+          "120-500Hz": 0.24634580548806123,
+          "500-2000Hz": 0.15821397810124818,
+          "2000-6000Hz": 0.3598659628740354,
+          "6000-22050Hz": 0.2160204639427973
+        },
+        "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+        "encodedPeakCeilingDbfs": -7,
+        "encodedPeakCheck": "passed"
+      }
+    },
+    "previousMobileRmsDbfs": -38.36677689117136,
+    "previousMobileSpectralEnergyFractions": {
+      "0-120Hz": 0.00015312374864142217,
+      "120-500Hz": 0.0003250097821706921,
+      "500-2000Hz": 0.0026313869064675914,
+      "2000-6000Hz": 0.1628546519431355,
+      "6000-22050Hz": 0.8340358276195764
+    },
+    "newMobileRmsDbfs": -30.772307549768794,
+    "newMobileSpectralEnergyFractions": {
+      "0-120Hz": 0.019553789593849142,
+      "120-500Hz": 0.24634580548806123,
+      "500-2000Hz": 0.15821397810124818,
+      "2000-6000Hz": 0.3598659628740354,
+      "6000-22050Hz": 0.2160204639427973
+    }
+  },
+  "scope": "All exports fully decoded with exact sample counts, zero nonfinite samples and conservative peaks. Signal evidence only; no human listening certification or perceptual identity guarantee.",
+  "unselectedGenerationIds": [
+    "phone-quench-ember",
+    "phone-quench-wood"
+  ]
+}

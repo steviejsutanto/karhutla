@@ -1,0 +1,226 @@
+{
+  "id": "phone-branches-dry-v20",
+  "kind": "phone-crackle",
+  "title": "Dry branches and leaves",
+  "description": "A new independent dry wooden branch and leaf crackle, with restrained low weight and clear fine woody detail.",
+  "model": "Stable Audio 3 Medium",
+  "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+  "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+  "license": "Stable Audio Community License",
+  "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+  "generated": true,
+  "assetKind": "processed-derivative-of-genuine-model-output",
+  "rawModelOutput": false,
+  "generationId": "phone-branches-dry-v20",
+  "sourceGeneration": {
+    "id": "phone-branches-dry-v20",
+    "kind": "phone-crackle",
+    "title": "Dry branches and leaves",
+    "seed": 202611032001,
+    "role": "Fine dry burning branch and leaf crackle with clear middle-frequency wooden body",
+    "prompt": "TrackType: SFX, Clear close outdoor recording of a steady small fire burning a shallow pile of crisp dry leaves and slender woody branches. Continuous finely textured dry papery crackling, many overlapping small crisp twig ticks with warm hollow wooden body in the middle frequencies. Soft restrained little wood snaps nestled inside an even dense delicate leaf crackle. Clean intimate detail, flat dry open-air acoustics, steady quiet activity with natural fine irregularity throughout. Length: 30 seconds.",
+    "durationSeconds": 30,
+    "steps": 8,
+    "cfgScale": 1.0,
+    "sampler": "pingpong",
+    "pack": "scripts/stablegen-v20-residue-prompts.json",
+    "model": "Stable Audio 3 Medium",
+    "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+    "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+    "license": "Stable Audio Community License",
+    "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+    "backend": "Official MLX local inference on Apple Silicon",
+    "runtimeRevision": "5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84",
+    "optimizedWeightsRevision": "30cb2644da54bfa63275d1bc7f1fa67fc718680f",
+    "generated": true,
+    "status": "generated",
+    "startedAt": "2026-11-03T10:48:52.781910+00:00",
+    "completedAt": "2026-11-03T10:49:02.937591+00:00",
+    "generationSeconds": 10.151,
+    "peakMetalAllocatedBytes": 6890371774,
+    "unclippedGeneratorPeak": 0.7282887697219849,
+    "unclippedGeneratorRms": 0.015541290875310478,
+    "unclippedGeneratorAboveFullScaleFraction": 0.0,
+    "unclippedGeneratorNearFullScaleFraction": 0.0,
+    "master": {
+      "file": "phone-branches-dry-v20-master.wav",
+      "bytes": 10584088,
+      "sha256": "228c97e19585e3e145aba91a4c7e190a3789a30ff03cc6a7fa62c7967a49b75d"
+    },
+    "processing": "Official pipeline output preserved as stereo44100Hz32-bit float WAV without clipping or normalization. No reverb, compression, mixing or post-effects added. Browser copy normalized separately.",
+    "listeningReview": "Technical validity checked. Perceptual prompt adherence requires audition."
+  },
+  "generationBatchRecord": "medium-residue-v20-batch.json",
+  "verifiedWeights": {
+    "t5gemma_f16.npz": {
+      "bytes": 567443068,
+      "sha256": "8deb20489f36d9aec539f26c9c67321f99bc5fe300d470435ed6e76be4f16bbd"
+    },
+    "dit_medium_f16.npz": {
+      "bytes": 2907300946,
+      "sha256": "f9e5647ea3225818657d47d47ae4b34afa29c0568206ca89566c1a758944a38e"
+    },
+    "same_l_decoder_f32.npz": {
+      "bytes": 1704311976,
+      "sha256": "84924be2122d3a20fce443f40b782d9cd88e8e73707476326003ac47659a2287"
+    }
+  },
+  "device": {
+    "device_name": "Apple M1 Pro",
+    "max_recommended_working_set_size": 11453251584,
+    "memory_size": 17179869184,
+    "architecture": "applegpu_g13s",
+    "max_buffer_length": 8589934592,
+    "resource_limit": 499000
+  },
+  "rawGeneratedMaster": {
+    "file": "phone-branches-dry-v20-master.wav",
+    "bytes": 10584088,
+    "sha256": "228c97e19585e3e145aba91a4c7e190a3789a30ff03cc6a7fa62c7967a49b75d"
+  },
+  "rawMasterValidation": {
+    "completeDecode": "passed",
+    "samplesPerChannel": 1323000,
+    "nonFiniteSamples": 0,
+    "peakAmplitude": 0.7282887697219849,
+    "peakDbfs": -2.7539277370775967,
+    "rmsDbfs": -36.17025822197534,
+    "crestDb": 33.41633048489774,
+    "nearFullScaleSampleFraction": 0.0,
+    "quietWindowFractionBelowMinus65Dbfs": 0.02,
+    "windowRmsP95AboveMedianDb": 16.383586682405106,
+    "windowRmsMaxAboveMedianDb": 19.60386191514165,
+    "spectralEnergyFractions": {
+      "0-120Hz": 0.0002160017244713471,
+      "120-500Hz": 0.0010478007905723,
+      "500-2000Hz": 0.014249916012561606,
+      "2000-6000Hz": 0.29689904727314353,
+      "6000-22050Hz": 0.6875871622061205
+    },
+    "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content."
+  },
+  "processedMaster": {
+    "file": "phone-branches-dry-v20-processed-master.wav",
+    "bytes": 10584092,
+    "sha256": "4a88978b0fdb99c1bdeea34f354e2a5bf271ace0fa31f0f1f7cd3120cbc3a6c7"
+  },
+  "derivation": {
+    "source": "phone-branches-dry-v20-master.wav",
+    "filters": "highpass=f=220:p=2,lowpass=f=6500:p=2,equalizer=f=1050:t=o:w=1.7:g=18,acompressor=threshold=0.008:ratio=4:attack=0.12:release=70:knee=2.8:makeup=1",
+    "description": "220 Hz two-pole high-pass removes low weight; 6500 Hz two-pole low-pass and a broad +18 dB 1050 Hz/1.7-octave equalizer support clear middle-frequency woody detail; soft compressor threshold 0.008/ratio 4/attack 0.12 ms/release 70 ms/knee 2.8/makeup 1 restrains isolated snaps."
+  },
+  "processing": "220 Hz two-pole high-pass removes low weight; 6500 Hz two-pole low-pass and a broad +18 dB 1050 Hz/1.7-octave equalizer support clear middle-frequency woody detail; soft compressor threshold 0.008/ratio 4/attack 0.12 ms/release 70 ms/knee 2.8/makeup 1 restrains isolated snaps. Unchanged genuine float model master retained. Main derivative: 30 seconds, 5 ms boundary guards, fixed gain toward -29.5 dBFS RMS constrained by -7 dBFS encoded peak ceiling, stereo 44.1 kHz/160 kbps MP3. Mobile: direct 6\u201324 s float excerpt, mono 44.1 kHz/96 kbps, 5 ms guards. No repeated-copy layering, reverb, delay, external sound, synthesized substitute, pitch or speed change.",
+  "browserAsset": {
+    "file": "phone-branches-dry-v20.mp3",
+    "bytes": 601382,
+    "sha256": "12cdd8dd828336d8f674a629764aa03a6034528deb65790992ecb153065fe17e",
+    "durationSeconds": 30,
+    "channels": 2,
+    "sampleRate": 44100,
+    "bitrateKbps": 160,
+    "normalization": {
+      "targetRmsDbfs": -29.5,
+      "peakCeilingDbfs": -7,
+      "appliedGainDb": 23.35763685592332,
+      "codecHeadroomCorrectionDb": 0.0
+    },
+    "validation": {
+      "completeDecode": "passed",
+      "samplesPerChannel": 1323000,
+      "nonFiniteSamples": 0,
+      "peakAmplitude": 0.3975198566913605,
+      "peakDbfs": -8.0128234565728,
+      "rmsDbfs": -31.115433622581566,
+      "crestDb": 23.102610166008766,
+      "nearFullScaleSampleFraction": 0.0,
+      "quietWindowFractionBelowMinus65Dbfs": 0.011666666666666667,
+      "windowRmsP95AboveMedianDb": 4.745650170857822,
+      "windowRmsMaxAboveMedianDb": 7.6212084157003055,
+      "spectralEnergyFractions": {
+        "0-120Hz": 0.000126848416183265,
+        "120-500Hz": 0.0038049714460658534,
+        "500-2000Hz": 0.23892660574667163,
+        "2000-6000Hz": 0.5577382755273487,
+        "6000-22050Hz": 0.19940329886372196
+      },
+      "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+      "encodedPeakCeilingDbfs": -7,
+      "encodedPeakCheck": "passed"
+    }
+  },
+  "mobile": {
+    "file": "phone-branches-dry-v20-mobile.mp3",
+    "bytes": 216964,
+    "sha256": "4da3dfea8d5c8ae9c485548763651cfbd144144f5c742158cb71e52db5658941",
+    "durationSeconds": 18,
+    "channels": 1,
+    "sampleRate": 44100,
+    "bitrateKbps": 96,
+    "normalization": {
+      "targetRmsDbfs": -29.5,
+      "peakCeilingDbfs": -7,
+      "appliedGainDb": 23.762443095477156,
+      "codecHeadroomCorrectionDb": 0.0
+    },
+    "validation": {
+      "completeDecode": "passed",
+      "samplesPerChannel": 793800,
+      "nonFiniteSamples": 0,
+      "peakAmplitude": 0.41344889998435974,
+      "peakDbfs": -7.671563184196964,
+      "rmsDbfs": -30.85124225324643,
+      "crestDb": 23.179679069049463,
+      "nearFullScaleSampleFraction": 0.0,
+      "quietWindowFractionBelowMinus65Dbfs": 0.0,
+      "windowRmsP95AboveMedianDb": 5.2775473710490175,
+      "windowRmsMaxAboveMedianDb": 8.32974305041693,
+      "spectralEnergyFractions": {
+        "0-120Hz": 0.00011901396821728797,
+        "120-500Hz": 0.0037489941322651514,
+        "500-2000Hz": 0.2463750173578967,
+        "2000-6000Hz": 0.5524286766312777,
+        "6000-22050Hz": 0.19732829791032377
+      },
+      "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+      "encodedPeakCeilingDbfs": -7,
+      "encodedPeakCheck": "passed"
+    },
+    "assetKind": "mobile-derivative-of-genuine-model-output",
+    "sourceGeneration": "phone-branches-dry-v20",
+    "sourceExcerptStartSeconds": 6,
+    "sourceExcerptEndSeconds": 24,
+    "sourceMasterSha256": "228c97e19585e3e145aba91a4c7e190a3789a30ff03cc6a7fa62c7967a49b75d",
+    "processing": "Direct seconds 6\u201324 of the processed float derivative, mono downmix and 5 ms boundary guards; fixed normalization and a single 44.1 kHz/96 kbps MP3 encoding. No MP3-to-MP3 transcode."
+  },
+  "validation": {
+    "completeDecode": "passed",
+    "samplesPerChannel": 1323000,
+    "nonFiniteSamples": 0,
+    "peakAmplitude": 0.3975198566913605,
+    "peakDbfs": -8.0128234565728,
+    "rmsDbfs": -31.115433622581566,
+    "crestDb": 23.102610166008766,
+    "nearFullScaleSampleFraction": 0.0,
+    "quietWindowFractionBelowMinus65Dbfs": 0.011666666666666667,
+    "windowRmsP95AboveMedianDb": 4.745650170857822,
+    "windowRmsMaxAboveMedianDb": 7.6212084157003055,
+    "spectralEnergyFractions": {
+      "0-120Hz": 0.000126848416183265,
+      "120-500Hz": 0.0038049714460658534,
+      "500-2000Hz": 0.23892660574667163,
+      "2000-6000Hz": 0.5577382755273487,
+      "6000-22050Hz": 0.19940329886372196
+    },
+    "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+    "encodedPeakCeilingDbfs": -7,
+    "encodedPeakCheck": "passed"
+  },
+  "playbackBoundary": {
+    "fadeInSeconds": 0.005,
+    "fadeOutSeconds": 0.005,
+    "loopConditioning": "runtime-circular-overlap"
+  },
+  "sourceMasterUnchangedCheck": true,
+  "listeningReview": "Signal measurements only. No human listening certification; perceptual prompt adherence remains unverified.",
+  "completedAt": "2026-11-03T10:56:44.146710+00:00"
+}

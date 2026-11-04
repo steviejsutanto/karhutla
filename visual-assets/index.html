@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f5f0">
+  <title>Rain & remains · WLU wildfire assets</title>
+  <link rel="icon" href="/favicon.svg">
+  <link rel="stylesheet" href="/visual-assets/preview.css">
+  <script type="module" src="/visual-assets/preview.js"></script>
+</head>
+<body>
+  <main>
+    <header>
+      <a href="/">← Back to the map</a>
+      <span>WLU / WILDFIRE <span class="divider">/</span> VISUAL STUDY 01</span>
+    </header>
+    <div class="intro">
+      <div><p class="eyebrow">LO-FI ANIMATED ASSETS</p><h1>Rain & what remains.</h1></div>
+      <p>A cloud responds to a touch.<br>The fire fades. The land remembers.</p>
+    </div>
+    <div class="studies">
+      <section class="rain-study" aria-labelledby="rain-title">
+        <div class="section-heading"><h2 id="rain-title"><span>01</span> Rainfall</h2><span id="rain-state" role="status" aria-live="polite">idle</span></div>
+        <button id="rain-trigger" class="rain-trigger" aria-label="Click for a shower, or hold for continuous rainfall">
+          <canvas id="rain-canvas" width="720" height="690" aria-hidden="true"></canvas>
+          <span class="touch-hint">click the cloud / hold to pour</span>
+        </button>
+        <div class="study-note"><span class="blue-dot">●</span><p>Soft cloud movement. Thin blue rain.<br>A short fall and a few last drops on release.</p></div>
+      </section>
+      <section class="forest-study" aria-labelledby="forest-title">
+        <div class="section-heading"><h2 id="forest-title"><span>02</span> Forest & land</h2><span id="forest-state" role="status" aria-live="polite">surface fire</span></div>
+        <canvas id="forest-canvas" width="1280" height="690" role="img" aria-label="A scorched forest patch with low surface flames, embers, and drifting smoke"></canvas>
+        <div class="transport">
+          <button id="play-transition">Play transition <span aria-hidden="true">↗</span></button>
+          <button id="reset-transition" aria-label="Reset to surface fire">Reset</button>
+          <span class="timing">18 s preview</span>
+        </div>
+        <label class="sr-only" for="transition">Transition from surface fire through embers to out</label>
+        <input id="transition" type="range" min="0" max="1000" step="1" value="0" aria-valuetext="Surface fire">
+        <div class="timeline-labels"><span>surface fire</span><span>embers</span><span>out</span></div>
+      </section>
+    </div>
+    <section class="states" aria-labelledby="states-title">
+      <div class="states-heading"><h2 id="states-title">One patch. Three states.</h2><span>The same trunks, ground, and fallen wood.</span></div>
+      <div class="state-grid">
+        <button class="state" data-progress="0" aria-label="Preview surface fire">
+          <div class="state-label"><span><i class="swatch fire"></i> Surface fire</span><span>01</span></div>
+          <canvas id="state-fire" width="800" height="420" aria-hidden="true"></canvas>
+          <p>Low flames in the ground layer.<br>Loose smoke rises above the trees.</p>
+        </button>
+        <button class="state" data-progress="0.62" aria-label="Preview embers">
+          <div class="state-label"><span><i class="swatch ember"></i> Embers</span><span>02</span></div>
+          <canvas id="state-embers" width="800" height="420" aria-hidden="true"></canvas>
+          <p>Flames subside; heat stays close to the soil.<br>Small warm cores and low smoke remain.</p>
+        </button>
+        <button class="state" data-progress="1" aria-label="Preview out and burned remains">
+          <div class="state-label"><span><i class="swatch out"></i> Out / burned remains</span><span>03</span></div>
+          <canvas id="state-out" width="800" height="420" aria-hidden="true"></canvas>
+          <p>Cold ash, charred trunks, fallen branches.<br>The smoke clears; the damage stays.</p>
+        </button>
+      </div>
+    </section>
+    <footer>
+      <p>Schematic performance imagery. The preview compresses the transition; the map keeps its slower moisture and heat model.</p>
+      <div><a class="download-kit" href="/visual-assets/exports/wildfire-lofi-assets.zip" download>Download asset kit ↓</a><button id="download-sheet">Save asset sheet ↓</button><button id="download-frames">Save transparent frames ↓</button><span id="export-status" role="status"></span></div>
+      <p class="motion-note" id="motion-note">Motion follows your device preference.</p>
+    </footer>
+  </main>
+</body>
+</html>

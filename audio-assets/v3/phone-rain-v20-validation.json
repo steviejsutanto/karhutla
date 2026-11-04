@@ -1,0 +1,75 @@
+{
+  "status": "complete",
+  "asset": {
+    "id": "rain-natural-light-mobile",
+    "generated": false,
+    "fieldRecording": true,
+    "assetKind": "mobile-excerpt-of-retained-cc0-field-recording-preview",
+    "file": "audio-assets/v3/rain-natural-light-mobile.mp3",
+    "bytes": 216964,
+    "sha256": "915e564e7a295fcf79476d8971e069eae8726f597c96d203907a35adb78447a9",
+    "durationSeconds": 18,
+    "sampleRate": 44100,
+    "channels": 1,
+    "bitrateKbps": 96,
+    "sourceFile": "audio-assets/v3/natural-sources/rain-country-preview.mp3",
+    "sourceSha256": "5527d0104b896184313a2be534169cda3e3d1a460cb34edbbecb6778a7ade129",
+    "publishedAssetFile": "audio-assets/v3/rain-natural-light.mp3",
+    "publishedAssetSha256": "d627fd9af9ff45e76100853418885d3906803273fc3b172d76503c48efa4e98c",
+    "sourceProvenanceFile": "audio-assets/v3/rain-natural-light-source.json",
+    "sourceExcerptStartSeconds": 54,
+    "sourceExcerptEndSeconds": 72,
+    "publishedAssetEquivalentExcerptStartSeconds": 8,
+    "publishedAssetEquivalentExcerptEndSeconds": 26,
+    "sourceUrl": "https://freesound.org/people/EduFigueres/sounds/688896/",
+    "license": "CC0 1.0 Universal",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "author": "EduFigueres",
+    "sourceTitle": "Soft rain in the countryside",
+    "freesoundId": 688896,
+    "sourcePreview": {
+      "file": "audio-assets/v3/natural-sources/rain-country-preview.mp3",
+      "bytes": 2062298,
+      "sha256": "5527d0104b896184313a2be534169cda3e3d1a460cb34edbbecb6778a7ade129",
+      "url": "https://cdn.freesound.org/previews/688/688896_2454586-hq.mp3"
+    },
+    "processing": "Select retained original public HQ MP3 preview seconds 54\u201372, equivalent to published rain-natural-light seconds 8\u201326. Apply the original fixed 16.000000000 dB gain, mono downmix, 5 ms boundary click guards, and encode once at 44.1 kHz/96 kbps MP3. Browser audio and its provenance remain unchanged. No compression, AGC, limiting, noise gate, envelope riding, filtering, time/pitch change, synthesis or added layer. Runtime circular overlap handles the seam. The retained upstream public preview is compressed; an original microphone master is not claimed.",
+    "normalization": {
+      "appliedConstantGainDb": 16,
+      "sourcePublishedAssetConstantGainDb": 16,
+      "targetPeakCeilingDbfs": -3
+    },
+    "validation": {
+      "completeDecode": "passed",
+      "samplesPerChannel": 793800,
+      "nonFiniteSamples": 0,
+      "peakAmplitude": 0.23393690586090088,
+      "peakDbfs": -12.618025170710146,
+      "rmsDbfs": -32.82148270126034,
+      "crestDb": 20.20345753055019,
+      "nearFullScaleSampleFraction": 0.0,
+      "quietWindowFractionBelowMinus65Dbfs": 0.0,
+      "windowRmsP95AboveMedianDb": 0.9638266495440106,
+      "windowRmsMaxAboveMedianDb": 2.144342050645829,
+      "spectralEnergyFractions": {
+        "0-120Hz": 0.02376523968642382,
+        "120-500Hz": 0.06843556637931801,
+        "500-2000Hz": 0.35171653412006104,
+        "2000-6000Hz": 0.3380952302492043,
+        "6000-22050Hz": 0.21798742956498648
+      },
+      "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+      "encodedPeakCeilingDbfs": -3,
+      "encodedPeakCheck": "passed"
+    },
+    "playbackBoundary": {
+      "fadeInSeconds": 0.005,
+      "fadeOutSeconds": 0.005,
+      "loopConditioning": "runtime-circular-overlap"
+    },
+    "sourcePreviewUnchangedCheck": true,
+    "publishedAssetUnchangedCheck": true,
+    "listeningReview": "Signal validation only; no human listening certification.",
+    "completedAt": "2026-11-03T10:55:11.539172+00:00"
+  }
+}

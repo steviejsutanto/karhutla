@@ -1,0 +1,64 @@
+{
+  "id": "cricket-far-mobile",
+  "generated": false,
+  "fieldRecording": true,
+  "assetKind": "mobile-derivative-of-published-cc0-field-recording-preview",
+  "file": "audio-assets/v3/cricket-far-mobile.mp3",
+  "bytes": 216964,
+  "sha256": "ee1c4ba88b3fab9e67de89fc7f6354861d8eab969a0f5eb76a66a3764f7a071d",
+  "durationSeconds": 18,
+  "sampleRate": 44100,
+  "channels": 1,
+  "bitrateKbps": 96,
+  "sourceFile": "audio-assets/v3/cricket-far.mp3",
+  "sourceSha256": "221f31277a861d386eda6fc5b127bb3f0b2ff0ab93861d0b2a0ce06e000a8c25",
+  "sourceProvenanceFile": "audio-assets/v3/cricket-far-source.json",
+  "sourceExcerptStartSeconds": 11,
+  "sourceExcerptEndSeconds": 29,
+  "sourceUrl": "https://freesound.org/people/Speziax/sounds/645329/",
+  "license": "CC0 1.0 Universal",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "author": "Speziax",
+  "sourceTitle": "Crickets - Warm Summer Night - Ambient.wav",
+  "freesoundId": 645329,
+  "sourcePreview": {
+    "file": "audio-assets/v3/natural-sources/cricket-far-preview.mp3",
+    "bytes": 2778644,
+    "sha256": "f8aaa5fa4adc611ad654c2d2405fbcf13409937e96671c9726062ed950402397",
+    "url": "https://cdn.freesound.org/previews/645/645329_988367-hq.mp3"
+  },
+  "processing": "Select published asset seconds11\u201329; mono downmix at44.1kHz, 5ms boundary click guards and fixed0.000000000dB additional gain. Encode96kbps MP3. Base audio and provenance remain unchanged. Existing source high-pass and fixed gain are inherited from the published asset. No new filtering, compression, AGC, imposed rhythm, time/pitch change, synthesis or added layer. Runtime circular overlap handles the seam.",
+  "normalization": {
+    "appliedConstantGainDb": 0.0,
+    "targetPeakCeilingDbfs": -3
+  },
+  "validation": {
+    "completeDecode": "passed",
+    "samplesPerChannel": 793800,
+    "nonFiniteSamples": 0,
+    "peakAmplitude": 0.5144317150115967,
+    "peakDbfs": -5.773445295069209,
+    "rmsDbfs": -21.00367519801066,
+    "crestDb": 15.230229902941453,
+    "nearFullScaleSampleFraction": 0.0,
+    "quietWindowFractionBelowMinus65Dbfs": 0.0,
+    "windowRmsP95AboveMedianDb": 2.133039377447947,
+    "windowRmsMaxAboveMedianDb": 3.379723733684898,
+    "spectralEnergyFractions": {
+      "0-120Hz": 2.3198298584653074e-10,
+      "120-500Hz": 1.2314833174838793e-05,
+      "500-2000Hz": 0.00026335067641184123,
+      "2000-6000Hz": 0.5195065111513342,
+      "6000-22050Hz": 0.4802178231070886
+    },
+    "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+    "encodedPeakCeilingDbfs": -3,
+    "encodedPeakCheck": "passed"
+  },
+  "playbackBoundary": {
+    "fadeInSeconds": 0.005,
+    "fadeOutSeconds": 0.005,
+    "loopConditioning": "runtime-circular-overlap"
+  },
+  "completedAt": "2026-11-02T16:55:53.704934+00:00"
+}

@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#351d18">
+  <title>Indonesia hotspots</title>
+  <link rel="icon" href="/favicon.svg">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/sound-controls.css">
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+  <main>
+    <h1>Indonesia hotspots</h1>
+    <p><a href="/study">karhutla · material study</a></p>
+    <p id="connection-state" role="status" aria-live="polite">Connecting to venue…</p>
+    <details id="audience-panel">
+      <summary>Audience · <span id="audience-count">0</span> joined · <span id="active-count">0</span> pouring</summary>
+      <div class="audience-join">
+        <img id="join-qr" src="/api/qr.svg" width="120" height="120" alt="QR code to join the local audience" hidden>
+        <div><p>Join on your phone: <a id="join-url" href="/join">Loading local join address…</a></p><p id="lan-note">Phone and laptop must use the same Wi-Fi.</p><p>Each numbered cloud is a confirmed contribution.</p></div>
+      </div>
+    </details>
+    <div id="bootstrap-panel" hidden>
+      <p>Start the shared performance using the previous browser state or a fresh landscape.</p>
+      <div class="controls"><button id="restore-browser" hidden>Restore saved browser performance</button><button id="start-fresh">Start fresh</button></div>
+    </div>
+    <div class="controls" aria-label="Snapshot and map controls">
+      <button id="fetch-button"><span>Fetch latest snapshot</span></button>
+      <button id="zoom-in" aria-label="Zoom in">+</button>
+      <button id="zoom-out" aria-label="Zoom out">−</button>
+      <button id="zoom-reset">Reset map</button>
+      <button id="fit-active">Fit active rain</button>
+      <span id="offscreen-active" aria-live="polite"></span>
+    </div>
+    <div class="controls rain-controls" aria-label="Rain and navigation">
+      <button id="mode-rain" aria-pressed="true">Rain</button>
+      <button id="mode-move" aria-pressed="false">Move map</button>
+      <label for="rain-strength">Strength</label>
+      <input id="rain-strength" type="range" min="0.1" max="1" step="0.1" value="0.5">
+      <output id="strength-value" for="rain-strength">50%</output>
+      <button id="simulation-reset">Reset simulation</button>
+    </div>
+    <div id="operator-sound" aria-label="Sound controls"></div>
+    <details id="timing-panel" open>
+      <summary>Timing controls</summary>
+      <div class="timing-grid">
+        <div class="timing-control">
+          <div class="timing-label"><label for="fire-return">Fire return</label><output id="fire-return-value" for="fire-return">25 s</output></div>
+          <input id="fire-return" data-parameter="fireReturnSeconds" type="range" min="3" max="90" step="1" value="4" aria-describedby="fire-return-help">
+          <p id="fire-return-help">After release, unfinished patches dry and regain heat. Lower values return their glow sooner. Out patches stay dark.</p>
+        </div>
+        <div class="timing-control">
+          <div class="timing-label"><label for="rain-response">Rain response</label><output id="rain-response-value" for="rain-response">1.5 s</output></div>
+          <input id="rain-response" data-parameter="rainResponseSeconds" type="range" min="0.5" max="20" step="0.5" value="1.5" aria-describedby="rain-response-help">
+          <p id="rain-response-help">Approx. time to halve surface flames under 50% rain on dry, hot ground.</p>
+        </div>
+        <div class="timing-control">
+          <div class="timing-label"><label for="deep-cooling">Ember cooling</label><output id="deep-cooling-value" for="deep-cooling">10 s</output></div>
+          <input id="deep-cooling" data-parameter="deepCoolingSeconds" type="range" min="2" max="240" step="1" value="10" aria-describedby="deep-cooling-help">
+          <p id="deep-cooling-help">Lower values cool wet embers faster. A fully covered dry patch takes about 25 s to go out at 50% rain with default timing; about 5.5 s at fastest timing. At 10% strength, fastest timing takes about 12 s.</p>
+        </div>
+        <div class="timing-control">
+          <div class="timing-label"><label for="extinction-hold">Out confirmation</label><output id="extinction-hold-value" for="extinction-hold">4 s</output></div>
+          <input id="extinction-hold" data-parameter="extinctionHoldSeconds" type="range" min="0" max="60" step="1" value="4" aria-describedby="extinction-hold-help">
+          <p id="extinction-hold-help">Keep raining on cool, wet ground this long to mark the patch out.</p>
+        </div>
+      </div>
+      <div class="controls timing-actions"><span>Applies live. Settings save with this performance.</span><button id="timing-reset">Reset timing</button></div>
+    </details>
+    <p class="source-readout">Satellite observations · <span id="detection-count">—</span> detections · <span id="sensor-value">VIIRS / NOAA-20</span><br>Observed: <span id="map-period">Loading snapshot…</span></p>
+    <p id="status-message" role="status" aria-live="polite" hidden></p>
+    <p class="model-note">Performance landscape · rain and cooling are simulated; satellite observations stay unchanged.</p>
+    <div id="map-container">
+      <canvas id="map" tabindex="0" role="img" aria-label="Indonesia performance map. Rain mode: hold and drag to pour locally. Move map mode: drag to pan. Scroll to zoom."></canvas>
+      <div id="map-empty" hidden></div>
+      <div id="map-tooltip" hidden></div>
+    </div>
+    <p id="mode-hint" class="muted">Rain: hold to pour; drag to spread. Scroll to zoom.</p>
+    <p class="muted"><span class="fire-key">surface fire</span> → <span class="ember-key">embers</span> → <span class="out-key">out / burned remains</span> · <span class="wet-key">blue = wet</span></p>
+    <p id="local-input-state" aria-live="polite">Ready when connected.</p>
+    <p class="simulation-readouts"><span id="rain-status" aria-live="polite">Rain idle.</span> <span id="simulation-status">Loading performance state…</span><br><span id="brush-readout">Brush: move over the map.</span></p>
+    <section aria-label="Point details">
+      <div class="controls">
+        <span id="inspection-hint">No point selected.</span>
+        <button id="browse-previous" aria-label="Previous observation" hidden>Previous point</button>
+        <button id="browse-next">Next point</button>
+      </div>
+      <dl id="observation-details" hidden></dl>
+      <p id="point-performance" hidden></p>
+    </section>
+    <footer>
+      <p>Fetched: <span id="fetched-at">—</span><br><span id="fetch-note">NASA's latest available 24-hour feed.</span><br><span id="storage-status">Shared performance saves on the laptop.</span></p>
+      <div class="controls"><a id="source-link" href="https://firms.modaps.eosdis.nasa.gov/" target="_blank" rel="noopener noreferrer">NASA FIRMS</a><a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener noreferrer">Natural Earth</a><a href="/visual-assets/">Animated visual assets</a><button id="about-open">Data info</button></div>
+    </footer>
+  </main>
+  <dialog id="about-dialog" aria-labelledby="about-title">
+    <button id="about-close" aria-label="Close data information">Close</button>
+    <h2 id="about-title">Data info</h2>
+    <p>NASA FIRMS NOAA-20 VIIRS thermal detections, filtered to Indonesia. Fetching downloads the latest available rolling 24-hour feed. The actual observation dates are shown on the page.</p>
+    <p>Hotspots can include fires and other heat sources. They are not fire boundaries, burned area, or a count of distinct wildfires. Forest and land drawings represent the performance model's local patches; their size and trees are schematic, not measured vegetation or burned extent. Multiple detections in one patch share its drawing; original observations remain available under Next point.</p>
+    <p>Country filtering uses Natural Earth's generalized boundary and may omit very small islands or coastal detections.</p>
+    <p>Rain, wetness, moisture, and residual heat are a separate performance simulation. The slower heat response is peat-inspired; it does not classify these hotspots as peat fires or predict real fire behaviour. NASA observations stay unchanged.</p>
+    <p>Each participant supplies one fixed water budget per second while holding. Extra fingers do not add water. Sweeping spreads that budget; overlapping holds add water. Patches and the brush use geographic coordinates, so water stays in place when the map moves. Timing controls adjust the surface response, return of flames, ember cooling, and out confirmation. Extinction requires continued rain, high moisture and low residual heat for <span id="extinction-hold-info">4 seconds</span>.</p>
+    <p>The cloud and rain scale with the geographic brush area. Rain falls freely beneath the cloud; water is applied to the circular area under it. Each forest patch responds to its own wetness and heat. Embers and smoke can remain after flames disappear; out patches retain charred trunks and ash.</p>
+    <p>The brush readout averages wetness, moisture, and heat over its circular footprint. Partly covered patches contribute in proportion to their covered area; untouched patches contribute zero. Point inspection still shows the selected patch separately.</p>
+    <p>Moisture tuning: dM/dt = r/1.2 − M/180, with M clamped to 0–1. These are rehearsal parameters, not measured physics. Unfinished patches regain heat when local rain stops; retained moisture does not continue cooling them unattended. Fully out patches stay out. One shared simulation runs on the laptop server, including when this display is hidden. Wetness and heat save separately from the NASA snapshot. Phones send normalized positions within their assigned region and never overwrite shared state. Rain stops on release or connection loss; stale holds expire after two seconds. Reset simulation restores dry, hot patches without changing the source snapshot.</p>
+    <p>Observed: <span id="observation-period">—</span></p>
+    <p id="source-extra"></p>
+    <p><a id="raw-source-link" href="https://firms.modaps.eosdis.nasa.gov/" target="_blank" rel="noopener noreferrer">Source CSV</a> · <a href="/data/fire-snapshot.json" target="_blank">Saved snapshot</a></p>
+  </dialog>
+</body>
+</html>

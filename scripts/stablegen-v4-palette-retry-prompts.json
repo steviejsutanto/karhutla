@@ -1,0 +1,36 @@
+{
+  "purpose": "Fresh natural palette endpoints for continuous wildfire ambiance controls",
+  "preferredModel": "medium",
+  "modelCard": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+  "space": "https://huggingface.co/spaces/stabilityai/stable-audio-3",
+  "durationSeconds": 45,
+  "steps": 8,
+  "cfgScale": 1.0,
+  "sampler": "pingpong",
+  "notes": "The CFG1 local path uses the positive prompt only. These are ten independent genuine generations; endpoint position describes the intended slider direction, not an acoustic measurement.",
+  "assets": [
+    {
+      "id": "haze-light",
+      "kind": "haze",
+      "endpoint": "low",
+      "endpointPosition": 0,
+      "title": "Light air",
+      "seed": 2026103171,
+      "role": "Lightweight airy low slider endpoint, without a heavy bass bed",
+      "prompt": "TrackType: SFX, A continuous seamless delicate outdoor air whisper, thin soft airy movement steadily drifting through fine grass, countless soft overlapping airy grains blending into one calm even sustained texture, transparent light wind with stable quiet volume and fine open-air detail throughout the whole recording. Length: 45 seconds.",
+      "generationId": "haze-light-take2"
+    },
+    {
+      "id": "ash-fine",
+      "kind": "ash",
+      "endpoint": "low",
+      "endpointPosition": 0,
+      "title": "Fine scattering",
+      "seed": 2026103173,
+      "role": "Clean delicate high-detail sifting ash, preserved without lo-fi filtering",
+      "prompt": "TrackType: SFX, A continuous even close high fidelity recording of fine dry papery ash softly sifting and gently rubbing together, many tiny overlapping flakes blending into one soft sustained detailed flutter, consistent quiet granular rustling at every moment, fine delicate clear full bandwidth texture and stable rounded dynamics throughout the whole recording. Length: 45 seconds.",
+      "generationId": "ash-fine-take2",
+      "bitrateKbps": 320
+    }
+  ]
+}

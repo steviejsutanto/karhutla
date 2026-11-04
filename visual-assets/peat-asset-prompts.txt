@@ -1,0 +1,23 @@
+Peat material study — generated with the built-in ImageGen tool, 30 October 2026.
+Runtime assets are local and require no image service or internet connection.
+
+ASSET: peat-material.png
+Use case: stylized-concept
+Asset type: reusable opaque material texture for a live projected artwork, not a finished screen or scene.
+Primary request: Create a full-bleed overhead macro study of dry, brittle peat and charcoal. Crumbly charred crust, layered paper-thin ash flakes, black carbon fibres and tiny pitted fragments. Sparse narrow cracks let a deep muted copper-orange ember light show from below the crust. The surface feels restless and hot beneath ash, tactile, restrained, and somber.
+Composition: Flat top-down material field filling the entire rectangular image, approximately landscape 3:2. Even distributed surface detail; naturally irregular fractures and pores; no central object, no horizon, no perspective scene, no framing vignette or staged lighting. Edges as detailed as center, useful as a material tile.
+Lighting: Dim diffuse grazing light makes ash and charcoal texture legible on a projection. Overall charcoal-black, graphite, warm gray ash; ember occupies only a small fraction, dark burnt sienna and copper, occasional dull orange pinpoint. Avoid bright lava, saturated red, yellow flames or glossy volcanic rock.
+Constraints: No text, typography, people, hands, trees, recognizable objects, maps, icons, borders, symbols, watermarks, clouds or smoke. Opaque background. Keep fine tactile detail natural and nonrepetitive.
+
+ASSET: peat-smoke.png
+Use case: stylized-concept
+Asset type: transparent PNG smoke texture sprite for a live projected artwork.
+Primary request: A single softly irregular suspended wisp of ash-gray peat smoke and haze. Thin semi-transparent veils and fibrous curls, horizontally spreading yet organically uneven. A sparse airy center surrounded by dissolving tendrils. Muted warm graphite-gray to pale dusty ash, delicate density variation and feathered transparent edges.
+Composition: Isolated smoke wisp with ample truly transparent margin around all edges, softly asymmetric, approximately landscape 3:2. No background scene or hard border. Useful as a composited atmosphere sprite on a charcoal-black artwork.
+Constraints: Actual transparent background with alpha; no opaque black or white backdrop, no checkerboard painted into the image, no dark rectangle, no text, no flames, no embers, no fire, no objects, no sky, no horizon. Avoid fluffy cartoon cumulus cloud, dense opaque white puff, blue smoke or sparkles. Smoke should remain subtly visible on a dark surface.
+
+OPTIMIZED DELIVERY COPIES
+Format conversion and resizing only; original generated PNG masters retained.
+peat-material.webp: 1536 x 1024, RGB, 499032 bytes, WebP quality 80.
+peat-material-phone.webp: 768 x 512, RGB, 129248 bytes, WebP quality 76.
+peat-smoke.webp: 768 x 512, RGBA, 85258 bytes, WebP quality 76. Alpha extrema (0, 253).

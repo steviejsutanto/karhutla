@@ -1,0 +1,64 @@
+{
+  "id": "cricket-mid-mobile",
+  "generated": false,
+  "fieldRecording": true,
+  "assetKind": "mobile-derivative-of-published-cc0-field-recording-preview",
+  "file": "audio-assets/v3/cricket-mid-mobile.mp3",
+  "bytes": 216964,
+  "sha256": "42d24414f4d85ed175eb4c7723261ab614baf7b9999ffc14180d8f62a463a867",
+  "durationSeconds": 18,
+  "sampleRate": 44100,
+  "channels": 1,
+  "bitrateKbps": 96,
+  "sourceFile": "audio-assets/v3/cricket-mid.mp3",
+  "sourceSha256": "a00eade79246db77b92cc8e4eec4fa6c2249da2018b0475843d3caaa0742f57b",
+  "sourceProvenanceFile": "audio-assets/v3/cricket-mid-source.json",
+  "sourceExcerptStartSeconds": 8,
+  "sourceExcerptEndSeconds": 26,
+  "sourceUrl": "https://freesound.org/people/Defelozedd94/sounds/522298/",
+  "license": "CC0 1.0 Universal",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "author": "Defelozedd94",
+  "sourceTitle": "Crickets At Night - Clean sound",
+  "freesoundId": 522298,
+  "sourcePreview": {
+    "file": "audio-assets/v3/natural-sources/cricket-clean-preview.mp3",
+    "bytes": 3947184,
+    "sha256": "8ae77b161d9e530739f31f4885941e6bdfff218060d530314b59383cbce0bdfa",
+    "url": "https://cdn.freesound.org/previews/522/522298_9084007-hq.mp3"
+  },
+  "processing": "Select published asset seconds8\u201326; mono downmix at44.1kHz, 5ms boundary click guards and fixed0.000000000dB additional gain. Encode96kbps MP3. Base audio and provenance remain unchanged. Existing source high-pass and fixed gain are inherited from the published asset. No new filtering, compression, AGC, imposed rhythm, time/pitch change, synthesis or added layer. Runtime circular overlap handles the seam.",
+  "normalization": {
+    "appliedConstantGainDb": 0.0,
+    "targetPeakCeilingDbfs": -3
+  },
+  "validation": {
+    "completeDecode": "passed",
+    "samplesPerChannel": 793800,
+    "nonFiniteSamples": 0,
+    "peakAmplitude": 0.30611452460289,
+    "peakDbfs": -10.28232126788775,
+    "rmsDbfs": -28.143293976954684,
+    "crestDb": 17.860972709066935,
+    "nearFullScaleSampleFraction": 0.0,
+    "quietWindowFractionBelowMinus65Dbfs": 0.0,
+    "windowRmsP95AboveMedianDb": 5.8216092810935685,
+    "windowRmsMaxAboveMedianDb": 8.989392379785947,
+    "spectralEnergyFractions": {
+      "0-120Hz": 4.151878837142813e-10,
+      "120-500Hz": 4.450122672357585e-07,
+      "500-2000Hz": 4.133186329223217e-05,
+      "2000-6000Hz": 0.994819624852752,
+      "6000-22050Hz": 0.005138597856488587
+    },
+    "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+    "encodedPeakCeilingDbfs": -3,
+    "encodedPeakCheck": "passed"
+  },
+  "playbackBoundary": {
+    "fadeInSeconds": 0.005,
+    "fadeOutSeconds": 0.005,
+    "loopConditioning": "runtime-circular-overlap"
+  },
+  "completedAt": "2026-11-02T16:55:53.953231+00:00"
+}

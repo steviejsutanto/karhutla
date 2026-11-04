@@ -1,0 +1,114 @@
+{
+  "model": "Stable Audio 3 Medium",
+  "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+  "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+  "license": "Stable Audio Community License",
+  "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+  "backend": "Official MLX local inference on Apple Silicon",
+  "runtimeRevision": "5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84",
+  "optimizedWeightsRepository": "https://huggingface.co/stabilityai/stable-audio-3-optimized",
+  "optimizedWeightsRevision": "30cb2644da54bfa63275d1bc7f1fa67fc718680f",
+  "verifiedWeights": {
+    "t5gemma_f16.npz": {
+      "bytes": 567443068,
+      "sha256": "8deb20489f36d9aec539f26c9c67321f99bc5fe300d470435ed6e76be4f16bbd"
+    },
+    "dit_medium_f16.npz": {
+      "bytes": 2907300946,
+      "sha256": "f9e5647ea3225818657d47d47ae4b34afa29c0568206ca89566c1a758944a38e"
+    },
+    "same_l_decoder_f32.npz": {
+      "bytes": 1704311976,
+      "sha256": "84924be2122d3a20fce443f40b782d9cd88e8e73707476326003ac47659a2287"
+    }
+  },
+  "device": {
+    "device_name": "Apple M1 Pro",
+    "max_recommended_working_set_size": 11453251584,
+    "memory_size": 17179869184,
+    "architecture": "applegpu_g13s",
+    "max_buffer_length": 8589934592,
+    "resource_limit": 499000
+  },
+  "startedAt": "2026-11-01T12:25:00.443059+00:00",
+  "status": "complete",
+  "assets": {
+    "phone-branches-leaves-take1": {
+      "id": "phone-branches-leaves-take1",
+      "kind": "phone-crackle",
+      "title": "Branches and leaves \u2014 take 1",
+      "seed": 2026110101,
+      "role": "Dry crisp continuous burning fine branches and leaves, papery rustle and soft fine wood snaps",
+      "prompt": "TrackType: SFX, Close detailed recording of dry slender branches, tiny twigs and brittle dead leaves steadily burning in a small open outdoor fire. Continuous crisp papery leaf crackle and delicate dry rustling, fine irregular soft twig snaps and finely textured burning wood grain, countless small overlapping crackles blending into a steady natural dry texture. Restrained flame movement under the clearly audible dry leaves and thin branches, intimate flat open-air acoustics, stable close activity throughout the entire recording. The sound consists exclusively of burning dry leaves and small woody branches. Length: 45 seconds.",
+      "durationSeconds": 45,
+      "steps": 8,
+      "cfgScale": 1.0,
+      "sampler": "pingpong",
+      "pack": "scripts/stablegen-v5-branches-leaves-prompts.json",
+      "model": "Stable Audio 3 Medium",
+      "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+      "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+      "license": "Stable Audio Community License",
+      "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+      "backend": "Official MLX local inference on Apple Silicon",
+      "runtimeRevision": "5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84",
+      "optimizedWeightsRevision": "30cb2644da54bfa63275d1bc7f1fa67fc718680f",
+      "generated": true,
+      "status": "generated",
+      "startedAt": "2026-11-01T12:25:04.676116+00:00",
+      "completedAt": "2026-11-01T12:25:13.734586+00:00",
+      "generationSeconds": 9.058,
+      "peakMetalAllocatedBytes": 7098783286,
+      "unclippedGeneratorPeak": 0.7933974266052246,
+      "unclippedGeneratorRms": 0.006545384146087814,
+      "unclippedGeneratorAboveFullScaleFraction": 0.0,
+      "unclippedGeneratorNearFullScaleFraction": 0.0,
+      "master": {
+        "file": "phone-branches-leaves-take1-master.wav",
+        "bytes": 15876088,
+        "sha256": "0e4e6e9013959630c5572ac440779f81ddb77ae23da773950e913821bc86bb60"
+      },
+      "processing": "Official pipeline output preserved as stereo44100Hz32-bit float WAV without clipping or normalization. No reverb, compression, mixing or post-effects added. Browser copy normalized separately.",
+      "listeningReview": "Technical validity checked. Perceptual prompt adherence requires audition."
+    },
+    "phone-branches-leaves-take2": {
+      "id": "phone-branches-leaves-take2",
+      "kind": "phone-crackle",
+      "title": "Branches and leaves \u2014 take 2",
+      "seed": 2026110102,
+      "role": "Fine papery burning leaf flakes and delicate twig snaps, with continuous dry wood grain",
+      "prompt": "TrackType: SFX, Intimate clear outdoor recording of a small heap of crisp dry fallen leaves and thin dry twigs burning steadily. A continuous delicate fabric of papery leaf sizzling, brittle fine rustle and tiny woody ticks, soft small branch snaps scattered irregularly through the closely detailed dry crackling. Light thin flame hiss stays behind the dry woody leaf texture, even gentle activity with many overlapping very small crackles, clear natural full bandwidth and flat open-air sound. Only the steady burning dry leaves and slender twigs are audible for the whole recording. Length: 45 seconds.",
+      "durationSeconds": 45,
+      "steps": 8,
+      "cfgScale": 1.0,
+      "sampler": "pingpong",
+      "pack": "scripts/stablegen-v5-branches-leaves-prompts.json",
+      "model": "Stable Audio 3 Medium",
+      "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+      "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+      "license": "Stable Audio Community License",
+      "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+      "backend": "Official MLX local inference on Apple Silicon",
+      "runtimeRevision": "5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84",
+      "optimizedWeightsRevision": "30cb2644da54bfa63275d1bc7f1fa67fc718680f",
+      "generated": true,
+      "status": "generated",
+      "startedAt": "2026-11-01T12:25:13.772136+00:00",
+      "completedAt": "2026-11-01T12:25:23.060980+00:00",
+      "generationSeconds": 9.289,
+      "peakMetalAllocatedBytes": 7098799674,
+      "unclippedGeneratorPeak": 0.7243087887763977,
+      "unclippedGeneratorRms": 0.014853855083343678,
+      "unclippedGeneratorAboveFullScaleFraction": 0.0,
+      "unclippedGeneratorNearFullScaleFraction": 0.0,
+      "master": {
+        "file": "phone-branches-leaves-take2-master.wav",
+        "bytes": 15876088,
+        "sha256": "9eb101519b04df5c168dceb763b201d727b2656a35ad6f514b825c0af34af720"
+      },
+      "processing": "Official pipeline output preserved as stereo44100Hz32-bit float WAV without clipping or normalization. No reverb, compression, mixing or post-effects added. Browser copy normalized separately.",
+      "listeningReview": "Technical validity checked. Perceptual prompt adherence requires audition."
+    }
+  },
+  "completedAt": "2026-11-01T12:25:23.099976+00:00"
+}

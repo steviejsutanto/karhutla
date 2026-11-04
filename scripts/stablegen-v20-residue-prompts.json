@@ -1,0 +1,75 @@
+{
+  "purpose": "Independent dry phone-fire alternatives and uncorrelated fine residue layers",
+  "preferredModel": "medium",
+  "durationSeconds": 30,
+  "steps": 8,
+  "cfgScale": 1.0,
+  "sampler": "pingpong",
+  "notes": "Use the cached pinned official MLX path only. Eight genuinely independent model generations with distinct seeds, not offset or pitch-shifted copies. Select one new phone texture and retain the other raw study. Residue variations supplement the original two-endpoint global morphs without replacing them.",
+  "assets": [
+    {
+      "id": "phone-branches-dry-v20",
+      "kind": "phone-crackle",
+      "title": "Dry branches and leaves",
+      "seed": 202611032001,
+      "role": "Fine dry burning branch and leaf crackle with clear middle-frequency wooden body",
+      "prompt": "TrackType: SFX, Clear close outdoor recording of a steady small fire burning a shallow pile of crisp dry leaves and slender woody branches. Continuous finely textured dry papery crackling, many overlapping small crisp twig ticks with warm hollow wooden body in the middle frequencies. Soft restrained little wood snaps nestled inside an even dense delicate leaf crackle. Clean intimate detail, flat dry open-air acoustics, steady quiet activity with natural fine irregularity throughout. Length: 30 seconds."
+    },
+    {
+      "id": "phone-branches-dry-v20-study2",
+      "kind": "phone-crackle",
+      "title": "Fine twig and leaf fire study",
+      "seed": 202611032002,
+      "role": "A second independent dry fine leaf fire with gentle woody ticks",
+      "prompt": "TrackType: SFX, A detailed field recording of dry leaves and thin brittle wooden twigs steadily burning. Countless tiny dry crackles and papery leaf fizz overlap continuously with soft rounded woody ticks, a close tactile natural fire texture with audible small wooden branch body. Dense even fine grain and delicate irregular crackling, gentle restrained dynamics, clear dry open outdoor sound at a consistent distance for the entire recording. Length: 30 seconds."
+    },
+    {
+      "id": "ash-flutter-v20",
+      "kind": "ash",
+      "title": "Fine ash flutter",
+      "seed": 202611032003,
+      "role": "Independent clean fine papery ash flutter for concurrent residue patches",
+      "prompt": "TrackType: SFX, Clear high fidelity close recording of extremely fine dry papery ash flakes gently fluttering and brushing across soft forest soil. Many tiny delicate flakes overlap as a continuous soft silky papery rustle, finely detailed airy granular texture with light natural irregular movement. Full bandwidth clean detail, quiet rounded dynamics and flat intimate outdoor acoustics, steady delicate activity throughout. Length: 30 seconds."
+    },
+    {
+      "id": "ash-settle-v20",
+      "kind": "ash",
+      "title": "Fine ash settling",
+      "seed": 202611032004,
+      "role": "Independent clean light ash sifting with fine dry leafy grains",
+      "prompt": "TrackType: SFX, Clean close high fidelity sound of a gentle continuous sift of fine dry ash and featherweight thin leaf flakes settling over soft earth. Countless small overlapping papery grains make a smooth delicate dry shivering rustle, softly rubbing and lightly scattering with full bandwidth natural detail. Restrained even soft dynamics, consistent intimate dry outdoor perspective and fine continuous activity for the entire recording. Length: 30 seconds."
+    },
+    {
+      "id": "moisture-moss-v20",
+      "kind": "moisture",
+      "title": "Moss moisture",
+      "seed": 202611032005,
+      "role": "Independent fine damp moss seep with quiet soft liquid detail",
+      "prompt": "TrackType: SFX, Clear close recording of a tiny amount of water slowly seeping through soft damp moss on forest earth. Fine quiet wet granular movement and delicate shallow liquid murmuring blend into a calm continuous soft texture. Very small droplets are softly absorbed by moss, feathered rounded gentle onsets and stable natural water tone, clean intimate outdoor detail with even quiet activity throughout. Length: 30 seconds."
+    },
+    {
+      "id": "moisture-earth-v20",
+      "kind": "moisture",
+      "title": "Damp earth movement",
+      "seed": 202611032006,
+      "role": "Independent tiny shallow water movement over damp leaf litter",
+      "prompt": "TrackType: SFX, High fidelity intimate recording of a very thin gentle trickle of water slowly moving through damp fine leaf litter and soft forest soil. Delicate smooth shallow liquid motion, tiny soft wet grains and quiet rounded droplets absorbed into earth form a continuous calm natural texture. Restrained soft onsets, consistent stable tone, clear fine detail in flat open-air acoustics with even activity throughout. Length: 30 seconds."
+    },
+    {
+      "id": "haze-grass-v20",
+      "kind": "haze",
+      "title": "Fine grass air",
+      "seed": 202611032007,
+      "role": "Independent lightweight clean air movement through fine dry grass",
+      "prompt": "TrackType: SFX, A clear delicate outdoor air whisper moving gently through fine slender dry grass. Countless soft overlapping airy grains and tiny fine grass movements blend into a continuous thin transparent breeze, light soft middle-frequency flutter and detailed weightless open air. Clean natural high fidelity recording, restrained even dynamics and consistent quiet activity throughout. Length: 30 seconds."
+    },
+    {
+      "id": "haze-leaves-v20",
+      "kind": "haze",
+      "title": "Fine leaf air",
+      "seed": 202611032008,
+      "role": "Independent gentle airy drift across slender leaves",
+      "prompt": "TrackType: SFX, Clear close outdoor recording of the gentlest steady breeze brushing very thin dry leaves. Fine soft airy leaf flutter and transparent thin air movement overlap in a delicate continuous texture, stable quiet volume with subtle natural irregularity and fine open-air detail. Lightweight clean middle-frequency air whisper, restrained gentle dynamics and calm consistent activity throughout. Length: 30 seconds."
+    }
+  ]
+}

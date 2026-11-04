@@ -1,0 +1,245 @@
+{
+  "id": "extinction-blob-b",
+  "kind": "blob",
+  "title": "Soft hollow bubble",
+  "description": "Independent quiet hollow wet bubble pop with a rounded short decay",
+  "model": "Stable Audio 3 Medium",
+  "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+  "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+  "license": "Stable Audio Community License",
+  "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+  "generated": true,
+  "assetKind": "processed-excerpt-of-genuine-model-output",
+  "rawModelOutput": false,
+  "generationId": "extinction-blob-b",
+  "sourceGeneration": {
+    "id": "extinction-blob-b",
+    "kind": "blob",
+    "title": "Soft hollow bubble",
+    "seed": 202611042402,
+    "role": "Independent quiet hollow wet bubble pop with a rounded short decay",
+    "prompt": "TrackType: SFX, A single gentle hollow water bubble rising and making a soft warm bloop. Small rounded moist blob sound with a smooth pillowy onset, low resonant watery body, brief organic settling wobble and a short quiet tail. Intimate dry detail and restrained soft top, no sharp popping crack, spray, steam, music or voices. One isolated liquid plop with quiet around it. Length: 5 seconds.",
+    "durationSeconds": 5,
+    "steps": 8,
+    "cfgScale": 1.0,
+    "sampler": "pingpong",
+    "pack": "scripts/stablegen-v24-blob-prompts.json",
+    "model": "Stable Audio 3 Medium",
+    "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+    "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+    "license": "Stable Audio Community License",
+    "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+    "backend": "Official MLX local inference on Apple Silicon",
+    "runtimeRevision": "5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84",
+    "optimizedWeightsRevision": "30cb2644da54bfa63275d1bc7f1fa67fc718680f",
+    "generated": true,
+    "status": "generated",
+    "startedAt": "2026-11-04T03:46:29.363271+00:00",
+    "completedAt": "2026-11-04T03:46:31.646432+00:00",
+    "generationSeconds": 2.283,
+    "peakMetalAllocatedBytes": 6408080606,
+    "unclippedGeneratorPeak": 0.9070709943771362,
+    "unclippedGeneratorRms": 0.0261356570269412,
+    "unclippedGeneratorAboveFullScaleFraction": 0.0,
+    "unclippedGeneratorNearFullScaleFraction": 0.0,
+    "master": {
+      "file": "extinction-blob-b-master.wav",
+      "bytes": 1764088,
+      "sha256": "c08fc59b451311e859979fbfb9f783082062ca3904dc89bae857372a84a3750b"
+    },
+    "processing": "Official pipeline output preserved as stereo44100Hz32-bit float WAV without clipping or normalization. No reverb, compression, mixing or post-effects added. Browser copy normalized separately.",
+    "listeningReview": "Technical validity checked. Perceptual prompt adherence requires audition."
+  },
+  "generationBatchRecord": "medium-blob-v24-batch.json",
+  "verifiedWeights": {
+    "t5gemma_f16.npz": {
+      "bytes": 567443068,
+      "sha256": "8deb20489f36d9aec539f26c9c67321f99bc5fe300d470435ed6e76be4f16bbd"
+    },
+    "dit_medium_f16.npz": {
+      "bytes": 2907300946,
+      "sha256": "f9e5647ea3225818657d47d47ae4b34afa29c0568206ca89566c1a758944a38e"
+    },
+    "same_l_decoder_f32.npz": {
+      "bytes": 1704311976,
+      "sha256": "84924be2122d3a20fce443f40b782d9cd88e8e73707476326003ac47659a2287"
+    }
+  },
+  "device": {
+    "device_name": "Apple M1 Pro",
+    "max_recommended_working_set_size": 11453251584,
+    "memory_size": 17179869184,
+    "architecture": "applegpu_g13s",
+    "max_buffer_length": 8589934592,
+    "resource_limit": 499000
+  },
+  "rawGeneratedMaster": {
+    "file": "extinction-blob-b-master.wav",
+    "bytes": 1764088,
+    "sha256": "c08fc59b451311e859979fbfb9f783082062ca3904dc89bae857372a84a3750b"
+  },
+  "rawMasterValidation": {
+    "completeDecode": "passed",
+    "samplesPerChannel": 220500,
+    "nonFiniteSamples": 0,
+    "peakAmplitude": 1.1667168140411377,
+    "peakDbfs": 1.339309134211673,
+    "rmsDbfs": -28.680003415748075,
+    "crestDb": 30.01931254995975,
+    "nearFullScaleSampleFraction": 0.00024489795918367346,
+    "spectralEnergyFractions": {
+      "0-120Hz": 0.0002895573227836229,
+      "120-500Hz": 0.8460611415525893,
+      "500-2000Hz": 0.15264324828576678,
+      "2000-6000Hz": 6.371057813172272e-05,
+      "6000-22050Hz": 0.0009422630483912971
+    },
+    "spectralMethod": "Whole short clip mono float decode with a Hann window; energy fractions from its full-length FFT.",
+    "peak10msWindowStartSeconds": 0.14,
+    "quietWindowFractionBelowMinus65Dbfs": 0.898,
+    "scope": "Signal and short-event envelope measurements only; not a human listening or semantic source certification."
+  },
+  "sourceExcerptStartSeconds": 0.08,
+  "sourceExcerptEndSeconds": 0.73,
+  "sourceExcerptStartSample": 3528,
+  "sourceExcerptSampleCount": 28665,
+  "eventSelection": "A separate real event from each of four independently generated5s masters. Measured10ms RMS onsets/envelopes informed the excerpt; no human listening classification claimed.",
+  "processedMaster": {
+    "file": "extinction-blob-b-processed-master.wav",
+    "bytes": 114752,
+    "sha256": "c936a65f1050b2ce81a7e1a466e263daf92aeeb2bb529af185b23f52e7b4e913",
+    "validation": {
+      "completeDecode": "passed",
+      "samplesPerChannel": 28665,
+      "nonFiniteSamples": 0,
+      "peakAmplitude": 1.459684133529663,
+      "peakDbfs": 3.285177747108485,
+      "rmsDbfs": -18.334212518835002,
+      "crestDb": 21.619390265943487,
+      "nearFullScaleSampleFraction": 0.004570033141461713,
+      "spectralEnergyFractions": {
+        "0-120Hz": 0.00014697521992401957,
+        "120-500Hz": 0.9969697027506375,
+        "500-2000Hz": 0.0028812052080391015,
+        "2000-6000Hz": 2.064270752319038e-06,
+        "6000-22050Hz": 5.255064728396427e-08
+      },
+      "spectralMethod": "Whole short clip mono float decode with a Hann window; energy fractions from its full-length FFT.",
+      "peak10msWindowStartSeconds": 0.06,
+      "quietWindowFractionBelowMinus65Dbfs": 0.46153846153846156,
+      "scope": "Signal and short-event envelope measurements only; not a human listening or semantic source certification."
+    }
+  },
+  "derivation": {
+    "source": "extinction-blob-b-master.wav",
+    "filters": "atrim=start_sample=3528:end_sample=32193,asetpts=PTS-STARTPTS,highpass=f=90:p=2,lowpass=f=2600:p=2,equalizer=f=450:t=o:w=1.5:g=2,afade=t=in:st=0:d=0.012,afade=t=out:st=0.470000:d=0.18"
+  },
+  "processing": "Select exact original float samples3528\u201332193 (0.08\u20130.73s) from this independent genuine master. 90Hz two-pole high-pass,2600Hz two-pole low-pass,broad+2dB450Hz/1.5-octave EQ; 12ms onset click guard and180ms ending taper,mono downmix. Apply fixed-15.285177747dB gain toward-27dBFS RMS constrained to-11dBFS decoded peak; encode once directly from processed float as mono44100Hz96kbps MP3. Any codec overshoot correction re-encodes directly from float. Unchanged raw master retained. No compression,AGC,limiting,gating,external audio,substitute synthesis,repeated copies, time/pitch changes,reverb,echo or added quench layer.",
+  "browserAsset": {
+    "file": "extinction-blob-b.mp3",
+    "bytes": 8507,
+    "sha256": "ec6f56c23da16d6001cf37af4bb56cf86b3adb8d863044341bdd502b520c1177",
+    "durationSeconds": 0.65,
+    "sampleRate": 44100,
+    "channels": 1,
+    "bitrateKbps": 96,
+    "normalization": {
+      "targetRmsDbfs": -27,
+      "peakCeilingDbfs": -11,
+      "appliedGainDb": -15.285177747108484,
+      "codecHeadroomCorrectionDb": 0
+    },
+    "validation": {
+      "completeDecode": "passed",
+      "samplesPerChannel": 28665,
+      "nonFiniteSamples": 0,
+      "peakAmplitude": 0.23861737549304962,
+      "peakDbfs": -12.445958706523747,
+      "rmsDbfs": -34.06475019310093,
+      "crestDb": 21.61879148657718,
+      "nearFullScaleSampleFraction": 0.0,
+      "spectralEnergyFractions": {
+        "0-120Hz": 0.0001470622810403418,
+        "120-500Hz": 0.9969637130936955,
+        "500-2000Hz": 0.0028870598379677165,
+        "2000-6000Hz": 2.1104913898633455e-06,
+        "6000-22050Hz": 5.4295906417339785e-08
+      },
+      "spectralMethod": "Whole short clip mono float decode with a Hann window; energy fractions from its full-length FFT.",
+      "peak10msWindowStartSeconds": 0.06,
+      "quietWindowFractionBelowMinus65Dbfs": 0.6,
+      "scope": "Signal and short-event envelope measurements only; not a human listening or semantic source certification.",
+      "encodedPeakCeilingDbfs": -11,
+      "encodedPeakCheck": "passed"
+    }
+  },
+  "mobile": {
+    "file": "extinction-blob-b.mp3",
+    "bytes": 8507,
+    "sha256": "ec6f56c23da16d6001cf37af4bb56cf86b3adb8d863044341bdd502b520c1177",
+    "durationSeconds": 0.65,
+    "sampleRate": 44100,
+    "channels": 1,
+    "bitrateKbps": 96,
+    "normalization": {
+      "targetRmsDbfs": -27,
+      "peakCeilingDbfs": -11,
+      "appliedGainDb": -15.285177747108484,
+      "codecHeadroomCorrectionDb": 0
+    },
+    "validation": {
+      "completeDecode": "passed",
+      "samplesPerChannel": 28665,
+      "nonFiniteSamples": 0,
+      "peakAmplitude": 0.23861737549304962,
+      "peakDbfs": -12.445958706523747,
+      "rmsDbfs": -34.06475019310093,
+      "crestDb": 21.61879148657718,
+      "nearFullScaleSampleFraction": 0.0,
+      "spectralEnergyFractions": {
+        "0-120Hz": 0.0001470622810403418,
+        "120-500Hz": 0.9969637130936955,
+        "500-2000Hz": 0.0028870598379677165,
+        "2000-6000Hz": 2.1104913898633455e-06,
+        "6000-22050Hz": 5.4295906417339785e-08
+      },
+      "spectralMethod": "Whole short clip mono float decode with a Hann window; energy fractions from its full-length FFT.",
+      "peak10msWindowStartSeconds": 0.06,
+      "quietWindowFractionBelowMinus65Dbfs": 0.6,
+      "scope": "Signal and short-event envelope measurements only; not a human listening or semantic source certification.",
+      "encodedPeakCeilingDbfs": -11,
+      "encodedPeakCheck": "passed"
+    }
+  },
+  "validation": {
+    "completeDecode": "passed",
+    "samplesPerChannel": 28665,
+    "nonFiniteSamples": 0,
+    "peakAmplitude": 0.23861737549304962,
+    "peakDbfs": -12.445958706523747,
+    "rmsDbfs": -34.06475019310093,
+    "crestDb": 21.61879148657718,
+    "nearFullScaleSampleFraction": 0.0,
+    "spectralEnergyFractions": {
+      "0-120Hz": 0.0001470622810403418,
+      "120-500Hz": 0.9969637130936955,
+      "500-2000Hz": 0.0028870598379677165,
+      "2000-6000Hz": 2.1104913898633455e-06,
+      "6000-22050Hz": 5.4295906417339785e-08
+    },
+    "spectralMethod": "Whole short clip mono float decode with a Hann window; energy fractions from its full-length FFT.",
+    "peak10msWindowStartSeconds": 0.06,
+    "quietWindowFractionBelowMinus65Dbfs": 0.6,
+    "scope": "Signal and short-event envelope measurements only; not a human listening or semantic source certification.",
+    "encodedPeakCeilingDbfs": -11,
+    "encodedPeakCheck": "passed"
+  },
+  "playbackBoundary": {
+    "oneShot": true,
+    "fadeInSeconds": 0.012,
+    "fadeOutSeconds": 0.18
+  },
+  "sourceMasterUnchangedCheck": true,
+  "listeningReview": "Technical signal/provenance checks only. No human listening or semantic guarantee of liquid identity or absence of music/voices.",
+  "completedAt": "2026-11-04T03:48:55.029749+00:00"
+}

@@ -1,0 +1,27 @@
+{
+  "purpose": "Independent fuller dry wooden crackle candidates",
+  "preferredModel": "medium",
+  "durationSeconds": 30,
+  "steps": 8,
+  "cfgScale": 1.0,
+  "sampler": "pingpong",
+  "notes": "Additional real independent official Medium generations. These favor wooden body over the very fine high-frequency first two studies; all masters remain retained.",
+  "assets": [
+    {
+      "id": "phone-wood-body-v20-study3",
+      "kind": "phone-crackle",
+      "title": "Dry wooden branch fire",
+      "seed": 202611032009,
+      "role": "Fuller dry middle-frequency wooden branch crackling",
+      "prompt": "TrackType: SFX, Close dry recording of a small steady wood fire consuming a pile of dry wooden branches and sticks. A dense continuous crunchy wood crackle, warm hollow wooden snapping and soft thick twig crunches with a clear rounded middle-frequency body. Quiet dry papery leaves crackle gently around the burning branches. Many small overlapping woody sounds make an even intimate natural texture, stable restrained dynamics in flat open outdoor acoustics throughout. Length: 30 seconds."
+    },
+    {
+      "id": "phone-wood-body-v20-study4",
+      "kind": "phone-crackle",
+      "title": "Wooden kindling fire",
+      "seed": 202611032010,
+      "role": "Dry textured wood fire with softer close branch body",
+      "prompt": "TrackType: SFX, A close natural recording of dry kindling and wooden branches steadily burning in a small outdoor campfire. Countless gentle soft-edged wooden crackles overlapping, thick warm twig snaps, quiet crunchy wood grain and a soft dry leaf rustle. The wooden crackling has rounded rich middle-frequency body with a stable quiet intimate presence, gently irregular small sounds and even continuous activity in dry flat open-air acoustics. Length: 30 seconds."
+    }
+  ]
+}

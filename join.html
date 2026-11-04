@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#202222">
+  <title>Your rain</title>
+  <link rel="icon" href="/favicon.svg">
+  <link rel="stylesheet" href="/join.css">
+  <link rel="stylesheet" href="/sound-controls.css">
+  <script type="module" src="/join.js"></script>
+</head>
+<body>
+  <div id="phone-atmosphere" aria-hidden="true" data-spatial="waiting"></div>
+  <canvas id="phone-rain" aria-hidden="true" data-state="idle"></canvas>
+  <main id="rain-instrument" aria-label="Rain instrument" aria-describedby="hold-instruction">
+    <header>
+      <p>YOUR RAIN <span aria-hidden="true">/</span> CLOUD <span id="participant-number">—</span></p>
+      <p id="connection-state" role="status" aria-live="polite">Connecting…</p>
+    </header>
+
+    <section class="region" aria-labelledby="region-name">
+      <p class="eyebrow">Your assigned region</p>
+      <h1 id="region-name">Finding your place…</h1>
+      <p id="stats-scope" class="stats-scope">Assigned region average</p>
+      <dl class="region-stats" aria-labelledby="stats-scope">
+        <div><dt>Wetness</dt><dd id="region-wetness">—</dd></div>
+        <div><dt>Moisture</dt><dd id="region-moisture">—</dd></div>
+        <div><dt>Heat</dt><dd id="region-heat">—</dd></div>
+      </dl>
+      <p id="region-condition" class="region-condition">Waiting for regional heat…</p>
+      <p class="region-note"><span id="region-out">—</span> fire patches out</p>
+      <p class="region-note"><span id="region-active">—</span> pouring here</p>
+      <p class="model-note">Performance model · not live measurements</p>
+    </section>
+
+    <footer>
+      <p id="local-input-state" class="input-state" role="status" aria-live="polite" aria-atomic="true">Waiting for the venue.</p>
+      <p id="hold-instruction" class="hold-instruction">Hold anywhere to pour.</p>
+      <p class="gesture-note">Top is north · right is east.<br>Drag to move. Lift to stop.</p>
+      <button id="rain-toggle" type="button" aria-pressed="false" aria-describedby="toggle-help" disabled>Start rain without holding</button>
+      <p id="toggle-help" class="toggle-help">Tap again to stop · keyboard: Enter or Space</p>
+    </footer>
+  </main>
+  <div id="phone-sound" aria-label="Sound controls"></div>
+  <noscript>This rain instrument needs JavaScript to connect to the venue.</noscript>
+</body>
+</html>

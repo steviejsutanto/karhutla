@@ -1,0 +1,134 @@
+{
+  "id": "crickets",
+  "seed": 2026103135,
+  "role": "Quiet aftermath only, enabled after confirmed extinction",
+  "prompt": "TrackType: SFX, a quiet natural chorus of small night crickets in still forest air after rain, gentle delicate individual chirps at slightly different irregular times, several soft close insects over a quiet open-air background, low density with restful gaps and stable low volume, realistic restrained outdoor field recording with dry clear detail. Length: 45 seconds.",
+  "durationSeconds": 45,
+  "steps": 8,
+  "cfgScale": 1.0,
+  "sampler": "pingpong",
+  "pack": "scripts/stablegen-v3-textures-prompts.json",
+  "model": "Stable Audio 3 Medium",
+  "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+  "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+  "license": "Stable Audio Community License",
+  "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+  "backend": "Official MLX local inference on Apple Silicon",
+  "runtimeRevision": "5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84",
+  "optimizedWeightsRevision": "30cb2644da54bfa63275d1bc7f1fa67fc718680f",
+  "generated": true,
+  "status": "generated",
+  "startedAt": "2026-10-31T05:24:22.072794+00:00",
+  "completedAt": "2026-10-31T05:25:01.668596+00:00",
+  "generationSeconds": 9.767,
+  "peakMetalAllocatedBytes": 7102088810,
+  "unclippedGeneratorPeak": 0.06103801727294922,
+  "unclippedGeneratorRms": 0.003537274649365689,
+  "unclippedGeneratorAboveFullScaleFraction": 0.0,
+  "unclippedGeneratorNearFullScaleFraction": 0.0,
+  "master": {
+    "file": "crickets-master.wav",
+    "bytes": 15876088,
+    "sha256": "7637061185160524f60f7cf3a041d29c7b401d774d017035044eb6b3e2dfc7c8"
+  },
+  "processing": "Original generated float WAV retained unchanged; MP3: 250ms fade-in, 500ms fade-out, raw master peak normalized near -4dBFS before encoding, stereo44.1kHz160kbps. Any codec overshoot is corrected by encoding again directly from the unchanged original master. Complete MP3 decode and encoded peak <= -3dBFS checks passed.",
+  "listeningReview": "Not certified by a human listener. Technical validation does not establish prompt adherence.",
+  "modelCard": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+  "adoptedAt": "2026-10-31T05:25:00.616091+00:00",
+  "verifiedWeights": {
+    "t5gemma_f16.npz": {
+      "bytes": 567443068,
+      "sha256": "8deb20489f36d9aec539f26c9c67321f99bc5fe300d470435ed6e76be4f16bbd"
+    },
+    "dit_medium_f16.npz": {
+      "bytes": 2907300946,
+      "sha256": "f9e5647ea3225818657d47d47ae4b34afa29c0568206ca89566c1a758944a38e"
+    },
+    "same_l_decoder_f32.npz": {
+      "bytes": 1704311976,
+      "sha256": "84924be2122d3a20fce443f40b782d9cd88e8e73707476326003ac47659a2287"
+    }
+  },
+  "device": {
+    "device_name": "Apple M1 Pro",
+    "max_recommended_working_set_size": 11453251584,
+    "memory_size": 17179869184,
+    "architecture": "applegpu_g13s",
+    "max_buffer_length": 8589934592,
+    "resource_limit": 499000
+  },
+  "wavMaster": {
+    "file": "crickets-master.wav",
+    "bytes": 15876088,
+    "sha256": "7637061185160524f60f7cf3a041d29c7b401d774d017035044eb6b3e2dfc7c8"
+  },
+  "browserAsset": {
+    "file": "crickets.mp3",
+    "bytes": 901268,
+    "sha256": "1bf64cb8fae8fd937fe8485b91cce94b765f4ceece4e54021549162fb01c8993",
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "mp3",
+          "sample_rate": "44100",
+          "channels": 2
+        }
+      ],
+      "format": {
+        "duration": "45.035102",
+        "size": "901268"
+      }
+    }
+  },
+  "validation": {
+    "completeDecode": "passed",
+    "samplesPerChannel": 1984500,
+    "nonFiniteSamples": 0,
+    "peakAmplitude": 0.588529646396637,
+    "peakDbfs": -4.604633105274988,
+    "rmsDbfs": -29.104980183999768,
+    "crestDb": 24.50034707872478,
+    "nearFullScaleSampleFraction": 0.0,
+    "quietWindowFractionBelowMinus65Dbfs": 0.013333333333333334,
+    "windowRmsP95AboveMedianDb": 3.3281230848289987,
+    "windowRmsMaxAboveMedianDb": 4.537435930896564,
+    "spectralEnergyFractions": {
+      "0-120Hz": 0.03444777535909813,
+      "120-500Hz": 0.02623885371757026,
+      "500-2000Hz": 0.042078965760742895,
+      "2000-6000Hz": 0.014193466386568166,
+      "6000-22050Hz": 0.8830409387759839
+    },
+    "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+    "encodedPeakCeilingDbfs": -3,
+    "encodedPeakCheck": "passed"
+  },
+  "masterValidation": {
+    "completeDecode": "passed",
+    "samplesPerChannel": 1984500,
+    "nonFiniteSamples": 0,
+    "peakAmplitude": 0.06103801727294922,
+    "peakDbfs": -24.287991644380256,
+    "rmsDbfs": -49.02662436732839,
+    "crestDb": 24.738632722948132,
+    "nearFullScaleSampleFraction": 0.0,
+    "quietWindowFractionBelowMinus65Dbfs": 0.015555555555555555,
+    "windowRmsP95AboveMedianDb": 3.39874054597999,
+    "windowRmsMaxAboveMedianDb": 4.632936387501282,
+    "spectralEnergyFractions": {
+      "0-120Hz": 0.03495903271961972,
+      "120-500Hz": 0.02667631342325355,
+      "500-2000Hz": 0.04291374060838236,
+      "2000-6000Hz": 0.01354551365306152,
+      "6000-22050Hz": 0.8819053050173684
+    },
+    "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content."
+  },
+  "normalization": {
+    "targetPeakDbfsBeforeEncoding": -4,
+    "appliedGainDb": 20.287991644380256,
+    "codecHeadroomCorrectionDb": 0
+  }
+}

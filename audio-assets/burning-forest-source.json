@@ -1,0 +1,88 @@
+{
+  "file": "burning-forest.mp3",
+  "description": "Full-strength forest wildfire bed, weighted overlay of three independent genuine Stable Audio 3.0 Small SFX generations.",
+  "sourceUrl": "https://huggingface.co/spaces/stabilityai/stable-audio-3",
+  "model": "Stable Audio 3.0 Small SFX",
+  "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-small-sfx",
+  "modelLicense": "Stable Audio Community License",
+  "modelLicenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-small-sfx/blob/main/LICENSE.md",
+  "spaceRevision": "a6d4a3300fb7d96b2f28ac409d868cba65eb6093",
+  "createdAt": "2026-10-31T04:38:53.070287+00:00",
+  "sources": [
+    {
+      "perspective": "close",
+      "amplitudeWeight": 0.55,
+      "master": {
+        "file": "stable-fire-close-space.wav",
+        "bytes": 10584044,
+        "sha256": "16f647ce5204d799cc8580f45c6e8b5e743a98efcda582d6ebd7659f63a6a9c3"
+      },
+      "sourceUrl": "https://huggingface.co/spaces/stabilityai/stable-audio-3",
+      "model": "Stable Audio 3.0 Small SFX",
+      "modelLicense": "Stable Audio Community License",
+      "modelLicenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-small-sfx/blob/main/LICENSE.md",
+      "prompt": "A catastrophic intense forest wildfire at full strength, close perspective. Dense irregular loud fire crackling, roaring turbulent flames, dry twigs snapping unpredictably, huge burning tree trunks creaking and cracking, powerful ember gusts and harsh rushing air. Continuous chaotic natural environmental sound, unmetered, wild, dangerous, detailed stereo field recording. No animals, no crickets, no birds, no insects, no music, no rhythm, no percussion, no speech, no voices, no sirens.",
+      "seed": 2026103101,
+      "eventId": "e5031fcffcee413ba0002365679a4aa8",
+      "steps": 8,
+      "cfgScale": 1.0,
+      "sampler": "pingpong"
+    },
+    {
+      "perspective": "middle",
+      "amplitudeWeight": 0.28,
+      "master": {
+        "file": "stable-fire-middle-space.wav",
+        "bytes": 10584044,
+        "sha256": "079cb3f30c770d008bdbf5d2974ea07899a5e27aa1cd7027069f36c0d2cf6bd6"
+      },
+      "sourceUrl": "https://huggingface.co/spaces/stabilityai/stable-audio-3",
+      "model": "Stable Audio 3.0 Small SFX",
+      "modelLicense": "Stable Audio Community License",
+      "modelLicenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-small-sfx/blob/main/LICENSE.md",
+      "prompt": "An immense raging forest wildfire engulfing a dense forest, heard from the middle distance. Continuous deep turbulent roaring flame fronts surge and recede chaotically. Countless dry branches snap at unpredictable scattered times. Heavy burning trunks creak and fracture, brief sharp wood cracks burst through the broad rushing inferno. Hot wind and ember gusts sweep through a wide stereo field. Intense dangerous natural disaster field recording, sustained full-strength fire, organic irregular dynamics, unmetered environmental noise. No music, no beat, no rhythm, no drums, no voice, no speech, no birds, no crickets, no insects, no animals, no sirens.",
+      "seed": 2026103102,
+      "eventId": "c521d75b181d428d91cd4b4c2f733aeb",
+      "steps": 8,
+      "cfgScale": 1.0,
+      "sampler": "pingpong"
+    },
+    {
+      "perspective": "distant",
+      "amplitudeWeight": 0.17,
+      "master": {
+        "file": "stable-fire-distant-space.wav",
+        "bytes": 10584044,
+        "sha256": "6157d831345b4f78d73837bb4feeaafab6e71aa880c2fd8aea5700187b576cd3"
+      },
+      "sourceUrl": "https://huggingface.co/spaces/stabilityai/stable-audio-3",
+      "model": "Stable Audio 3.0 Small SFX",
+      "modelLicense": "Stable Audio Community License",
+      "modelLicenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-small-sfx/blob/main/LICENSE.md",
+      "prompt": "A vast catastrophic forest fire roaring across a hillside, heard at a distance across the forest. Powerful low rushing flames and turbulent hot wind create a continuous broad spatial roar, with irregular violent surges, remote heavy tree cracks, random far-away branch snaps and dense rolling ember gusts. Dangerous raging wildfire at its maximum strength, organic chaotic unmetered natural environmental sound, wide stereo outdoor field recording. No music, no rhythm, no beat, no instruments, no voices, no speech, no birds, no crickets, no insects, no animals, no rain, no sirens.",
+      "seed": 2026103103,
+      "eventId": "70e81cdf77834d8aafaaf6f704240984",
+      "steps": 8,
+      "cfgScale": 1.0,
+      "sampler": "pingpong"
+    }
+  ],
+  "durationSeconds": 60,
+  "sampleRate": 44100,
+  "channels": 2,
+  "bitrate": 160000,
+  "bytes": 1201154,
+  "sha256": "08ba2e8a08df10d3834970fe745df20f8c413dde7a38bed4473903eb8451283c",
+  "processing": "Overlay close/middle/distant masters at linear amplitude weights 0.55/0.28/0.17. Peak-normalize the full mix to -3.8 dBFS before MP3 encoding, with 120 ms fade-in and 350 ms fade-out. Validate encoded peak <= -3 dBFS. No compression, temporal quantization, pitch shift, added rhythm, music, or external field recording.",
+  "normalizationGain": 1.1345525961621952,
+  "validation": {
+    "completeDecode": "passed",
+    "peakDbfs": -4.330720747415942,
+    "rmsDbfs": -24.009815736669033,
+    "NaN": 0,
+    "Inf": 0,
+    "decodedSamplesPerChannel": 2646000
+  },
+  "listeningReview": "Not certified by a human listener; prompt adherence must be assessed by listening.",
+  "reproduce": "python3 scripts/generate-stable-wildfire-mix.py"
+}

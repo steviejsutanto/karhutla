@@ -1,0 +1,141 @@
+/* Static grain over charcoal, muted embers, and heat. Only layer opacity fades. */
+:root {
+  color-scheme: dark;
+  --ink: #fff2e5;
+  --ground: #202222;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--ground);
+  -webkit-text-size-adjust: 100%;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; overscroll-behavior: none; }
+body {
+  isolation: isolate;
+  background: var(--ground);
+}
+#phone-atmosphere {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 66% 28%, #373a39 0%, transparent 66%),
+    linear-gradient(180deg, #252827 0%, #202222 56%, #171919 100%);
+}
+.heat-patch {
+  position: absolute;
+  --warm-opacity: 0;
+  --hot-opacity: 0;
+}
+.heat-patch::before, .heat-patch::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transition: opacity 1400ms linear;
+}
+.heat-patch::before {
+  opacity: var(--warm-opacity);
+  background: linear-gradient(135deg, #795349, #68413a 55%, #4c3432);
+}
+.heat-patch::after {
+  opacity: var(--hot-opacity);
+  background: linear-gradient(135deg, #be410f, #b22d08 55%, #85200b);
+}
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background-image: var(--grain-image);
+  background-size: 128px 128px;
+  opacity: .64;
+}
+#phone-rain {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+#rain-instrument {
+  position: relative;
+  z-index: 3;
+  text-shadow: 0 1px 2px #171919, 0 0 5px rgba(23, 25, 25, .9);
+  min-height: 100vh;
+  min-height: 100svh;
+  padding: max(22px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-right)) max(22px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left));
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 40px;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  cursor: crosshair;
+}
+p { margin: 0; }
+header { font-size: 11px; letter-spacing: .035em; }
+header p:first-child { font-weight: 650; }
+#connection-state { margin-top: 5px; }
+.region { margin: auto 0; }
+.eyebrow { font-size: 11px; }
+h1 { font-size: clamp(27px, 8vw, 40px); font-weight: 500; line-height: 1.18; letter-spacing: -.055em; margin: 8px 0 28px; overflow-wrap: anywhere; }
+.stats-scope { font-size: 10px; margin-bottom: 8px; }
+.region-stats { display: flex; flex-wrap: wrap; gap: 18px 32px; margin: 0 0 18px; }
+.region-stats dt { font-size: 11px; }
+.region-stats dd { margin: 3px 0 0; font-size: 24px; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.region-condition { font-size: 12px; margin-bottom: 8px; }
+.region-note { font-size: 11px; }
+.model-note { margin-top: 16px; font-size: 10px; }
+.input-state { font-size: 11px; min-height: 1.5em; margin-bottom: 9px; }
+.input-state::before { content: '○'; margin-right: 6px; }
+body[data-pouring='true'] .input-state::before { content: '●'; }
+.hold-instruction { font-size: clamp(18px, 5vw, 24px); line-height: 1.3; letter-spacing: -.035em; }
+.gesture-note { margin-top: 9px; font-size: 11px; }
+button {
+  display: block;
+  min-height: 44px;
+  margin-top: 22px;
+  padding: 10px 12px;
+  color: inherit;
+  background: transparent;
+  border: 1px solid currentColor;
+  border-radius: 0;
+  font: inherit;
+  font-size: 11px;
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+button:disabled { opacity: .5; cursor: default; }
+button[aria-pressed='true'] { color: var(--ground); background: var(--ink); border-color: var(--ink); text-shadow: none; }
+button:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+.toggle-help { margin-top: 7px; font-size: 9px; }
+noscript { position: fixed; inset: 20px; background: var(--ground); z-index: 4; }
+@media (min-width: 650px) {
+  #rain-instrument { padding: 32px; }
+  .region { max-width: 520px; }
+}
+@media (max-height: 610px) {
+  #rain-instrument { gap: 24px; padding-top: 16px; padding-bottom: 16px; }
+  h1 { margin-bottom: 18px; }
+  .region-stats { margin-bottom: 12px; }
+  .model-note { margin-top: 10px; }
+  button { margin-top: 15px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heat-patch::before, .heat-patch::after { transition: none; }
+}
+
+/* Keep the optional local sound button clear of the rain toggle and help. */
+#rain-instrument { padding-bottom: max(88px, calc(env(safe-area-inset-bottom) + 72px)); }
+#phone-sound { position: fixed; }

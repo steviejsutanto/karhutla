@@ -1,0 +1,263 @@
+{
+  "model": "Stable Audio 3 Medium",
+  "generationBatchRecord": "medium-branches-leaves-batch.json",
+  "actualGenerationCount": 2,
+  "selectedGenerationId": "phone-branches-leaves-take2",
+  "activeId": "phone-branches-leaves",
+  "takes": {
+    "phone-branches-leaves-take1": {
+      "seed": 2026110101,
+      "master": {
+        "file": "phone-branches-leaves-take1-master.wav",
+        "bytes": 15876088,
+        "sha256": "0e4e6e9013959630c5572ac440779f81ddb77ae23da773950e913821bc86bb60"
+      },
+      "rawMasterSha256Verified": true,
+      "signal": {
+        "completeDecode": "passed",
+        "samplesPerChannel": 1984500,
+        "nonFiniteSamples": 0,
+        "peakAmplitude": 0.7933974266052246,
+        "peakDbfs": -2.010184249986627,
+        "rmsDbfs": -43.681297195769716,
+        "crestDb": 41.671112945783086,
+        "nearFullScaleSampleFraction": 0.0,
+        "quietWindowFractionBelowMinus65Dbfs": 0.008888888888888889,
+        "windowRmsP95AboveMedianDb": 11.325219517333593,
+        "windowRmsMaxAboveMedianDb": 24.56352559525764,
+        "spectralEnergyFractions": {
+          "0-120Hz": 0.006722352441441293,
+          "120-500Hz": 0.0034190713343742766,
+          "500-2000Hz": 0.021953954585216793,
+          "2000-6000Hz": 0.3814982921054724,
+          "6000-22050Hz": 0.5864062371115322
+        },
+        "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content."
+      }
+    },
+    "phone-branches-leaves-take2": {
+      "seed": 2026110102,
+      "master": {
+        "file": "phone-branches-leaves-take2-master.wav",
+        "bytes": 15876088,
+        "sha256": "9eb101519b04df5c168dceb763b201d727b2656a35ad6f514b825c0af34af720"
+      },
+      "rawMasterSha256Verified": true,
+      "signal": {
+        "completeDecode": "passed",
+        "samplesPerChannel": 1984500,
+        "nonFiniteSamples": 0,
+        "peakAmplitude": 0.7243087887763977,
+        "peakDbfs": -2.801524900598833,
+        "rmsDbfs": -36.56321634896476,
+        "crestDb": 33.76169144836592,
+        "nearFullScaleSampleFraction": 0.0,
+        "quietWindowFractionBelowMinus65Dbfs": 0.07222222222222222,
+        "windowRmsP95AboveMedianDb": 8.812780232333825,
+        "windowRmsMaxAboveMedianDb": 14.454380642287745,
+        "spectralEnergyFractions": {
+          "0-120Hz": 0.00014598441348364767,
+          "120-500Hz": 0.000331677796810225,
+          "500-2000Hz": 0.002643386541056729,
+          "2000-6000Hz": 0.1631364611372699,
+          "6000-22050Hz": 0.8337412626528272
+        },
+        "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content."
+      }
+    }
+  },
+  "selectionEvidence": {
+    "basis": "Signal comparison and tightly dry papery prompts; no human listening certification.",
+    "selectedRawEnergyBelow500HzFraction": 0.0004776622102938727,
+    "previousRawEnergyBelow500HzFraction": 0.14745938170875578,
+    "selectedRawMax50msWindowAboveMedianDb": 14.454380642287745,
+    "alternateRawMax50msWindowAboveMedianDb": 24.56352559525764
+  },
+  "desktop": {
+    "file": "phone-branches-leaves.mp3",
+    "bytes": 901268,
+    "sha256": "59cf87a8a7b41c536b2a70d9d76c3cf2a0d6f51017893b4ea28e55ba6a55f9d1",
+    "durationSeconds": 45,
+    "channels": 2,
+    "sampleRate": 44100,
+    "bitrateKbps": 160,
+    "validation": {
+      "completeDecode": "passed",
+      "samplesPerChannel": 1984500,
+      "nonFiniteSamples": 0,
+      "peakAmplitude": 0.5998056530952454,
+      "peakDbfs": -4.439788907691849,
+      "rmsDbfs": -38.14636018091009,
+      "crestDb": 33.70657127321824,
+      "nearFullScaleSampleFraction": 0.0,
+      "quietWindowFractionBelowMinus65Dbfs": 0.07444444444444444,
+      "windowRmsP95AboveMedianDb": 8.952020398750612,
+      "windowRmsMaxAboveMedianDb": 14.797964105937588,
+      "spectralEnergyFractions": {
+        "0-120Hz": 0.00014368832245773429,
+        "120-500Hz": 0.00032661750221008045,
+        "500-2000Hz": 0.0026147828167591364,
+        "2000-6000Hz": 0.16313249525303603,
+        "6000-22050Hz": 0.8337824161055294
+      },
+      "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+      "encodedPeakCeilingDbfs": -3,
+      "encodedPeakCheck": "passed"
+    },
+    "normalization": {
+      "targetPeakDbfsBeforeEncoding": -4,
+      "appliedGainDb": -1.198475099401167,
+      "codecHeadroomCorrectionDb": 0.0
+    },
+    "playbackBoundary": {
+      "fadeInSeconds": 0.005,
+      "fadeOutSeconds": 0.005,
+      "loopConditioning": "runtime-circular-overlap"
+    }
+  },
+  "mobile": {
+    "file": "audio-assets/v3/phone-branches-leaves-mobile.mp3",
+    "bytes": 216964,
+    "sha256": "9e2bbdeee3dd7cb0472b383305a32b3c3de1ad76b58c6abecbb01e44819c91c2",
+    "durationSeconds": 18,
+    "channels": 1,
+    "sampleRate": 44100,
+    "bitrateKbps": 96,
+    "validation": {
+      "completeDecode": "passed",
+      "samplesPerChannel": 793800,
+      "nonFiniteSamples": 0,
+      "peakAmplitude": 0.6021528244018555,
+      "peakDbfs": -4.405865444897696,
+      "rmsDbfs": -38.36677689117136,
+      "crestDb": 33.96091144627367,
+      "nearFullScaleSampleFraction": 0.0,
+      "quietWindowFractionBelowMinus65Dbfs": 0.0,
+      "windowRmsP95AboveMedianDb": 9.282775287823569,
+      "windowRmsMaxAboveMedianDb": 12.98039512151593,
+      "spectralEnergyFractions": {
+        "0-120Hz": 0.00015312374864142217,
+        "120-500Hz": 0.0003250097821706921,
+        "500-2000Hz": 0.0026313869064675914,
+        "2000-6000Hz": 0.1628546519431355,
+        "6000-22050Hz": 0.8340358276195764
+      },
+      "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+      "encodedPeakCeilingDbfs": -3,
+      "encodedPeakCheck": "passed"
+    },
+    "normalization": {
+      "targetPeakDbfsBeforeEncoding": -4,
+      "appliedGainDb": -1.191687068250396,
+      "codecHeadroomCorrectionDb": 0.0
+    },
+    "playbackBoundary": {
+      "fadeInSeconds": 0.005,
+      "fadeOutSeconds": 0.005,
+      "loopConditioning": "runtime-circular-overlap"
+    },
+    "assetKind": "mobile-derivative-of-genuine-model-output",
+    "sourceFile": "audio-assets/v3/phone-branches-leaves-take2-master.wav",
+    "sourceSha256": "9eb101519b04df5c168dceb763b201d727b2656a35ad6f514b825c0af34af720",
+    "sourceExcerptStartSeconds": 8,
+    "sourceExcerptEndSeconds": 26,
+    "processing": "Select raw generated seconds 8\u201326 directly from the unchanged float master; mono downmix, 44.1 kHz, 96 kbps MP3, 5 ms click guard at each edge and conservative peak normalization. No long export fades. Phone runtime circular overlap conditions the seam. No additional model generation or codec-to-codec conversion."
+  },
+  "previousPhoneSourceRetained": {
+    "id": "phone-crackle",
+    "desktop": {
+      "file": "phone-crackle.mp3",
+      "bytes": 901268,
+      "sha256": "c8640014a04f67f8c8641c0382311e66343f03ac2d68d882e1dd6929727f297c",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "mp3",
+            "sample_rate": "44100",
+            "channels": 2
+          }
+        ],
+        "format": {
+          "duration": "45.035102",
+          "size": "901268"
+        }
+      }
+    },
+    "mobile": {
+      "file": "audio-assets/v3/phone-crackle-mobile.mp3",
+      "bytes": 120833,
+      "sha256": "319c98f6e2256cf0d3278ee87e22b0b2b2d79d309e5ff7f683c370953c3eb351",
+      "durationSeconds": 15,
+      "channels": 1,
+      "sampleRate": 22050,
+      "bitrateKbps": 64,
+      "assetKind": "mobile-derivative-of-published-generated-asset",
+      "sourceFile": "audio-assets/v3/phone-crackle.mp3",
+      "sourceSha256": "c8640014a04f67f8c8641c0382311e66343f03ac2d68d882e1dd6929727f297c",
+      "processing": "Select seconds 8\u201323 of published browser asset, mono downmix, 22.05 kHz resample, 120 ms/300 ms boundary fades, 0.000000000 dB additional gain, 64 kbps MP3. No additional model generation.",
+      "validation": {
+        "completeDecode": "passed",
+        "samplesPerChannel": 661500,
+        "nonFiniteSamples": 0,
+        "peakAmplitude": 0.39131057262420654,
+        "peakDbfs": -8.149568359117904,
+        "rmsDbfs": -33.503919234736,
+        "crestDb": 25.3543508756181,
+        "nearFullScaleSampleFraction": 0.0,
+        "quietWindowFractionBelowMinus65Dbfs": 0.0,
+        "windowRmsP95AboveMedianDb": 3.8379044111722536,
+        "windowRmsMaxAboveMedianDb": 6.436911525251411,
+        "spectralEnergyFractions": {
+          "0-120Hz": 0.03537655883552516,
+          "120-500Hz": 0.0749111103055121,
+          "500-2000Hz": 0.7510258594296494,
+          "2000-6000Hz": 0.09584690317308818,
+          "6000-22050Hz": 0.04283956825621574
+        },
+        "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content."
+      }
+    },
+    "master": {
+      "file": "phone-crackle-master.wav",
+      "bytes": 15876088,
+      "sha256": "156faee1ba11b1f348d8c07046f0490b67081e0aa38fab60651321fce3d6404b"
+    }
+  },
+  "cricketMobileUnchanged": {
+    "file": "audio-assets/v3/crickets-pulse-mobile.mp3",
+    "bytes": 120833,
+    "sha256": "6dca1db4ec60a7c9607051524f9124359a3d2aa0eeac7db7bd0817c81c3a2d1a",
+    "durationSeconds": 15,
+    "channels": 1,
+    "sampleRate": 22050,
+    "bitrateKbps": 64,
+    "assetKind": "mobile-derivative-of-published-generated-asset",
+    "sourceFile": "audio-assets/v3/crickets-pulse.mp3",
+    "sourceSha256": "1e57b3d797e0c30db067e61e4045397699255ac484dea308070e70f1973d8152",
+    "processing": "Select seconds 8\u201323 of published browser asset, mono downmix, 22.05 kHz resample, 120 ms/300 ms boundary fades, 0.000000000 dB additional gain, 64 kbps MP3. No additional model generation.",
+    "validation": {
+      "completeDecode": "passed",
+      "samplesPerChannel": 661500,
+      "nonFiniteSamples": 0,
+      "peakAmplitude": 0.33171534538269043,
+      "peakDbfs": -9.584688745017496,
+      "rmsDbfs": -34.54373807531478,
+      "crestDb": 24.959049330297283,
+      "nearFullScaleSampleFraction": 0.0,
+      "quietWindowFractionBelowMinus65Dbfs": 0.6433333333333333,
+      "windowRmsP95AboveMedianDb": 56.123663318471934,
+      "windowRmsMaxAboveMedianDb": 60.287763554181,
+      "spectralEnergyFractions": {
+        "0-120Hz": 6.207408229116267e-11,
+        "120-500Hz": 7.486661662507635e-07,
+        "500-2000Hz": 0.00037725513921381935,
+        "2000-6000Hz": 0.9985020744057233,
+        "6000-22050Hz": 0.0011199217268222745
+      },
+      "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content."
+    }
+  },
+  "limitations": "Spectral and envelope measurements do not identify dry leaves or branches, certify absence of liquid character, or replace audition. Runtime circular-loop quality is checked separately."
+}

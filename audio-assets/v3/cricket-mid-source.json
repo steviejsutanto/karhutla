@@ -1,0 +1,93 @@
+{
+  "id": "cricket-mid",
+  "kind": "crickets",
+  "title": "Summer garden crickets",
+  "description": "A separate summer-night cricket recording with a different call pattern and stereo space.",
+  "sourceKey": "cricket-clean",
+  "freesoundId": 522298,
+  "sourceTitle": "Crickets At Night - Clean sound",
+  "author": "Defelozedd94",
+  "sourcePreviewUrl": "https://cdn.freesound.org/previews/522/522298_9084007-hq.mp3",
+  "sourceStartSeconds": 52,
+  "durationSeconds": 40,
+  "channels": 2,
+  "highpassHz": 1800,
+  "depth": 0.5,
+  "sourceDescriptionSummary": "Summer-night garden crickets recorded with a Tascam DR-05; the creator removed storm background noise in Audacity. This new 40-second passage is independent from the legacy 8\u201328-second excerpt.",
+  "status": "prepared",
+  "generated": false,
+  "fieldRecording": true,
+  "assetKind": "excerpt-of-cc0-field-recording-public-preview",
+  "retrievedOn": "2026-11-01",
+  "sourceUrl": "https://freesound.org/people/Defelozedd94/sounds/522298/",
+  "license": "CC0 1.0 Universal",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "preview": true,
+  "access": "Public HQ MP3 preview, without login, account, or paid service; original WAV download requires Freesound login.",
+  "sourcePreview": {
+    "file": "audio-assets/v3/natural-sources/cricket-clean-preview.mp3",
+    "bytes": 3947184,
+    "sha256": "8ae77b161d9e530739f31f4885941e6bdfff218060d530314b59383cbce0bdfa",
+    "url": "https://cdn.freesound.org/previews/522/522298_9084007-hq.mp3"
+  },
+  "sourcePageEvidence": {
+    "file": "audio-assets/v3/natural-sources/cricket-clean-page.html",
+    "bytes": 50925,
+    "sha256": "3277dad3a7ab027edce1175e480b567b7e8a12a14ff5ee0d996524531477a736",
+    "checkedLicense": "CC0 1.0 Universal"
+  },
+  "browserAsset": {
+    "file": "cricket-mid.mp3",
+    "bytes": 961767,
+    "sha256": "a00eade79246db77b92cc8e4eec4fa6c2249da2018b0475843d3caaa0742f57b",
+    "durationSeconds": 40,
+    "sampleRate": 44100,
+    "channels": 2,
+    "bitrateKbps": 192
+  },
+  "processing": "Select source seconds 52\u201392; 1800 Hz two-pole high-pass to remove low background wash; fixed 10.956829 dB gain throughout, 5 ms click guards at both boundaries, 2-channel 44.1 kHz 192 kbps MP3. No added compression, AGC, limiting, noise gate, dynamic denoise, envelope riding, time/pitch change, artificial pulse, or added layer. Runtime circular overlap handles the loop seam. The downloaded public preview is retained byte-for-byte; original uncompressed source was not downloaded.",
+  "normalization": {
+    "targetPeakCeilingDbfsBeforeEncoding": -5,
+    "appliedConstantGainDb": 10.956828575474397,
+    "sharedSourceGain": false
+  },
+  "validation": {
+    "completeDecode": "passed",
+    "samplesPerChannel": 1764000,
+    "nonFiniteSamples": 0,
+    "peakAmplitude": 0.5449823141098022,
+    "peakDbfs": -5.272351826362564,
+    "rmsDbfs": -23.425232765101548,
+    "crestDb": 18.152880938738985,
+    "nearFullScaleSampleFraction": 0.0,
+    "quietWindowFractionBelowMinus65Dbfs": 0.0,
+    "windowRmsP95AboveMedianDb": 6.229902669407139,
+    "windowRmsMaxAboveMedianDb": 8.81262265843467,
+    "spectralEnergyFractions": {
+      "0-120Hz": 1.1661496794269111e-10,
+      "120-500Hz": 1.7861505277017338e-07,
+      "500-2000Hz": 1.865434773523934e-05,
+      "2000-6000Hz": 0.9949392275455546,
+      "6000-22050Hz": 0.005041939375033913
+    },
+    "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+    "encodedPeakCeilingDbfs": -3,
+    "encodedPeakCheck": "passed",
+    "envelope": {
+      "windowSeconds": 0.5,
+      "windowRmsP95MinusP5Db": 3.957308011289225,
+      "windowRmsStandardDeviationDb": 1.8813584942055412,
+      "windowRmsMaxMinusMinDb": 15.007977254087088,
+      "envelope10msModulationIndex": 0.7237108831771589,
+      "largestEnvelopeAutocorrelationWithin0p2To2": 0.4515895879954652,
+      "largestEnvelopeAutocorrelationLagSecondsWithin0p2To2": 0.41,
+      "scope": "Signal amplitude evidence only. Natural rainfall intensity and insect pulse gaps may vary; these measurements do not identify sources or certify perceptual absence of pumping."
+    }
+  },
+  "playbackBoundary": {
+    "fadeInSeconds": 0.005,
+    "fadeOutSeconds": 0.005,
+    "loopConditioning": "runtime-circular-overlap"
+  },
+  "listeningReview": "Source-page descriptions, waveform and spectrogram inspection, and signal/envelope measurements; no human listening certification."
+}

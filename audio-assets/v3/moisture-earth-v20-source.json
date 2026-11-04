@@ -1,0 +1,226 @@
+{
+  "id": "moisture-earth-v20",
+  "kind": "moisture",
+  "title": "Damp earth movement",
+  "description": "Independent tiny shallow water movement over damp leaf litter",
+  "model": "Stable Audio 3 Medium",
+  "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+  "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+  "license": "Stable Audio Community License",
+  "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+  "generated": true,
+  "assetKind": "processed-derivative-of-genuine-model-output",
+  "rawModelOutput": false,
+  "generationId": "moisture-earth-v20",
+  "sourceGeneration": {
+    "id": "moisture-earth-v20",
+    "kind": "moisture",
+    "title": "Damp earth movement",
+    "seed": 202611032006,
+    "role": "Independent tiny shallow water movement over damp leaf litter",
+    "prompt": "TrackType: SFX, High fidelity intimate recording of a very thin gentle trickle of water slowly moving through damp fine leaf litter and soft forest soil. Delicate smooth shallow liquid motion, tiny soft wet grains and quiet rounded droplets absorbed into earth form a continuous calm natural texture. Restrained soft onsets, consistent stable tone, clear fine detail in flat open-air acoustics with even activity throughout. Length: 30 seconds.",
+    "durationSeconds": 30,
+    "steps": 8,
+    "cfgScale": 1.0,
+    "sampler": "pingpong",
+    "pack": "scripts/stablegen-v20-residue-prompts.json",
+    "model": "Stable Audio 3 Medium",
+    "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+    "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+    "license": "Stable Audio Community License",
+    "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+    "backend": "Official MLX local inference on Apple Silicon",
+    "runtimeRevision": "5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84",
+    "optimizedWeightsRevision": "30cb2644da54bfa63275d1bc7f1fa67fc718680f",
+    "generated": true,
+    "status": "generated",
+    "startedAt": "2026-11-03T10:49:34.473656+00:00",
+    "completedAt": "2026-11-03T10:49:42.359619+00:00",
+    "generationSeconds": 7.885,
+    "peakMetalAllocatedBytes": 6890371774,
+    "unclippedGeneratorPeak": 0.3775031864643097,
+    "unclippedGeneratorRms": 0.010076671430188023,
+    "unclippedGeneratorAboveFullScaleFraction": 0.0,
+    "unclippedGeneratorNearFullScaleFraction": 0.0,
+    "master": {
+      "file": "moisture-earth-v20-master.wav",
+      "bytes": 10584088,
+      "sha256": "ee5005a6f32ba64190e4beed043914ecde781ac124741f8a369170fc91efd11d"
+    },
+    "processing": "Official pipeline output preserved as stereo44100Hz32-bit float WAV without clipping or normalization. No reverb, compression, mixing or post-effects added. Browser copy normalized separately.",
+    "listeningReview": "Technical validity checked. Perceptual prompt adherence requires audition."
+  },
+  "generationBatchRecord": "medium-residue-v20-batch.json",
+  "verifiedWeights": {
+    "t5gemma_f16.npz": {
+      "bytes": 567443068,
+      "sha256": "8deb20489f36d9aec539f26c9c67321f99bc5fe300d470435ed6e76be4f16bbd"
+    },
+    "dit_medium_f16.npz": {
+      "bytes": 2907300946,
+      "sha256": "f9e5647ea3225818657d47d47ae4b34afa29c0568206ca89566c1a758944a38e"
+    },
+    "same_l_decoder_f32.npz": {
+      "bytes": 1704311976,
+      "sha256": "84924be2122d3a20fce443f40b782d9cd88e8e73707476326003ac47659a2287"
+    }
+  },
+  "device": {
+    "device_name": "Apple M1 Pro",
+    "max_recommended_working_set_size": 11453251584,
+    "memory_size": 17179869184,
+    "architecture": "applegpu_g13s",
+    "max_buffer_length": 8589934592,
+    "resource_limit": 499000
+  },
+  "rawGeneratedMaster": {
+    "file": "moisture-earth-v20-master.wav",
+    "bytes": 10584088,
+    "sha256": "ee5005a6f32ba64190e4beed043914ecde781ac124741f8a369170fc91efd11d"
+  },
+  "rawMasterValidation": {
+    "completeDecode": "passed",
+    "samplesPerChannel": 1323000,
+    "nonFiniteSamples": 0,
+    "peakAmplitude": 0.3775031864643097,
+    "peakDbfs": -8.461587563714353,
+    "rmsDbfs": -39.933658044775605,
+    "crestDb": 31.47207048106125,
+    "nearFullScaleSampleFraction": 0.0,
+    "quietWindowFractionBelowMinus65Dbfs": 0.016666666666666666,
+    "windowRmsP95AboveMedianDb": 8.335006489218273,
+    "windowRmsMaxAboveMedianDb": 16.147858862800852,
+    "spectralEnergyFractions": {
+      "0-120Hz": 0.0003950629082661924,
+      "120-500Hz": 0.0020268764014717455,
+      "500-2000Hz": 0.6593236151135533,
+      "2000-6000Hz": 0.2034814202191184,
+      "6000-22050Hz": 0.13477298431344464
+    },
+    "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content."
+  },
+  "processedMaster": {
+    "file": "moisture-earth-v20-processed-master.wav",
+    "bytes": 10584092,
+    "sha256": "2f6ad7f679cc6d254c24239f538f96776842254d2bf71f8cc6edbb7c9f7d78a2"
+  },
+  "derivation": {
+    "source": "moisture-earth-v20-master.wav",
+    "filters": "acompressor=threshold=0.018138009:ratio=3:attack=0.5:release=180:knee=2.828:makeup=1",
+    "description": "Fast gentle 3:1 compression at 0.018138009 amplitude threshold, 0.5 ms attack and 180 ms release softens isolated water onsets; full bandwidth retained."
+  },
+  "processing": "Fast gentle 3:1 compression at 0.018138009 amplitude threshold, 0.5 ms attack and 180 ms release softens isolated water onsets; full bandwidth retained. Unchanged genuine float model master retained. Main derivative: 30 seconds, 5 ms boundary guards, fixed gain toward -27.2 dBFS RMS constrained by -4 dBFS encoded peak ceiling, stereo 44.1 kHz/160 kbps MP3. Mobile: direct 6\u201324 s float excerpt, mono 44.1 kHz/96 kbps, 5 ms guards. No repeated-copy layering, reverb, delay, external sound, synthesized substitute, pitch or speed change.",
+  "browserAsset": {
+    "file": "moisture-earth-v20.mp3",
+    "bytes": 601382,
+    "sha256": "90d8b36092ffb271aeb9c790a70826dd2ebb185514da09d3adaa1e8d9c53e990",
+    "durationSeconds": 30,
+    "channels": 2,
+    "sampleRate": 44100,
+    "bitrateKbps": 160,
+    "normalization": {
+      "targetRmsDbfs": -27.2,
+      "peakCeilingDbfs": -4,
+      "appliedGainDb": 15.87926592436899,
+      "codecHeadroomCorrectionDb": 0.0
+    },
+    "validation": {
+      "completeDecode": "passed",
+      "samplesPerChannel": 1323000,
+      "nonFiniteSamples": 0,
+      "peakAmplitude": 0.5393591523170471,
+      "peakDbfs": -5.362438947615957,
+      "rmsDbfs": -29.250364067946318,
+      "crestDb": 23.88792512033036,
+      "nearFullScaleSampleFraction": 0.0,
+      "quietWindowFractionBelowMinus65Dbfs": 0.013333333333333334,
+      "windowRmsP95AboveMedianDb": 4.241102865236005,
+      "windowRmsMaxAboveMedianDb": 7.374405702289213,
+      "spectralEnergyFractions": {
+        "0-120Hz": 0.0005792820568179975,
+        "120-500Hz": 0.003016075392789039,
+        "500-2000Hz": 0.5867392161103371,
+        "2000-6000Hz": 0.2451212565254185,
+        "6000-22050Hz": 0.16454416991462645
+      },
+      "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+      "encodedPeakCeilingDbfs": -4,
+      "encodedPeakCheck": "passed"
+    }
+  },
+  "mobile": {
+    "file": "moisture-earth-v20-mobile.mp3",
+    "bytes": 216964,
+    "sha256": "4fa6134d5f8ade8012d9853e419362d5b83583a2a3d30e234e8c7fbc19adcbc3",
+    "durationSeconds": 18,
+    "channels": 1,
+    "sampleRate": 44100,
+    "bitrateKbps": 96,
+    "normalization": {
+      "targetRmsDbfs": -27.2,
+      "peakCeilingDbfs": -4,
+      "appliedGainDb": 18.814428791777285,
+      "codecHeadroomCorrectionDb": 0.0
+    },
+    "validation": {
+      "completeDecode": "passed",
+      "samplesPerChannel": 793800,
+      "nonFiniteSamples": 0,
+      "peakAmplitude": 0.5004693865776062,
+      "peakDbfs": -6.012449658280287,
+      "rmsDbfs": -27.61604079035669,
+      "crestDb": 21.603591132076403,
+      "nearFullScaleSampleFraction": 0.0,
+      "quietWindowFractionBelowMinus65Dbfs": 0.0,
+      "windowRmsP95AboveMedianDb": 5.404830263371,
+      "windowRmsMaxAboveMedianDb": 8.729318870964473,
+      "spectralEnergyFractions": {
+        "0-120Hz": 0.0006987089033254791,
+        "120-500Hz": 0.002927755895144597,
+        "500-2000Hz": 0.6947489987542376,
+        "2000-6000Hz": 0.20853919924505063,
+        "6000-22050Hz": 0.0930853372022281
+      },
+      "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+      "encodedPeakCeilingDbfs": -4,
+      "encodedPeakCheck": "passed"
+    },
+    "assetKind": "mobile-derivative-of-genuine-model-output",
+    "sourceGeneration": "moisture-earth-v20",
+    "sourceExcerptStartSeconds": 6,
+    "sourceExcerptEndSeconds": 24,
+    "sourceMasterSha256": "ee5005a6f32ba64190e4beed043914ecde781ac124741f8a369170fc91efd11d",
+    "processing": "Direct seconds 6\u201324 of the processed float derivative, mono downmix and 5 ms boundary guards; fixed normalization and a single 44.1 kHz/96 kbps MP3 encoding. No MP3-to-MP3 transcode."
+  },
+  "validation": {
+    "completeDecode": "passed",
+    "samplesPerChannel": 1323000,
+    "nonFiniteSamples": 0,
+    "peakAmplitude": 0.5393591523170471,
+    "peakDbfs": -5.362438947615957,
+    "rmsDbfs": -29.250364067946318,
+    "crestDb": 23.88792512033036,
+    "nearFullScaleSampleFraction": 0.0,
+    "quietWindowFractionBelowMinus65Dbfs": 0.013333333333333334,
+    "windowRmsP95AboveMedianDb": 4.241102865236005,
+    "windowRmsMaxAboveMedianDb": 7.374405702289213,
+    "spectralEnergyFractions": {
+      "0-120Hz": 0.0005792820568179975,
+      "120-500Hz": 0.003016075392789039,
+      "500-2000Hz": 0.5867392161103371,
+      "2000-6000Hz": 0.2451212565254185,
+      "6000-22050Hz": 0.16454416991462645
+    },
+    "scope": "Signal measurements only; not a perceptual certification of source, dryness, or absence of musical content.",
+    "encodedPeakCeilingDbfs": -4,
+    "encodedPeakCheck": "passed"
+  },
+  "playbackBoundary": {
+    "fadeInSeconds": 0.005,
+    "fadeOutSeconds": 0.005,
+    "loopConditioning": "runtime-circular-overlap"
+  },
+  "sourceMasterUnchangedCheck": true,
+  "listeningReview": "Signal measurements only. No human listening certification; perceptual prompt adherence remains unverified.",
+  "completedAt": "2026-11-03T10:56:50.308391+00:00"
+}
