@@ -54,7 +54,7 @@ export async function startKarhutla(options) {
   try { const handle = await open(writeTest, 'wx'); await handle.close(); await unlink(writeTest); }
   catch { throw new Error('Karhutla cannot save in this folder. Extract the ZIP into a writable folder such as Documents, then run Start-Karhutla.cmd there.'); }
   let createPerformanceServer;
-  try { ({ createPerformanceServer } = await import('../server.mjs')); }
+  try { ({ createPerformanceServer } = await import('../app/server.mjs')); }
   catch (error) {
     if (error.code === 'ERR_MODULE_NOT_FOUND') throw new Error('A program dependency is missing. Extract a fresh release ZIP, or run npm ci once when working from a Git checkout.');
     throw error;

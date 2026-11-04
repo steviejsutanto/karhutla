@@ -19,22 +19,28 @@ export function safePackagePath(value) {
   return value;
 }
 
-export async function validateRequiredFiles(root, { runtime = false } = {}) {
-  const required = new Set(['package.json', 'package-lock.json', 'Start-Karhutla.cmd', 'scripts/start-karhutla.mjs', 'server.mjs', 'data/fire-snapshot.json']);
-  const server = await readFile(path.join(root, 'server.mjs'), 'utf8');
+export async function packagePublicFiles(root) {
+  const server = await readFile(path.join(root, 'app/server.mjs'), 'utf8');
+  const publicFiles = new Map();
   // Every literal entry in the HTTP server's static-file map must travel with it.
-  for (const match of server.matchAll(/\['\/[^']*',\s*\['([^']+)'/g)) required.add(match[1]);
+  for (const match of server.matchAll(/\['(\/[^']*)',\s*\['([^']+)'/g)) publicFiles.set(match[1], match[2]);
   const exportLoop = server.match(/for \(const name of \[([^\]]+)\]\) \{[\s\S]*?staticFiles\.set\(`\/visual-assets\/exports\//);
-  if (exportLoop) for (const match of exportLoop[1].matchAll(/'([^']+)'/g)) required.add(`visual-assets/exports/${match[1]}`);
+  if (exportLoop) for (const match of exportLoop[1].matchAll(/'([^']+)'/g)) publicFiles.set(`/visual-assets/exports/${match[1]}`, `visual-assets/exports/${match[1]}`);
   for (const catalog of ['audio-assets/manifest.json', 'audio-assets/v3/manifest.json']) {
     const manifest = JSON.parse(await readFile(path.join(root, catalog), 'utf8'));
-    required.add(catalog);
+    publicFiles.set(`/${catalog}`, catalog);
     for (const asset of manifest.assets ?? []) {
       for (const entry of [asset, asset.mobile].filter(Boolean)) {
-        if (typeof entry.file === 'string' && entry.file.endsWith('.mp3')) required.add(entry.file);
+        if (typeof entry.file === 'string' && entry.file.endsWith('.mp3')) publicFiles.set(`/${entry.file}`, entry.file);
       }
     }
   }
+  return [...publicFiles].map(([url, file]) => ({ url, file: safePackagePath(file) })).sort((a, b) => a.url.localeCompare(b.url, 'en'));
+}
+
+export async function validateRequiredFiles(root, { runtime = false } = {}) {
+  const required = new Set(['package.json', 'package-lock.json', 'Start-Karhutla.cmd', 'scripts/start-karhutla.mjs', 'app/server.mjs', 'data/fire-snapshot.json']);
+  for (const entry of await packagePublicFiles(root)) required.add(entry.file);
   if (runtime) { required.add('runtime/node.exe'); required.add('runtime/LICENSE'); }
   const missing = [];
   for (const file of required) {
@@ -50,6 +56,7 @@ export async function checkPackage(root, { verifyMutable = true } = {}) {
   const manifest = JSON.parse(await readFile(path.join(root, 'package-manifest.json'), 'utf8'));
   if (manifest.schema !== 1 || !Array.isArray(manifest.files)) throw new Error('Unsupported package manifest.');
   await validateRequiredFiles(root, { runtime: true });
+  if (manifest.publicFiles && JSON.stringify(manifest.publicFiles) !== JSON.stringify(await packagePublicFiles(root))) throw new Error('The package public URL map does not match its release manifest.');
   const seen = new Set();
   for (const entry of manifest.files) {
     const file = safePackagePath(entry.path);

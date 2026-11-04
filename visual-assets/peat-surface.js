@@ -1,7 +1,7 @@
 // Material study only: this renderer reads heat/wetness and never advances or
 // predicts the shared simulation. Images are decoded once; expensive texture
 // extraction, feathering and filters happen only while preparing cached assets.
-import { countryMapRect, countryPath, studyMapRect } from '../country-view.mjs';
+import { countryMapRect, countryPath, studyMapRect } from '../app/country-view.mjs';
 import { RainFeedback, RainContactTransitions } from './rain-feedback.js';
 import { OperatorForest } from './surface-heat.js';
 import { ExtinctionFeedback } from './extinction-feedback.js';

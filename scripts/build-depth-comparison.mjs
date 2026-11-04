@@ -3,7 +3,7 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import { RainSimulation } from '../simulation.js';
+import { RainSimulation } from '../app/simulation.js';
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const position = [114.125, -.125];

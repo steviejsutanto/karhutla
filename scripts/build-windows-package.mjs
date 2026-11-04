@@ -4,18 +4,21 @@ import { spawn } from 'node:child_process';
 import path from 'node:path';
 import os from 'node:os';
 import { fileURLToPath } from 'node:url';
-import { sha256, safePackagePath, validateRequiredFiles, checkPackage, MUTABLE_PACKAGE_FILES } from './check-package.mjs';
+import { sha256, safePackagePath, validateRequiredFiles, checkPackage, packagePublicFiles, MUTABLE_PACKAGE_FILES } from './check-package.mjs';
 
 export const DEFAULT_NODE_VERSION = 'v24.22.2';
 const workspace = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const dataFiles = new Set(['fire-snapshot.json', 'indonesia.geojson', 'indonesia-overview.geojson', 'surrounding-land.geojson', 'geography-metadata.json']);
-const scriptFiles = new Set(['start-karhutla.mjs', 'check-package.mjs', 'build-windows-package.mjs', 'smoke-windows-package.mjs', 'fetch-snapshot.mjs', 'fetch-snapshot.test.mjs', 'fetch_snapshot.py', 'peat-study-preview.mjs']);
+const scriptFiles = new Set(['start-karhutla.mjs', 'check-package.mjs', 'build-windows-package.mjs', 'smoke-windows-package.mjs', 'fetch-snapshot.mjs', 'fetch_snapshot.py', 'peat-study-preview.mjs']);
 
 /** Positive allowlist: a new cache or production artifact cannot enter a release by accident. */
 export function includeProjectFile(relative) {
   const parts = relative.split('/');
   if (parts.some(part => part.startsWith('.') || ['node_modules', 'rejected', 'natural-sources', 'output', 'dist'].includes(part))) return false;
-  if (parts.length === 1) return ['package.json', 'package-lock.json', 'Start-Karhutla.cmd'].includes(relative) || /\.(?:js|mjs|html|css|svg|md)$/.test(relative);
+  if (parts.length === 1) return ['package.json', 'package-lock.json', 'Start-Karhutla.cmd', 'README.md'].includes(relative);
+  if (parts[0] === 'app') return /\.(?:js|mjs|html|css|svg)$/.test(relative) && !relative.endsWith('.test.mjs');
+  if (parts[0] === 'tests') return /\.test\.mjs$/.test(relative);
+  if (parts[0] === 'docs') return /\.md$/.test(relative);
   if (parts[0] === 'data') return parts.length === 2 && dataFiles.has(parts[1]);
   if (parts[0] === 'scripts') return parts.length === 2 && scriptFiles.has(parts[1]);
   if (parts[0] === 'audio-assets') return (parts.length === 2 || parts.length === 3 && parts[1] === 'v3') && /\.(?:mp3|json|md)$/.test(relative);
@@ -36,10 +39,10 @@ export async function listFiles(root, relative = '') {
 }
 
 export async function stageProjectFiles(source, destination) {
-  // Only traverse the five allowed source locations, never model caches or node_modules.
+  // Traverse only allowed source locations, never model caches or node_modules.
   const top = await readdir(source, { withFileTypes: true });
   const candidates = top.filter(entry => entry.isFile()).map(entry => entry.name);
-  for (const directory of ['data', 'scripts', 'audio-assets', 'visual-assets']) {
+  for (const directory of ['app', 'tests', 'docs', 'data', 'scripts', 'audio-assets', 'visual-assets']) {
     candidates.push(...(await listFiles(path.join(source, directory))).map(file => `${directory}/${file}`));
   }
   const files = candidates.filter(includeProjectFile).sort();
@@ -219,7 +222,7 @@ export async function createPackageManifest(stage, runtime, dependencies) {
     if (!info.isFile()) throw new Error(`Cannot package non-regular file: ${file}`);
     files.push({ path: file, bytes: info.size, sha256: await sha256(path.join(stage, file)), ...(MUTABLE_PACKAGE_FILES.has(file) ? { mutable: true } : {}) });
   }
-  const manifest = { schema: 1, name: 'karhutla', version: pkg.version, platform: 'windows-x64', runtime, dependencyLockSha256: await sha256(path.join(stage, 'package-lock.json')), dependencies, statePolicy: 'Local performance-state.json is excluded; settings presets are imported explicitly.', files };
+  const manifest = { schema: 1, name: 'karhutla', version: pkg.version, platform: 'windows-x64', runtime, dependencyLockSha256: await sha256(path.join(stage, 'package-lock.json')), dependencies, statePolicy: 'Local performance-state.json is excluded; settings presets are imported explicitly.', publicFiles: await packagePublicFiles(stage), files };
   await writeFile(path.join(stage, 'package-manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
   return manifest;
 }

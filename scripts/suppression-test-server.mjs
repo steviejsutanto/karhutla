@@ -1,7 +1,7 @@
 // Isolated browser fixture. No real save or source file is modified.
-import { createPerformanceServer } from '../server.mjs';
-import { RegionCatalog } from '../regions.mjs';
-import { PARAMETER_LIMITS } from '../simulation.js';
+import { createPerformanceServer } from '../app/server.mjs';
+import { RegionCatalog } from '../app/regions.mjs';
+import { PARAMETER_LIMITS } from '../app/simulation.js';
 const position = new RegionCatalog().map('kalimantan', [.5, .5]);
 const instance = await createPerformanceServer({ port: 4183, persistencePath: null, records: [{ longitude: position[0], latitude: position[1] }], snapshotVersion: 'isolated-suppression-fixture' });
 await instance.room.bootstrap({ state: null, strength: process.argv.includes('--weak') ? .1 : .5 });

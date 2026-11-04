@@ -1,6 +1,6 @@
 // Separate rehearsal room. Uses the saved source observations, never reads or
 // writes the real performance save and never changes the running server.
-import { createPerformanceServer } from '../server.mjs';
+import { createPerformanceServer } from '../app/server.mjs';
 const port = Number(process.env.STUDY_PORT || 4185);
 const instance = await createPerformanceServer({ port, lanEnabled: true, persistencePath: null });
 await instance.room.bootstrap({ state: null, strength: .5 });

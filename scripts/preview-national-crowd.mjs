@@ -4,8 +4,8 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { performance } from 'node:perf_hooks';
 import { WebSocket } from 'ws';
-import { RegionCatalog } from '../regions.mjs';
-import { NationalSpace, COUNTRY_BOUNDS } from '../national-space.mjs';
+import { RegionCatalog } from '../app/regions.mjs';
+import { NationalSpace, COUNTRY_BOUNDS } from '../app/national-space.mjs';
 
 const ENDPOINT = new URL('ws://127.0.0.1:4185/ws');
 if (ENDPOINT.hostname !== '127.0.0.1' || ENDPOINT.port !== '4185') throw new Error('Crowd preview must use the separate loopback rehearsal on port 4185.');

@@ -1,13 +1,13 @@
 {
   "name": "indonesia-wildfire-prototype",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "node server.mjs",
-    "start:lan": "node server.mjs --lan",
+    "start": "node app/server.mjs",
+    "start:lan": "node app/server.mjs --lan",
     "study": "node scripts/peat-study-preview.mjs",
-    "test": "node --test simulation.test.mjs shared-room.test.mjs wire-state.test.mjs shared-client.test.mjs network.test.mjs phone-cooling.test.mjs phone-spatial.test.mjs peat-study.test.mjs peat-depth.test.mjs peat-motion.test.mjs surface-anchor.test.mjs map-markers.test.mjs operator-map.test.mjs operator-projection.test.mjs rain-transition.test.mjs rain-area.test.mjs national-space.test.mjs sound-engine.test.mjs patch-soft-tones.test.mjs sound-phone.test.mjs phone-weather.test.mjs phone-tap-rain.test.mjs main-quench.test.mjs drag-ash.test.mjs bell-relay.test.mjs sound-integration.test.mjs sound-library.test.mjs participant-main.test.mjs performance-scenes.test.mjs performance-view.test.mjs final-rain.test.mjs scene-score.test.mjs settings-presets.test.mjs scripts/fetch-snapshot.test.mjs windows-package.test.mjs",
+    "test": "node --test \"tests/*.test.mjs\"",
     "refresh": "node scripts/fetch-snapshot.mjs",
     "launch": "node scripts/start-karhutla.mjs",
     "package:windows": "node scripts/build-windows-package.mjs"

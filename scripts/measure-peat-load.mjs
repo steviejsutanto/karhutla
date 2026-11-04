@@ -7,7 +7,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { performance, monitorEventLoopDelay } from 'node:perf_hooks';
 import { WebSocket } from 'ws';
-import { createPerformanceServer } from '../server.mjs';
+import { createPerformanceServer } from '../app/server.mjs';
 
 const configuration = { counts: [10, 50, 100, 200], durationMs: 3000, output: null, national: false };
 const arguments_ = process.argv.slice(2);

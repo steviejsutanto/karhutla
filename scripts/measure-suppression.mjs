@@ -4,10 +4,10 @@ import { readFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 import path from 'node:path';
 import { performance } from 'node:perf_hooks';
-import { SharedRoom } from '../shared-room.mjs';
-import { RegionCatalog } from '../regions.mjs';
+import { SharedRoom } from '../app/shared-room.mjs';
+import { RegionCatalog } from '../app/regions.mjs';
 
-const { RainSimulation, DEFAULT_PARAMETERS, PARAMETER_LIMITS, CELL_SIZE, BRUSH_RADIUS } = await import(pathToFileURL(path.resolve(process.argv[2] || 'simulation.js')));
+const { RainSimulation, DEFAULT_PARAMETERS, PARAMETER_LIMITS, CELL_SIZE, BRUSH_RADIUS } = await import(pathToFileURL(path.resolve(process.argv[2] || 'app/simulation.js')));
 const minimum = Object.fromEntries(Object.entries(PARAMETER_LIMITS).map(([key, value]) => [key, value.min]));
 const catalog = new RegionCatalog();
 const fixtures = [{ name: 'operator-interior', position: [110.125, -2.125] }, ...[...catalog.regions.values()].map(region => ({ name: region.id, position: catalog.map(region.id, [.5, .5]), constraint: region.constraint }))];
@@ -103,4 +103,4 @@ for (const participantCount of [1, 8]) {
   }
   cpu.push({ participantCount, ticks: samples.length, simulatedSeconds: 10, cells: room.simulation.cells.size, meanTickMs: round(samples.reduce((a, b) => a + b, 0) / samples.length), p95TickMs: round(quantile(samples, .95)), maxTickMs: round(Math.max(...samples)), waterAdded: round(room.simulation.totalWater - initialWater), expectedWater: round(budget * .5 * 10 * participantCount) });
 }
-console.log(JSON.stringify({ measuredAt: new Date().toISOString(), model: process.argv[2] || 'simulation.js', parameters: { default: DEFAULT_PARAMETERS, minimum }, timeResolutionSeconds: .05, timeoutSeconds: 600, timingDefinition: 'Dry/hot central fire cell under stationary50% or10% rain; actual threshold crossings sampled every50ms. Null means threshold not reached within600s. Room renews every500ms. All clocks synthetic; CPU timings use real wall time. No network latency is measured.', timings, modelCpu, cpu }, null, 2));
+console.log(JSON.stringify({ measuredAt: new Date().toISOString(), model: process.argv[2] || 'app/simulation.js', parameters: { default: DEFAULT_PARAMETERS, minimum }, timeResolutionSeconds: .05, timeoutSeconds: 600, timingDefinition: 'Dry/hot central fire cell under stationary50% or10% rain; actual threshold crossings sampled every50ms. Null means threshold not reached within600s. Room renews every500ms. All clocks synthetic; CPU timings use real wall time. No network latency is measured.', timings, modelCpu, cpu }, null, 2));
