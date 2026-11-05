@@ -10,7 +10,7 @@ import { isMain } from './is-main.mjs';
 export const DEFAULT_NODE_VERSION = 'v24.22.2';
 const workspace = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const dataFiles = new Set(['fire-snapshot.json', 'indonesia.geojson', 'indonesia-overview.geojson', 'surrounding-land.geojson', 'geography-metadata.json']);
-const scriptFiles = new Set(['start-karhutla.mjs', 'check-package.mjs', 'is-main.mjs', 'build-windows-package.mjs', 'build-mac-package.mjs', 'smoke-windows-package.mjs', 'smoke-mac-package.mjs', 'fetch-snapshot.mjs', 'fetch_snapshot.py', 'peat-study-preview.mjs']);
+const scriptFiles = new Set(['start-karhutla.mjs', 'check-package.mjs', 'is-main.mjs', 'open-browser.mjs', 'build-windows-package.mjs', 'build-mac-package.mjs', 'smoke-windows-package.mjs', 'smoke-mac-package.mjs', 'smoke-operator-flow.mjs', 'fetch-snapshot.mjs', 'fetch_snapshot.py', 'peat-study-preview.mjs']);
 
 /** Positive allowlist: a new cache or production artifact cannot enter a release by accident. */
 export function includeProjectFile(relative, { platform = 'windows-x64' } = {}) {

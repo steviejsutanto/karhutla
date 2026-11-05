@@ -1,15 +1,11 @@
-karhutla 1.0.2 adds self-contained Mac downloads alongside Windows. Application behavior and shared settings remain compatible with earlier releases.
+karhutla 1.0.3 fixes the first-run performance controls and Windows browser opening.
 
-Choose the ZIP for your computer:
+On a new installation, **Start timed performance**, every scene button (including Forest takeover and Final rain), and **Restart performance** now prepare the landscape automatically. Prepared mixer balances, timings, rain strength and audience information are retained. Existing initialized performances keep their progress during normal scene changes.
 
-- **macos-arm64** — Apple Silicon (M-series Macs).
-- **macos-x64** — Intel Macs.
-- **windows-x64** — Windows PCs.
+The Windows launcher now opens the Operator address with corrected command quoting. If the default browser cannot open, the server keeps running and prints the address for manual use.
 
-Extract the whole ZIP to a writable local folder. Double-click **Start-Karhutla.command** on Mac or **Start-Karhutla.cmd** on Windows. The matching runtime, dependencies, recordings, visuals and a satellite snapshot are included. No separate Node installation is needed. The performance works offline; fetching a new snapshot needs internet.
+Choose the ZIP for your computer: **windows-x64**, **macos-arm64** (Apple Silicon), or **macos-x64** (Intel). Extract the whole ZIP and double-click **Start-Karhutla.cmd** on Windows or **Start-Karhutla.command** on Mac. The runtime and all playback assets are included.
 
-Mac downloads preserve executable permissions. If macOS blocks the first launch, follow **docs/mac.md** and Apple's first-open approval instructions. Keep the Terminal/launcher window open while performing; Ctrl+C stops and saves.
+Export your settings from **Operator → Setup → Settings file** in the old version and import them in the new version. Keep the previous version available, and stop it before starting the new one.
 
-Use **Operator → Setup → Settings file** to export settings from the previous computer/version and import them into this one. Private settings and running performance saves are not included in downloads.
-
-Each platform package is built and checked on its native architecture before publication. Automated checks cover startup, pages, recordings, QR generation and settings transfer. Rehearse the actual laptop, audio output, router, projector and phones before an event. Keep the previous rehearsed version available.
+Fresh-install regression checks exercise the ordinary Start, scene and Restart controls without a direct initialization call. Native Windows checks also exercise the browser-opening command through the actual Windows command parser. All platform packages are checked before publication.

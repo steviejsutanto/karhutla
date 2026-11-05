@@ -210,7 +210,7 @@ test('actual Node and shared CLI execute through a symlinked package path instea
   await mkdir(path.join(actual, 'runtime/bin'), { recursive: true }); await mkdir(path.join(actual, 'scripts'));
   await copyFile(path.join(workspace, 'Start-Karhutla.command'), path.join(actual, 'Start-Karhutla.command'));
   await chmod(path.join(actual, 'Start-Karhutla.command'), 0o755);
-  for (const file of ['start-karhutla.mjs', 'check-package.mjs', 'is-main.mjs']) {
+  for (const file of ['start-karhutla.mjs', 'check-package.mjs', 'is-main.mjs', 'open-browser.mjs']) {
     await copyFile(path.join(workspace, 'scripts', file), path.join(actual, 'scripts', file));
   }
   // Use the real test runtime, not the synthetic shell stub in the argument

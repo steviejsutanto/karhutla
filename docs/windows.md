@@ -3,12 +3,12 @@
 ## Run the performance download
 
 1. Download the Windows ZIP from the [latest release](https://github.com/steviejsutanto/karhutla/releases/latest) in the private repository. Choose the Windows asset, rather than GitHub's automatically generated Source code ZIP.
-2. Extract the whole ZIP to a local folder, for example `C:\Performances\karhutla-1.0.1`. Do not launch from inside the ZIP or put the running folder in OneDrive.
+2. Extract the whole ZIP to a local folder, for example `C:\Performances\karhutla-1.0.3`. Do not launch from inside the ZIP or put the running folder in OneDrive.
 3. Double-click **Start-Karhutla.cmd**. The package includes Node.js and the required libraries; no installation or internet connection is needed to use the included fire snapshot.
 4. If Windows Firewall asks, allow this app on your trusted **Private** performance network. The laptop and audience phones must use the same router, with client isolation disabled. Ethernet from the laptop to the router is preferable when available.
-5. Operator opens at <http://127.0.0.1:4173/operator>. On a first launch, choose **Setup → Initialize landscape** if that button is shown. Click **Enable main sound**, select the correct Windows audio output, and check its level through the PA.
+5. Operator opens at <http://127.0.0.1:4173/operator>. Click **Enable main sound**, select the correct Windows audio output, and check its level through the PA.
 6. Use Operator's **Projection** link, move that window to the projector, and make it fullscreen. Keep Operator open: it produces Main audio while Projection displays the image.
-7. Phones join using the current QR code and audience address. Enable phone sound on each device. Start the timed performance when everyone is ready.
+7. Phones join using the current QR code and audience address. Enable phone sound on each device. Start the timed performance when everyone is ready. You can also select any scene directly, including Forest takeover and Final rain. First use prepares the landscape automatically; no separate setup step is needed.
 
 Keep the launcher console open. Press Ctrl+C there to stop the server cleanly. The normal server saves settings and landscape progress locally. Starting it again opens a paused Arrival scene; it does not resume the previous scene clock. **Restart performance** resets the landscape and retains settings.
 

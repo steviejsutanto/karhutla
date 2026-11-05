@@ -7,6 +7,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { checkPackage, packagePublicFiles } from './check-package.mjs';
 import { isMain } from './is-main.mjs';
+import { prepareFreshOperator, exercisePreparedOperator, assertRestartedOperator } from './smoke-operator-flow.mjs';
 
 export function parseSmokeOptions(args, { platform = process.platform, architecture = process.arch } = {}) {
   let output = 'dist', arch = architecture, positional = false;
@@ -158,31 +159,23 @@ export async function smokeMacPackage({ output, arch }) {
         `${url} must serve its packaged bytes`);
     }
     assert.ok((await (await request(active.base, '/api/qr.svg?view=audience')).text()).includes('<svg'));
-    await request(active.base, '/api/bootstrap', { state: null });
-    await request(active.base, '/api/scene', { scene: 'participation' });
-    await request(active.base, '/api/scene', { action: 'pause' });
-    const before = await (await request(active.base, '/api/scene')).json();
-    const preset = await (await request(active.base, '/api/settings/export')).json();
-    preset.strength = .37; preset.soundSettings.level = .42; preset.soundSettings.automation = false;
-    preset.soundSettings.mixer.bells = .8; preset.soundSettings.macros.haze = .61;
-    preset.sceneSettings.participationSeconds = 333; preset.sceneSettings.wifiName = 'Smoke rehearsal';
-    preset.sceneSettings.programNotes = 'Mac release settings persistence check.';
-    const imported = await (await request(active.base, '/api/settings/import', preset)).json();
-    assert.equal(imported.scene.id, before.id); assert.equal(imported.scene.paused, before.paused);
-    assert.equal(imported.scene.elapsedMs, before.elapsedMs);
-    assert.deepEqual(await (await request(active.base, '/api/settings/export')).json(), preset);
+    const preset = await prepareFreshOperator(active.base);
+    await stopWrapper(active); active = null;
+    const prepared = JSON.parse(await readFile(path.join(root, 'data/performance-state.json'), 'utf8'));
+    assert.equal(prepared.settingsOnly, true, 'Preparing settings must not silently initialize the show.');
+    active = await startWrapper(root, temporary);
+    await assertRestartedOperator(active.base, preset, { initialized: false });
+    await exercisePreparedOperator(active.base, preset);
     await stopWrapper(active); active = null;
     const saved = JSON.parse(await readFile(path.join(root, 'data/performance-state.json'), 'utf8'));
     assert.equal(saved.strength, .37); assert.equal(saved.soundSettings.level, .42);
     assert.equal(saved.sceneSettings.participationSeconds, 333);
     active = await startWrapper(root, temporary);
-    assert.deepEqual(await (await request(active.base, '/api/settings/export')).json(), preset, 'Custom settings survive graceful shutdown and restart.');
-    const restarted = await (await request(active.base, '/api/scene')).json();
-    assert.equal(restarted.id, 'arrival'); assert.equal(restarted.paused, true); assert.equal(restarted.elapsedMs, 0);
+    await assertRestartedOperator(active.base, preset, { initialized: true });
     await stopWrapper(active, 'SIGHUP'); active = null;
     const afterHangup = JSON.parse(await readFile(path.join(root, 'data/performance-state.json'), 'utf8'));
     assert.equal(afterHangup.strength, .37); assert.equal(afterHangup.soundSettings.level, .42);
-    console.log(`Mac package smoke passed: ${verified.files} verified files, ${publicFiles.length} byte-identical public URLs, executable ZIP extraction, actual .command with no system Node, startup failures and settings persistence across SIGTERM/restart/SIGHUP (${arch}).`);
+    console.log(`Mac package smoke passed: ${verified.files} verified files, ${publicFiles.length} byte-identical public URLs, executable ZIP extraction, actual .command with no system Node, fresh Start/cues4-5/Restart without manual initialization, prepared-settings persistence and SIGTERM/restart/SIGHUP (${arch}).`);
     return { files: verified.files, publicUrls: publicFiles.length, architecture: arch };
   } finally {
     if (active) await stopWrapper(active).catch(error => console.error(error.message));

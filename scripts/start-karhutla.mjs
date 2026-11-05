@@ -1,5 +1,4 @@
 import net from 'node:net';
-import { spawn } from 'node:child_process';
 import { access, open, unlink } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -7,6 +6,7 @@ import { randomUUID } from 'node:crypto';
 import { createInterface } from 'node:readline/promises';
 import { checkPackage, validateRequiredFiles } from './check-package.mjs';
 import { isMain } from './is-main.mjs';
+import { openBrowser } from './open-browser.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -28,15 +28,6 @@ export async function assertPortAvailable(port) {
     probe.listen(port, '0.0.0.0', resolve);
   });
   await new Promise((resolve, reject) => probe.close(error => error ? reject(error) : resolve()));
-}
-
-function openBrowser(url) {
-  const [command, args] = process.platform === 'win32'
-    ? [process.env.ComSpec || 'cmd.exe', ['/d', '/s', '/c', `start "" "${url}"`]]
-    : process.platform === 'darwin' ? ['open', [url]] : ['xdg-open', [url]];
-  const child = spawn(command, args, { detached: true, stdio: 'ignore' });
-  child.on('error', () => console.log(`Open this address in your browser: ${url}`));
-  child.unref();
 }
 
 export async function startKarhutla(options) {
@@ -78,7 +69,7 @@ export async function startKarhutla(options) {
   if (instance.network.addresses.length) console.log(`Audience: http://${instance.network.addresses[0]}:${address.port}/audience`);
   else console.log('Connect this computer and audience phones to the same Wi-Fi or Ethernet network.');
   console.log('Press Ctrl+C in this window to stop and save.');
-  if (options.browser) openBrowser(`${base}/operator`);
+  if (options.browser) void openBrowser(`${base}/operator`);
   return instance;
 }
 

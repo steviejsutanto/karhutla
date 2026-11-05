@@ -370,7 +370,7 @@ export class SharedRoom extends EventEmitter {
 
   async reset() {
     this._assertSettingsEditable();
-    if (this.bootstrapAvailable) throw roomError('Start or restore the shared performance first.', 409);
+    if (this.bootstrapAvailable) return this._startFreshPerformance({ action: 'restart' });
     this.advance();
     this.simulation.reset();
     this.scenes.enter('arrival', this.clock(), this.wallClock(), true);
@@ -401,7 +401,11 @@ export class SharedRoom extends EventEmitter {
 
   async setScene(body) {
     this._assertSettingsEditable();
-    if (['forest-takeover', 'final-rain'].includes(body?.scene) && this.bootstrapAvailable) throw roomError('Start or restore the shared performance first.', 409);
+    // Choosing a cue or starting the clock is the operator's authorization to
+    // initialize a fresh install. Browsing and preparing settings still leave
+    // the previous browser-save migration available until that deliberate act.
+    if (this.bootstrapAvailable && (['resume', 'restart'].includes(body?.action)
+      || (body?.scene !== undefined && !['afterglow', 'ended'].includes(body.scene)))) return this._startFreshPerformance(body);
     this.advance();
     const before = this.scenes.revision, beforeId = this.scenes.id, rainWasOpen = this.scenes.state(this.clock(), this.wallClock()).audienceEnabled;
     this.scenes.update(body, { now: this.clock(), wallNow: this.wallClock(), ...this.globalSound().fireProgress });
@@ -436,6 +440,37 @@ export class SharedRoom extends EventEmitter {
     return this.wireState();
   }
 
+  async _startFreshPerformance(body) {
+    this._assertSettingsEditable();
+    const simulation = new RainSimulation(this.simulation.parameters).seed(this.records);
+    const scenes = new PerformanceScenes({ now: this.clock(), wallNow: this.wallClock(), settings: this.scenes.settings });
+    scenes.revision = this.scenes.revision;
+    // Validate the complete command on detached state before a save or any
+    // in-memory initialization. Invalid cues must not consume migration.
+    scenes.update(body, { now: this.clock(), wallNow: this.wallClock(), sourceCount: this.national.fireKeys.size, outCount: 0 });
+    if (scenes.id === 'forest-takeover') simulation.beginForestRestoration(this.national.fireKeys);
+    if (scenes.id === 'final-rain') {
+      simulation.beginFinalRainCooling(this.national.fireKeys);
+      simulation.coolFinalRain(0);
+    }
+    const envelope = { ...this._envelope(simulation), sceneSettings: { ...scenes.settings } };
+    this.bootstrapping = true;
+    try {
+      await this._writeEnvelope(envelope, () => {
+        this.simulation = simulation;
+        this.scenes = scenes;
+        // A slow save must not use up the opening of the selected cue.
+        this.scenes.anchor = this.clock();
+        this.scenes.startedAt = this.wallClock();
+        this.bootstrapAvailable = false;
+        this.epoch = randomUUID();
+        this._clearHolds();
+        this.lastAdvance = this.clock();
+      });
+    } finally { this.bootstrapping = false; }
+    return this.wireState();
+  }
+
   async setSoundSettings(patch) {
     this._assertSettingsEditable();
     this.soundSettings = soundSettingsPatch(this.soundSettings, patch);
@@ -451,6 +486,7 @@ export class SharedRoom extends EventEmitter {
 
   _assertSettingsEditable() {
     if (this.settingsImportInProgress) throw roomError('A settings import is still being saved. Try this change again when it finishes.', 409);
+    if (this.bootstrapping) throw roomError('The performance is being initialized. Try this change again when it finishes.', 409);
   }
 
   async importSettingsPreset(preset) {
@@ -481,6 +517,7 @@ export class SharedRoom extends EventEmitter {
   }
 
   seed(records, snapshotVersion = null) {
+    this._assertSettingsEditable();
     this.advance();
     this.records = records;
     this.snapshotVersion = snapshotVersion;

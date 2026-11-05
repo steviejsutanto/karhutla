@@ -9,7 +9,7 @@ A participatory performance in which an audience uses their phones to bring rain
 3. Double-click **Start-Karhutla.command** on Mac or **Start-Karhutla.cmd** on Windows. Keep its window open.
 4. In Operator, enable Main sound and open Projection on the projector. Audience phones join through the displayed QR code on the same Wi-Fi.
 
-On first launch, choose **Setup → Initialize landscape** if that button is shown.
+Start the timed performance or select any scene directly. The landscape is prepared automatically on first use.
 
 The download includes the runtime, recordings, visuals and a fire snapshot. It runs offline; fetching new satellite observations needs internet.
 

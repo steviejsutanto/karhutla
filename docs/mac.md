@@ -14,7 +14,7 @@ Use **Apple menu → About This Mac** to check your chip or processor. Each ZIP 
 1. Download the matching Mac ZIP and double-click it in Finder to extract it.
 2. Move the whole extracted folder to a writable local location, such as a Performances folder inside Documents. Keep each version in its own folder.
 3. Double-click **Start-Karhutla.command**. Terminal opens and the launcher starts the server, checks it, then opens Operator in your default browser. Keep Terminal open while performing.
-4. On first launch, choose **Operator → Setup → Initialize landscape** if that button is shown.
+4. Start the timed performance or select any scene directly when ready. First use prepares the landscape automatically; no separate initialization step is needed.
 5. Enable Main sound in Operator. Select the correct Mac audio output and check its level through your speakers or audio interface.
 6. Use Operator's **Open projection** link, move that window to the projector, then make it fullscreen. Keep Operator open: it produces Main audio while Projection displays the image.
 7. Connect the Mac and phones to the same router. Phones use the displayed QR code and audience address. Enable sound on each phone, then start the timed performance when ready.

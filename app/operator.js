@@ -109,7 +109,6 @@ function receiveState(message) {
   const condition = message.soundCondition;
   if (condition) { text('operator-heat', `${Math.round((condition.heat || 0) * 100)}%`); text('operator-wetness', `${Math.round((condition.surfaceWetness || 0) * 100)}%`); text('operator-out', `${condition.outCount || 0} / ${condition.sourceCount || 0}`); }
   text('operator-crowd', `${message.joinedCount || 0} phones · ${message.activeCount || 0} raining`);
-  $('start-performance').hidden = !message.bootstrapAvailable;
   if (document.activeElement !== $('rain-strength') && !strengthTimer && Number.isFinite(message.strength)) { $('rain-strength').value = String(Math.round(message.strength * 100)); text('rain-strength-value', `${Math.round(message.strength * 100)}%`); }
   if (!timingTimer && message.simulation?.parameters) for (const control of document.querySelectorAll('[data-parameter]')) {
     if (document.activeElement === control) continue;
@@ -175,7 +174,6 @@ for (const control of document.querySelectorAll('[data-parameter]')) control.add
   timingTimer = setTimeout(() => { timingTimer = null; const parameters = Object.fromEntries([...document.querySelectorAll('[data-parameter]')].map(node => [node.dataset.parameter, Number(node.value)])); action('/api/parameters', { parameters }).catch(() => {}); }, 160);
 });
 $('timing-defaults').addEventListener('click', () => action('/api/parameters', { parameters: DEFAULT_PARAMETERS }, 'Ground timing restored.').catch(() => {}));
-$('start-performance').addEventListener('click', () => action('/api/bootstrap', { state: null, strength: Number($('rain-strength').value) / 100 }, 'Landscape initialized.').catch(() => {}));
 async function readSnapshot() {
   try { const response = await fetch('/data/fire-snapshot.json', { cache: 'no-store' }); if (!response.ok) throw new Error(); const data = await response.json(); text('snapshot-status', data.observationStart && data.observationEnd ? `NASA FIRMS / NOAA-20 · ${data.observationStart.slice(0, 10)} to ${data.observationEnd.slice(0, 10)} · ${data.records?.length ?? data.hotspots?.length ?? 'Saved'} observations` : 'Saved NASA FIRMS observations.'); }
   catch { text('snapshot-status', 'Saved source status unavailable. The received landscape remains visible.'); }
