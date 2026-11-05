@@ -1,4 +1,4 @@
-name: Windows performance package
+name: Performance packages
 on:
   push:
     tags: ['v*']
@@ -7,27 +7,53 @@ permissions:
   contents: read
 jobs:
   package:
-    runs-on: windows-latest
+    name: ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows
+            os: windows-latest
+            platform: win32
+            arch: x64
+            artifact: windows-x64
+            build: npm run package:windows
+            smoke: node scripts/smoke-windows-package.mjs dist
+          - name: Mac Apple Silicon
+            os: macos-15
+            platform: darwin
+            arch: arm64
+            artifact: macos-arm64
+            build: npm run package:mac -- --arch arm64
+            smoke: node scripts/smoke-mac-package.mjs dist --arch arm64
+          - name: Mac Intel
+            os: macos-15-intel
+            platform: darwin
+            arch: x64
+            artifact: macos-x64
+            build: npm run package:mac -- --arch x64
+            smoke: node scripts/smoke-mac-package.mjs dist --arch x64
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
           cache: npm
+      - name: Verify native build architecture
+        run: node -e "if(process.platform!=='${{ matrix.platform }}'||process.arch!=='${{ matrix.arch }}')throw new Error('Runner does not match the package architecture')"
       - run: npm ci
       - run: npm test
       - name: Verify release version
         if: startsWith(github.ref, 'refs/tags/')
-        shell: pwsh
-        run: |
-          $version = (Get-Content package.json | ConvertFrom-Json).version
-          if ($env:GITHUB_REF_NAME -ne "v$version") { throw 'Version tag must match package.json' }
-      - run: npm run package:windows
-      - name: Check bundled package on Windows
-        run: node scripts/smoke-windows-package.mjs dist
+        run: node -e "if(process.env.GITHUB_REF_NAME!=='v'+require('./package.json').version)throw new Error('Version tag must match package.json')"
+      - name: Build offline package
+        run: ${{ matrix.build }}
+      - name: Check bundled package natively
+        run: ${{ matrix.smoke }}
       - uses: actions/upload-artifact@v4
         with:
-          name: karhutla-windows
+          name: karhutla-${{ matrix.artifact }}
           path: |
             dist/*.zip
             dist/*.sha256
@@ -42,9 +68,10 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
-          name: karhutla-windows
+          pattern: karhutla-*
+          merge-multiple: true
           path: dist
-      - name: Publish tested Windows download
+      - name: Publish tested downloads
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh release create "$GITHUB_REF_NAME" dist/*.zip dist/*.sha256 --verify-tag --title "karhutla $GITHUB_REF_NAME" --notes-file docs/release-notes.md

@@ -7,6 +7,7 @@
 *.css text eol=lf
 *.yml text eol=lf
 *.cmd text eol=crlf
+*.command text eol=lf
 *.mp3 binary
 *.png binary
 *.webp binary

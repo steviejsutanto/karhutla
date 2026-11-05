@@ -2,11 +2,11 @@
 
 A participatory performance in which an audience uses their phones to bring rain to a shared Indonesian wildfire landscape, with projected visuals and spatial sound.
 
-## Run on Windows
+## Run on Mac or Windows
 
-1. Download the **Windows ZIP** from the [latest release](https://github.com/steviejsutanto/karhutla/releases/latest).
+1. Download the ZIP for your computer from the [latest release](https://github.com/steviejsutanto/karhutla/releases/latest): **Mac Apple Silicon**, **Mac Intel**, or **Windows**.
 2. Extract the whole ZIP into a local folder.
-3. Double-click **Start-Karhutla.cmd** and keep its window open.
+3. Double-click **Start-Karhutla.command** on Mac or **Start-Karhutla.cmd** on Windows. Keep its window open.
 4. In Operator, enable Main sound and open Projection on the projector. Audience phones join through the displayed QR code on the same Wi-Fi.
 
 On first launch, choose **Setup → Initialize landscape** if that button is shown.
@@ -21,6 +21,7 @@ For an update, extract the new release into its own folder and import your setti
 
 ## Guides
 
+- [Mac setup and first launch](docs/mac.md)
 - [Windows setup, projector, audio and Wi-Fi](docs/windows.md)
 - [Sound and performance guide](docs/sound.md)
 - [Developing and updating the project](docs/development.md)

@@ -9,6 +9,7 @@ import QRCode from 'qrcode';
 import { SharedRoom } from './shared-room.mjs';
 import { stateFrame, statePacket } from './wire-state.mjs';
 import { createBellRelay } from './bell-relay.mjs';
+import { isMain } from '../scripts/is-main.mjs';
 
 const workspaceRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const staticFiles = new Map([
@@ -494,7 +495,7 @@ export async function createPerformanceServer(options = {}) {
   };
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+if (isMain(import.meta)) {
   const lanEnabled = process.argv.includes('--lan') || process.env.LAN === '1';
   const instance = await createPerformanceServer({ lanEnabled });
   const address = await instance.listen();

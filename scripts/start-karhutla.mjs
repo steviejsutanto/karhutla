@@ -4,7 +4,9 @@ import { access, open, unlink } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { randomUUID } from 'node:crypto';
+import { createInterface } from 'node:readline/promises';
 import { checkPackage, validateRequiredFiles } from './check-package.mjs';
+import { isMain } from './is-main.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -38,7 +40,7 @@ function openBrowser(url) {
 }
 
 export async function startKarhutla(options) {
-  if (Number(process.versions.node.split('.')[0]) < 22) throw new Error('Karhutla needs Node.js 22 or newer. Use the Windows release ZIP with its included runtime.');
+  if (Number(process.versions.node.split('.')[0]) < 22) throw new Error('Karhutla needs Node.js 22 or newer. Use the release ZIP for your computer with its included runtime.');
   try { await assertPortAvailable(options.port); }
   catch (error) {
     if (error.code === 'EADDRINUSE') throw new Error(`Port ${options.port} is already in use. Karhutla was not started. If it is already running, use its existing window; otherwise close the app using that port or choose another with --port NUMBER.`);
@@ -49,10 +51,10 @@ export async function startKarhutla(options) {
   if (bundled) {
     console.log('Checking the performance package…');
     await checkPackage(root, { verifyMutable: false });
-  } else await validateRequiredFiles(root);
+  } else await validateRequiredFiles(root, { platform: process.platform === 'darwin' ? `macos-${process.arch}` : 'windows-x64' });
   const writeTest = path.join(root, 'data', `.karhutla-write-${randomUUID()}`);
   try { const handle = await open(writeTest, 'wx'); await handle.close(); await unlink(writeTest); }
-  catch { throw new Error('Karhutla cannot save in this folder. Extract the ZIP into a writable folder such as Documents, then run Start-Karhutla.cmd there.'); }
+  catch { throw new Error(`Karhutla cannot save in this folder. Extract the ZIP into a writable folder such as Documents, then run ${process.platform === 'darwin' ? 'Start-Karhutla.command' : 'Start-Karhutla.cmd'} there.`); }
   let createPerformanceServer;
   try { ({ createPerformanceServer } = await import('../app/server.mjs')); }
   catch (error) {
@@ -80,7 +82,7 @@ export async function startKarhutla(options) {
   return instance;
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+if (isMain(import.meta)) {
   try {
     const instance = await startKarhutla(launcherOptions(process.argv.slice(2)));
     let stopping = false;
@@ -92,5 +94,15 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     };
     process.once('SIGINT', stop);
     process.once('SIGTERM', stop);
-  } catch (error) { console.error(`\nKarhutla could not start: ${error.message}`); process.exitCode = 1; }
+    if (process.platform !== 'win32') process.once('SIGHUP', stop);
+  } catch (error) {
+    console.error(`\nKarhutla could not start: ${error.message}`);
+    process.exitCode = 1;
+    // Finder launches in Terminal, whose profile may close the window on exit.
+    if (process.env.KARHUTLA_PAUSE_ON_ERROR === '1' && process.stdin.isTTY) {
+      const prompt = createInterface({ input: process.stdin, output: process.stdout });
+      try { await prompt.question('Press Return to close this window. '); }
+      finally { prompt.close(); }
+    }
+  }
 }

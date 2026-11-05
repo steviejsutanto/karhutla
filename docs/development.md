@@ -1,6 +1,6 @@
 # Developing karhutla
 
-Use Node.js **24.22.2**, pinned in the repository's `.nvmrc`, and run commands from the project root. Node 22 or newer is required. The Windows performance ZIP includes its own runtime.
+Use Node.js **24.22.2**, pinned in the repository's `.nvmrc`, and run commands from the project root. Node 22 or newer is required. The Mac and Windows performance ZIPs include their own runtimes.
 
 ```sh
 npm ci
@@ -21,7 +21,7 @@ npm run launch
 | `audio-assets/` | Finished recordings, manifests, source attribution and generation notes |
 | `visual-assets/` | Finished visuals and their drawing modules/previews |
 | `data/` | Geographic data, the satellite snapshot and local performance save |
-| `Start-Karhutla.cmd` | Windows launcher |
+| `Start-Karhutla.cmd`, `Start-Karhutla.command` | Windows and Mac launchers |
 | `package.json`, `package-lock.json` | Commands and locked dependencies |
 
 Source files moved into `app/`, while browser addresses such as `/operator`, `/projection` and `/audience` remain the same. The server maps public addresses to disk files explicitly. Keep those mappings, Node imports, test fixtures and package inclusion rules aligned when moving or adding files.
@@ -34,7 +34,7 @@ Do not commit `data/performance-state.json`, exported settings, model caches, WA
 
 ## Validate and release
 
-Run `npm test` after application changes. The test suite uses isolated servers and temporary saves. GitHub also runs it on Windows, macOS and Linux. The Windows release workflow builds an offline ZIP, verifies the official Node runtime checksum and package contents, then starts the package on Windows and checks pages, recordings, QR generation and a settings round-trip.
+Run `npm test` after application changes. The test suite uses isolated servers and temporary saves. GitHub also runs it on Windows, native Apple Silicon and Intel Macs, and Linux. The release workflow builds offline ZIPs, verifies the official Node runtime checksums and package contents, then starts each package on its native architecture and checks pages, recordings, QR generation and settings transfer.
 
 For a local Windows build:
 
@@ -43,13 +43,23 @@ npm run package:windows
 node scripts/smoke-windows-package.mjs dist
 ```
 
-On a Mac, the smoke check uses the host Node runtime. GitHub's Windows runner uses the bundled Windows executable. Neither replaces an on-device check of double-click launching, browser audio, firewall access, projector routing and physical phones.
+For a Mac build, choose the target chip explicitly:
 
-To publish an update, increase the version in `package.json` and `package-lock.json`, update [release notes](release-notes.md), commit and push, then push an annotated matching tag such as `v1.0.2`. A successful release workflow publishes the versioned Windows ZIP and checksum. Do not move an existing release tag or replace a rehearsed package silently.
+```sh
+npm run package:mac -- --arch arm64 --out dist/mac-arm64
+node scripts/smoke-mac-package.mjs dist/mac-arm64 --arch arm64
+```
+
+Use `--arch x64` for Intel. The builder can prepare either Mac architecture; native verification requires a matching Mac. Build into separate output directories when keeping several unpacked versions locally. Both builders accept `--runtime-archive` and `--runtime-checksums` to reuse previously downloaded official archives.
+
+The Mac smoke check extracts the final ZIP with the Mac archive utility, checks executable permissions without repairing them, runs the real command launcher with system Node absent from PATH, and verifies stop/restart persistence. Windows verification uses its bundled executable and checks the CMD wrapper. A Mac running the Windows smoke check uses host Node and does not claim native Windows execution. None replaces first-open approval after a browser download, browser audio, firewall access, projector routing or a physical-phone rehearsal.
+
+To publish an update, increase the version in `package.json` and `package-lock.json`, update [release notes](release-notes.md), commit and push, then push an annotated matching tag such as `v1.0.3`. A successful release workflow publishes Windows, Mac Apple Silicon and Mac Intel ZIPs with their checksums, after every native package check passes. Do not move an existing release tag or replace a rehearsed package silently.
 
 ## Further notes
 
 - [Windows use, settings transfer and packaging details](windows.md)
+- [Mac use and first-open instructions](mac.md)
 - [Sound and performance design](sound.md)
 - [Detailed application, simulation and historical verification notes](technical.md)
 - [Visual design review](design-qa.md)

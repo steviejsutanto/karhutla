@@ -1,21 +1,22 @@
-import { readFile, writeFile, readdir, mkdir, mkdtemp, copyFile, lstat, rm, rename, access } from 'node:fs/promises';
+import { readFile, writeFile, readdir, mkdir, mkdtemp, copyFile, chmod, lstat, rm, rename, access } from 'node:fs/promises';
 import { deflateRawSync, inflateRawSync } from 'node:zlib';
 import { spawn } from 'node:child_process';
 import path from 'node:path';
 import os from 'node:os';
 import { fileURLToPath } from 'node:url';
-import { sha256, safePackagePath, validateRequiredFiles, checkPackage, packagePublicFiles, MUTABLE_PACKAGE_FILES } from './check-package.mjs';
+import { sha256, safePackagePath, validateRequiredFiles, checkPackage, packagePublicFiles, packageTarget, MUTABLE_PACKAGE_FILES } from './check-package.mjs';
+import { isMain } from './is-main.mjs';
 
 export const DEFAULT_NODE_VERSION = 'v24.22.2';
 const workspace = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const dataFiles = new Set(['fire-snapshot.json', 'indonesia.geojson', 'indonesia-overview.geojson', 'surrounding-land.geojson', 'geography-metadata.json']);
-const scriptFiles = new Set(['start-karhutla.mjs', 'check-package.mjs', 'build-windows-package.mjs', 'smoke-windows-package.mjs', 'fetch-snapshot.mjs', 'fetch_snapshot.py', 'peat-study-preview.mjs']);
+const scriptFiles = new Set(['start-karhutla.mjs', 'check-package.mjs', 'is-main.mjs', 'build-windows-package.mjs', 'build-mac-package.mjs', 'smoke-windows-package.mjs', 'smoke-mac-package.mjs', 'fetch-snapshot.mjs', 'fetch_snapshot.py', 'peat-study-preview.mjs']);
 
 /** Positive allowlist: a new cache or production artifact cannot enter a release by accident. */
-export function includeProjectFile(relative) {
+export function includeProjectFile(relative, { platform = 'windows-x64' } = {}) {
   const parts = relative.split('/');
   if (parts.some(part => part.startsWith('.') || ['node_modules', 'rejected', 'natural-sources', 'output', 'dist'].includes(part))) return false;
-  if (parts.length === 1) return ['package.json', 'package-lock.json', 'Start-Karhutla.cmd', 'README.md'].includes(relative);
+  if (parts.length === 1) return ['package.json', 'package-lock.json', packageTarget(platform).launcher, 'README.md'].includes(relative);
   if (parts[0] === 'app') return /\.(?:js|mjs|html|css|svg)$/.test(relative) && !relative.endsWith('.test.mjs');
   if (parts[0] === 'tests') return /\.test\.mjs$/.test(relative);
   if (parts[0] === 'docs') return /\.md$/.test(relative);
@@ -38,21 +39,22 @@ export async function listFiles(root, relative = '') {
   return result.sort();
 }
 
-export async function stageProjectFiles(source, destination) {
+export async function stageProjectFiles(source, destination, { platform = 'windows-x64' } = {}) {
   // Traverse only allowed source locations, never model caches or node_modules.
   const top = await readdir(source, { withFileTypes: true });
   const candidates = top.filter(entry => entry.isFile()).map(entry => entry.name);
   for (const directory of ['app', 'tests', 'docs', 'data', 'scripts', 'audio-assets', 'visual-assets']) {
     candidates.push(...(await listFiles(path.join(source, directory))).map(file => `${directory}/${file}`));
   }
-  const files = candidates.filter(includeProjectFile).sort();
+  const files = candidates.filter(file => includeProjectFile(file, { platform })).sort();
   for (const file of files) {
     const info = await lstat(path.join(source, file));
     if (!info.isFile()) throw new Error(`Refusing non-regular source file: ${file}`);
     await mkdir(path.dirname(path.join(destination, file)), { recursive: true });
     await copyFile(path.join(source, file), path.join(destination, file));
+    await chmod(path.join(destination, file), file === 'Start-Karhutla.command' ? 0o755 : 0o644);
   }
-  await validateRequiredFiles(destination);
+  await validateRequiredFiles(destination, { platform });
   return files;
 }
 
@@ -61,7 +63,7 @@ export function validatePortableLock(lock) {
   for (const [name, entry] of Object.entries(lock.packages)) {
     if (!name || entry.dev) continue;
     if (!name.startsWith('node_modules/') || entry.link || entry.hasInstallScript || entry.os || entry.cpu || entry.libc || !entry.integrity || !/^https:\/\/registry\.npmjs\.org\//.test(entry.resolved || '')) {
-      throw new Error(`Dependency ${name} needs a platform-specific build or unsupported install. Review the Windows packaging policy before releasing it.`);
+      throw new Error(`Dependency ${name} needs a platform-specific build or unsupported install. Review the portable packaging policy before releasing it.`);
     }
   }
 }
@@ -95,7 +97,7 @@ export async function installLockedDependencies(stage, cache) {
     const info = await lstat(path.join(modules, file));
     if (!info.isFile() || /\.(?:node|exe|dll|dylib|so)$/i.test(file) || /(?:^|\/)binding\.gyp$/.test(file)) throw new Error(`Dependency contains a native binary or link: ${file}`);
   }
-  // On a non-Windows host, deliberately support only this checked pure-JavaScript graph.
+  // Cross-platform builds deliberately support only this checked pure-JavaScript graph.
   return Object.entries(lock.packages).filter(([name, entry]) => name && !entry.dev).map(([name, entry]) => ({ name: name.replace(/^node_modules\//, ''), version: entry.version, integrity: entry.integrity }));
 }
 
@@ -147,6 +149,8 @@ export async function writeZip(root, files, output, prefix = '') {
     for (const relative of files.slice().sort()) {
       safePackagePath(relative);
       const name = Buffer.from(prefix ? `${prefix}/${relative}` : relative);
+      const info = await lstat(path.join(root, relative));
+      if (!info.isFile()) throw new Error(`Cannot archive non-regular file: ${relative}`);
       const data = await readFile(path.join(root, relative));
       const compressed = deflateRawSync(data, { level: 9 });
       const crc = crc32(data);
@@ -155,8 +159,9 @@ export async function writeZip(root, files, output, prefix = '') {
       local.writeUInt16LE(33, 12); // 1980-01-01, fixed timestamps for repeatable release archives.
       local.writeUInt32LE(crc, 14); local.writeUInt32LE(compressed.length, 18); local.writeUInt32LE(data.length, 22); local.writeUInt16LE(name.length, 26);
       const directory = Buffer.alloc(46);
-      directory.writeUInt32LE(0x02014b50, 0); directory.writeUInt16LE(20, 4); directory.writeUInt16LE(20, 6); directory.writeUInt16LE(0x800, 8); directory.writeUInt16LE(8, 10);
+      directory.writeUInt32LE(0x02014b50, 0); directory.writeUInt16LE(0x0314, 4); directory.writeUInt16LE(20, 6); directory.writeUInt16LE(0x800, 8); directory.writeUInt16LE(8, 10);
       directory.writeUInt16LE(33, 14); directory.writeUInt32LE(crc, 16); directory.writeUInt32LE(compressed.length, 20); directory.writeUInt32LE(data.length, 24); directory.writeUInt16LE(name.length, 28); directory.writeUInt32LE(position, 42);
+      directory.writeUInt32LE(((0o100000 | (info.mode & 0o777)) * 65536) >>> 0, 38);
       central.push(directory, name);
       await writeAll(handle, local); await writeAll(handle, name); await writeAll(handle, compressed);
       position += local.length + name.length + compressed.length;
@@ -186,7 +191,7 @@ export function officialRuntimeHash(checksums, filename) {
   return match[1].toLowerCase();
 }
 
-async function download(url, destination) {
+export async function download(url, destination) {
   console.log(`Downloading ${url}`);
   const response = await fetch(url, { signal: AbortSignal.timeout(120000) });
   if (!response.ok) throw new Error(`Download failed (${response.status}): ${url}`);
@@ -220,9 +225,11 @@ export async function createPackageManifest(stage, runtime, dependencies) {
   for (const file of (await listFiles(stage)).filter(file => file !== 'package-manifest.json')) {
     const info = await lstat(path.join(stage, file));
     if (!info.isFile()) throw new Error(`Cannot package non-regular file: ${file}`);
-    files.push({ path: file, bytes: info.size, sha256: await sha256(path.join(stage, file)), ...(MUTABLE_PACKAGE_FILES.has(file) ? { mutable: true } : {}) });
+    files.push({ path: file, bytes: info.size, sha256: await sha256(path.join(stage, file)), ...(runtime.platform === 'darwin' ? { mode: info.mode & 0o777 } : {}), ...(MUTABLE_PACKAGE_FILES.has(file) ? { mutable: true } : {}) });
   }
-  const manifest = { schema: 1, name: 'karhutla', version: pkg.version, platform: 'windows-x64', runtime, dependencyLockSha256: await sha256(path.join(stage, 'package-lock.json')), dependencies, statePolicy: 'Local performance-state.json is excluded; settings presets are imported explicitly.', publicFiles: await packagePublicFiles(stage), files };
+  const platform = runtime.platform === 'darwin' ? `macos-${runtime.architecture}` : 'windows-x64';
+  packageTarget(platform);
+  const manifest = { schema: 1, name: 'karhutla', version: pkg.version, platform, runtime, dependencyLockSha256: await sha256(path.join(stage, 'package-lock.json')), dependencies, statePolicy: 'Local performance-state.json is excluded; settings presets are imported explicitly.', publicFiles: await packagePublicFiles(stage), files };
   await writeFile(path.join(stage, 'package-manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
   return manifest;
 }
@@ -239,17 +246,50 @@ export function parseBuildOptions(args) {
   return options;
 }
 
+export async function assertReleaseDestination(output, name, force = false) {
+  for (const file of [path.join(output, name), path.join(output, `${name}.zip`)]) {
+    try { await access(file); }
+    catch { continue; }
+    if (!force) throw new Error(`${file} already exists. Use --force to rebuild that package.`);
+  }
+}
+
+/** Shared verified artifact finalization for Windows and Mac targets. */
+export async function publishStagedPackage({ stage, temporary, output, name, runtime, dependencies, force = false }) {
+  await assertReleaseDestination(output, name, force);
+  const platform = runtime.platform === 'darwin' ? `macos-${runtime.architecture}` : 'windows-x64';
+  await validateRequiredFiles(stage, { runtime: true, platform });
+  const manifest = await createPackageManifest(stage, runtime, dependencies);
+  await checkPackage(stage);
+  await mkdir(output, { recursive: true });
+  const destination = path.join(output, name), zip = `${destination}.zip`;
+  const temporaryZip = path.join(temporary, `${name}.zip`);
+  await writeZip(stage, [...manifest.files.map(entry => entry.path), 'package-manifest.json'], temporaryZip, name);
+  const zipHash = await sha256(temporaryZip);
+  const pendingZip = `${zip}.partial`;
+  await copyFile(temporaryZip, pendingZip);
+  await rm(destination, { recursive: true, force: true });
+  await mkdir(destination);
+  for (const file of [...manifest.files.map(entry => entry.path), 'package-manifest.json']) {
+    const from = path.join(stage, file), to = path.join(destination, file);
+    await mkdir(path.dirname(to), { recursive: true });
+    await copyFile(from, to);
+    await chmod(to, (await lstat(from)).mode & 0o777);
+  }
+  await rm(zip, { force: true });
+  await rename(pendingZip, zip);
+  await writeFile(`${zip}.sha256`, `${zipHash}  ${path.basename(zip)}\n`);
+  await copyFile(path.join(stage, 'package-manifest.json'), `${destination}.manifest.json`);
+  console.log(`\nVerified ${packageTarget(platform).label} package: ${zip}\nSHA-256: ${zipHash}\nFiles: ${manifest.files.length}\nRuntime: ${runtime.version} (official checksum verified)`);
+  return { directory: destination, zip, sha256: zipHash, manifest };
+}
+
 export async function buildWindowsPackage(options = {}) {
   const output = path.resolve(options.out || path.join(workspace, 'dist'));
   const pkg = JSON.parse(await readFile(path.join(workspace, 'package.json'), 'utf8'));
   if (!/^\d+\.\d+\.\d+(?:[-+][A-Za-z0-9.-]+)?$/.test(pkg.version)) throw new Error('Use a valid, filename-safe project version before packaging.');
   const name = `karhutla-${pkg.version}-windows-x64`;
-  const destination = path.join(output, name), zip = `${destination}.zip`;
-  let exists = false;
-  try { await access(destination); exists = true; } catch {}
-  let zipExists = false;
-  try { await access(zip); zipExists = true; } catch {}
-  if ((exists || zipExists) && !options.force) throw new Error(`${destination} already exists. Use --force to rebuild that package.`);
+  await assertReleaseDestination(output, name, options.force);
   const temporary = await mkdtemp(path.join(os.tmpdir(), 'karhutla-package-'));
   const stage = path.join(temporary, name);
   try {
@@ -258,32 +298,11 @@ export async function buildWindowsPackage(options = {}) {
     console.log(`Staged ${files.length} project and finished asset files.`);
     const runtime = await bundleRuntime(stage, temporary, options);
     const dependencies = await installLockedDependencies(stage, path.join(temporary, 'npm-cache'));
-    await validateRequiredFiles(stage, { runtime: true });
-    const manifest = await createPackageManifest(stage, runtime, dependencies);
-    await checkPackage(stage);
-    await mkdir(output, { recursive: true });
-    const temporaryZip = path.join(temporary, `${name}.zip`);
-    await writeZip(stage, [...manifest.files.map(entry => entry.path), 'package-manifest.json'], temporaryZip, name);
-    const zipHash = await sha256(temporaryZip);
-    // Copy across volumes before the final rename; never leave a partial ZIP at the release path.
-    const pendingZip = `${zip}.partial`;
-    await copyFile(temporaryZip, pendingZip);
-    if (exists) await rm(destination, { recursive: true });
-    await mkdir(destination);
-    for (const file of [...manifest.files.map(entry => entry.path), 'package-manifest.json']) {
-      await mkdir(path.dirname(path.join(destination, file)), { recursive: true });
-      await copyFile(path.join(stage, file), path.join(destination, file));
-    }
-    if (zipExists) await rm(zip);
-    await rename(pendingZip, zip);
-    await writeFile(`${zip}.sha256`, `${zipHash}  ${path.basename(zip)}\n`);
-    await copyFile(path.join(stage, 'package-manifest.json'), `${destination}.manifest.json`);
-    console.log(`\nVerified Windows package: ${zip}\nSHA-256: ${zipHash}\nFiles: ${manifest.files.length}\nRuntime: ${runtime.version} (official checksum verified)`);
-    return { directory: destination, zip, sha256: zipHash, manifest };
+    return await publishStagedPackage({ stage, temporary, output, name, runtime, dependencies, force: options.force });
   } finally { await rm(temporary, { recursive: true, force: true }); }
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+if (isMain(import.meta)) {
   try { await buildWindowsPackage(parseBuildOptions(process.argv.slice(2))); }
   catch (error) { console.error(`Windows package failed: ${error.message}`); process.exitCode = 1; }
 }

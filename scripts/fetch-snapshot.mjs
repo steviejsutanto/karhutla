@@ -3,6 +3,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { mkdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { isMain } from './is-main.mjs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { parseArgs } from 'node:util';
 
@@ -243,6 +244,6 @@ async function main() {
     observationStart: snapshot.observationStart, observationEnd: snapshot.observationEnd, counts: snapshot.counts }, null, 2));
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
+if (isMain(import.meta)) {
   main().catch(error => { console.error(`Snapshot refresh failed: ${error.message}`); process.exitCode = 1; });
 }

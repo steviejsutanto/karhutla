@@ -1,8 +1,9 @@
 import { createHash } from 'node:crypto';
-import { createReadStream } from 'node:fs';
-import { readFile, stat } from 'node:fs/promises';
+import { createReadStream, constants } from 'node:fs';
+import { readFile, stat, access } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { isMain } from './is-main.mjs';
 
 export async function sha256(file) {
   const hash = createHash('sha256');
@@ -38,10 +39,17 @@ export async function packagePublicFiles(root) {
   return [...publicFiles].map(([url, file]) => ({ url, file: safePackagePath(file) })).sort((a, b) => a.url.localeCompare(b.url, 'en'));
 }
 
-export async function validateRequiredFiles(root, { runtime = false } = {}) {
-  const required = new Set(['package.json', 'package-lock.json', 'Start-Karhutla.cmd', 'scripts/start-karhutla.mjs', 'app/server.mjs', 'data/fire-snapshot.json']);
+export function packageTarget(platform = 'windows-x64') {
+  if (platform === 'windows-x64') return { launcher: 'Start-Karhutla.cmd', executable: 'runtime/node.exe', label: 'Windows x64' };
+  if (/^macos-(?:arm64|x64)$/.test(platform)) return { launcher: 'Start-Karhutla.command', executable: 'runtime/bin/node', label: `macOS ${platform.slice(6)}` };
+  throw new Error(`Unsupported package platform: ${platform}`);
+}
+
+export async function validateRequiredFiles(root, { runtime = false, platform = 'windows-x64' } = {}) {
+  const target = packageTarget(platform);
+  const required = new Set(['package.json', 'package-lock.json', target.launcher, 'scripts/start-karhutla.mjs', 'app/server.mjs', 'data/fire-snapshot.json']);
   for (const entry of await packagePublicFiles(root)) required.add(entry.file);
-  if (runtime) { required.add('runtime/node.exe'); required.add('runtime/LICENSE'); }
+  if (runtime) { required.add(target.executable); required.add('runtime/LICENSE'); }
   const missing = [];
   for (const file of required) {
     safePackagePath(file);
@@ -49,13 +57,26 @@ export async function validateRequiredFiles(root, { runtime = false } = {}) {
     catch { missing.push(file); }
   }
   if (missing.length) throw new Error(`The package is incomplete. Missing: ${missing.join(', ')}`);
+  if (platform.startsWith('macos-') && process.platform !== 'win32') {
+    // Launch requirements belong to the app, never to optional manifest data.
+    for (const file of [target.launcher, ...(runtime ? [target.executable] : [])]) {
+      const filename = path.join(root, file);
+      const info = await stat(filename);
+      try {
+        if (!(info.mode & 0o111)) throw new Error('No execute permission bits are set.');
+        await access(filename, constants.X_OK);
+      } catch { throw new Error(`Required Mac package file is not executable: ${file}. Extract a fresh copy of the release ZIP with Finder or Archive Utility.`); }
+    }
+  }
   return [...required].sort();
 }
 
 export async function checkPackage(root, { verifyMutable = true } = {}) {
   const manifest = JSON.parse(await readFile(path.join(root, 'package-manifest.json'), 'utf8'));
   if (manifest.schema !== 1 || !Array.isArray(manifest.files)) throw new Error('Unsupported package manifest.');
-  await validateRequiredFiles(root, { runtime: true });
+  const platform = manifest.platform || 'windows-x64';
+  packageTarget(platform);
+  await validateRequiredFiles(root, { runtime: true, platform });
   if (manifest.publicFiles && JSON.stringify(manifest.publicFiles) !== JSON.stringify(await packagePublicFiles(root))) throw new Error('The package public URL map does not match its release manifest.');
   const seen = new Set();
   for (const entry of manifest.files) {
@@ -71,14 +92,15 @@ export async function checkPackage(root, { verifyMutable = true } = {}) {
       continue;
     }
     if (!info.isFile() || info.size !== entry.bytes || await sha256(filename) !== entry.sha256) throw new Error(`Package verification failed: ${file}. Extract a fresh copy of the release ZIP.`);
+    if (platform.startsWith('macos-') && process.platform !== 'win32' && entry.mode != null && (info.mode & 0o777) !== entry.mode) throw new Error(`Package permissions changed: ${file}. Extract a fresh copy of the release ZIP with Finder or Archive Utility.`);
   }
-  return { version: manifest.version, files: seen.size, runtime: manifest.runtime };
+  return { version: manifest.version, files: seen.size, runtime: manifest.runtime, platform };
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+if (isMain(import.meta)) {
   try {
     const root = path.resolve(process.argv[2] || path.join(path.dirname(fileURLToPath(import.meta.url)), '..'));
     const result = await checkPackage(root);
-    console.log(`Karhutla ${result.version}: verified ${result.files} files (${result.runtime.version}, Windows x64).`);
+    console.log(`Karhutla ${result.version}: verified ${result.files} files (${result.runtime.version}, ${packageTarget(result.platform).label}).`);
   } catch (error) { console.error(error.message); process.exitCode = 1; }
 }
