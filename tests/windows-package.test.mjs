@@ -209,6 +209,25 @@ test('permanent remote operator credentials stay out of every staged release, ma
   }
 });
 
+test('illustrated Mac instructions retain their local pictures in every release without admitting private images', async t => {
+  const { root } = await releaseFixture(t);
+  for (const directory of ['tests', 'docs/images']) await mkdir(path.join(root, directory), { recursive: true });
+  await writeFile(path.join(root, 'Start-Karhutla.command'), '#!/bin/sh\n');
+  const files = ['docs/mac-setup.md', 'docs/images/mac-unverified-app.png', 'docs/images/mac-open-anyway.png'];
+  for (const file of files) await writeFile(path.join(root, file), await readFile(new URL(`../${file}`, import.meta.url)));
+  await writeFile(path.join(root, 'docs/images/private-desktop.png'), 'private screenshot fixture');
+  for (const platform of ['windows-x64', 'macos-arm64', 'macos-x64']) {
+    const stage = await mkdtemp(path.join(os.tmpdir(), 'karhutla-illustrated-guide-'));
+    t.after(() => rm(stage, { recursive: true, force: true }));
+    const staged = await stageProjectFiles(root, stage, { platform });
+    for (const file of files) {
+      assert.ok(staged.includes(file), `${platform}: missing guide dependency ${file}`);
+      assert.deepEqual(await readFile(path.join(stage, file)), await readFile(path.join(root, file)));
+    }
+    await assert.rejects(access(path.join(stage, 'docs/images/private-desktop.png')), { code: 'ENOENT' });
+  }
+});
+
 test('public preset validation rejects corrupt schema, running-state data and either Wi-Fi credential field', async t => {
   const { root } = await releaseFixture(t);
   assert.deepEqual(await validatePublicPreset(root), [], 'Older minimal fixtures have no preset directory.');

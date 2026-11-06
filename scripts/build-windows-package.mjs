@@ -19,7 +19,7 @@ export function includeProjectFile(relative, { platform = 'windows-x64' } = {}) 
   if (parts.length === 1) return ['package.json', 'package-lock.json', packageTarget(platform).launcher, 'README.md'].includes(relative);
   if (parts[0] === 'app') return /\.(?:js|mjs|html|css|svg)$/.test(relative) && !relative.endsWith('.test.mjs');
   if (parts[0] === 'tests') return /\.test\.mjs$/.test(relative);
-  if (parts[0] === 'docs') return /\.md$/.test(relative);
+  if (parts[0] === 'docs') return /\.md$/.test(relative) || ['docs/mac-setup.pdf', 'docs/images/mac-unverified-app.png', 'docs/images/mac-open-anyway.png'].includes(relative);
   if (parts[0] === 'presets') return ['presets/current-performance.json', 'presets/README.md'].includes(relative);
   if (parts[0] === 'data') return parts.length === 2 && dataFiles.has(parts[1]);
   if (parts[0] === 'scripts') return parts.length === 2 && scriptFiles.has(parts[1]);

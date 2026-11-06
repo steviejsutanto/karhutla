@@ -1,5 +1,5 @@
 #!/bin/sh
-# Use absolute macOS tools so the offline package needs no system Node or PATH.
+# Prefer installed Node; absolute system tools keep the bundled fallback offline.
 case "$0" in
   */*) KARHUTLA_DIRECTORY=${0%/*} ;;
   *) KARHUTLA_DIRECTORY=. ;;
@@ -17,6 +17,24 @@ karhutla_fail() {
   fi
   exit 1
 }
+
+karhutla_try_installed_node() {
+  KARHUTLA_INSTALLED_NODE=$1
+  shift
+  [ -n "$KARHUTLA_INSTALLED_NODE" ] && [ -x "$KARHUTLA_INSTALLED_NODE" ] || return 1
+  "$KARHUTLA_INSTALLED_NODE" -e 'process.exit(Number(process.versions.node.split(".")[0]) >= 22 ? 0 : 1)' >/dev/null 2>&1 || return 1
+  printf 'Using installed Node.js: %s\n' "$KARHUTLA_INSTALLED_NODE"
+  exec "$KARHUTLA_INSTALLED_NODE" "$KARHUTLA_DIRECTORY/scripts/start-karhutla.mjs" "$@"
+}
+
+if [ "${KARHUTLA_USE_BUNDLED_NODE:-0}" != 1 ]; then
+  KARHUTLA_PATH_NODE=$(command -v node 2>/dev/null) || KARHUTLA_PATH_NODE=
+  # Terminal normally loads PATH; these locations also cover Finder launches
+  # using the official installer, Apple Silicon Homebrew, or Intel Homebrew.
+  for KARHUTLA_NODE_CANDIDATE in "$KARHUTLA_PATH_NODE" /opt/homebrew/bin/node /usr/local/bin/node; do
+    karhutla_try_installed_node "$KARHUTLA_NODE_CANDIDATE" "$@"
+  done
+fi
 
 karhutla_hash() {
   KARHUTLA_HASH_OUTPUT=$(/usr/bin/shasum -a 256 "$1") || return 1
@@ -66,7 +84,4 @@ fi
 if [ -e "$KARHUTLA_DIRECTORY/runtime/bin/node" ] || [ -L "$KARHUTLA_DIRECTORY/runtime/bin/node" ]; then
   karhutla_fail 'The included Node.js runtime is not executable. Extract a fresh Mac release ZIP with Finder or Archive Utility.'
 fi
-if command -v node >/dev/null 2>&1; then
-  exec node "$KARHUTLA_DIRECTORY/scripts/start-karhutla.mjs" "$@"
-fi
-karhutla_fail 'Karhutla could not find Node.js.' 'Use the Mac release ZIP, which includes its own runtime.' 'For a Git checkout, install Node.js and run npm ci first.'
+karhutla_fail 'Karhutla could not find a working Node.js 22 or newer.' 'Install Node.js LTS from https://nodejs.org/en/download, or use the Mac release ZIP with its included runtime.' 'For a Git checkout, run npm ci after installing Node.js.'

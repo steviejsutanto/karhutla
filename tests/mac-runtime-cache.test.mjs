@@ -46,7 +46,7 @@ async function capture(command, args, options = {}) {
 
 function launch(root, cache, args = []) {
   return capture(path.join(root, 'Start-Karhutla.command'), args, {
-    cwd: os.tmpdir(), env: { ...process.env, PATH: '', KARHUTLA_RUNTIME_CACHE: cache },
+    cwd: os.tmpdir(), env: { ...process.env, PATH: '', KARHUTLA_USE_BUNDLED_NODE: '1', KARHUTLA_RUNTIME_CACHE: cache },
   });
 }
 
@@ -96,7 +96,7 @@ test('the default cache lives in the current user Library and supports a home fo
   const { temporary } = await fixture(t);
   const root = await release(temporary, 'release using default cache');
   const userHome = path.join(temporary, 'test user home with spaces');
-  const env = { ...process.env, PATH: '', HOME: userHome };
+  const env = { ...process.env, PATH: '', HOME: userHome, KARHUTLA_USE_BUNDLED_NODE: '1' };
   delete env.KARHUTLA_RUNTIME_CACHE;
   const cached = path.join(userHome, 'Library', 'Application Support', 'Karhutla', 'RuntimeCache', digest(firstRuntime), 'node');
   const result = await capture(path.join(root, 'Start-Karhutla.command'), [], { cwd: os.tmpdir(), env });
@@ -165,7 +165,7 @@ test('a cache-root symlink cannot redirect installation into another directory',
   await assert.rejects(lstat(path.join(outside, digest(firstRuntime))), { code: 'ENOENT' });
 });
 
-test('a broken bundled-runtime symlink fails instead of silently switching to system Node', { skip: unixOnly }, async t => {
+test('forced bundled mode rejects a broken runtime symlink without switching to installed Node', { skip: unixOnly }, async t => {
   const { temporary, cache } = await fixture(t);
   const root = await release(temporary, 'release');
   const bundled = path.join(root, 'runtime/bin/node');
@@ -175,7 +175,7 @@ test('a broken bundled-runtime symlink fails instead of silently switching to sy
   await mkdir(systemBin);
   await writeFile(path.join(systemBin, 'node'), '#!/bin/sh\nprintf "SYSTEM_FALLBACK_EXECUTED\\n"\nexit 0\n', { mode: 0o755 });
   const result = await capture(path.join(root, 'Start-Karhutla.command'), [], {
-    cwd: os.tmpdir(), env: { ...process.env, PATH: systemBin, KARHUTLA_RUNTIME_CACHE: cache },
+    cwd: os.tmpdir(), env: { ...process.env, PATH: systemBin, KARHUTLA_USE_BUNDLED_NODE: '1', KARHUTLA_RUNTIME_CACHE: cache },
   });
   assert.equal(result.code, 1, result.output);
   assert.doesNotMatch(result.output, /SYSTEM_FALLBACK_EXECUTED/);

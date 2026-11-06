@@ -1,5 +1,7 @@
 # karhutla on Mac
 
+For a quick start, use the [illustrated setup and approval guide](mac-setup.md).
+
 ## Choose your download
 
 Open the [latest release](https://github.com/steviejsutanto/karhutla/releases/latest) while signed in to GitHub:
@@ -7,7 +9,9 @@ Open the [latest release](https://github.com/steviejsutanto/karhutla/releases/la
 - **macos-arm64.zip** is for Apple Silicon Macs, including M1 and later M-series chips.
 - **macos-x64.zip** is for Intel Macs.
 
-Use **Apple menu → About This Mac** to check your chip or processor. Each ZIP includes the matching Node runtime, libraries, recordings, visuals and a saved fire snapshot. You do not need to install Node, Homebrew, Python or audio-generation models to run it.
+Use **Apple menu → About This Mac** to check your chip or processor. Each ZIP includes libraries, recordings, visuals, a saved fire snapshot and a fallback Node runtime.
+
+For simpler startup, install [Node.js LTS](https://nodejs.org/en/download) once with its **macOS Installer (.pkg)**. An existing Node 22 or newer also works. The launcher tries Node on your command path first, then the standard Homebrew and official-installer locations. Older or non-working installations are skipped. It uses the included runtime if no compatible installation is found.
 
 ## Start the performance
 
@@ -39,7 +43,9 @@ The PIN and private key are saved locally in `data/remote-operator.json`, outsid
 
 macOS may ask you to approve the downloaded launcher. If it blocks opening, first try launching it, then follow **System Settings → Privacy & Security → Open Anyway** when that option is offered for this file. Approve only the package you obtained from this project's GitHub release. [Apple's first-open instructions](https://support.apple.com/en-us/102445) explain the available prompts.
 
-On first use, the launcher places its bundled Node runtime in **~/Library/Application Support/Karhutla/RuntimeCache**. If macOS also blocks **node**, use the same **Open Anyway** steps for Node, then run the launcher again. This approval applies to the reusable copy, so the first release using this arrangement may ask again even if you approved Node in an older release folder.
+When using an already approved installed Node, the launcher does not start or copy the bundled Node. If the installed Node itself has not been approved, macOS may still ask about it. Installing Node does not remove the separate first-open approval for the downloaded launcher.
+
+If no compatible installed Node is found, the launcher places its bundled runtime in **~/Library/Application Support/Karhutla/RuntimeCache**. If macOS also blocks **node**, use the same **Open Anyway** steps for Node, then run the launcher again. This approval applies to the reusable copy, so the first release using this arrangement may ask again even if you approved Node in an older release folder.
 
 Future updates verify and reuse that exact Node file without replacing it. A new launcher may still need approval, but Node should need approval only when its binary changes or the runtime cache is removed. The package stays offline and includes its runtime. If a cache entry fails verification, the launcher stops and prints the specific cache folder to move to the Trash before retrying.
 
@@ -57,4 +63,4 @@ For an update, stop the old version with Ctrl+C, extract the new release into it
 
 The bundled Node 24.22.2 runtime has a technical minimum of **macOS 13.5** for both architectures; use a macOS version still supported by Apple. See [Node's pinned platform requirements](https://github.com/nodejs/node/blob/v24.22.2/BUILDING.md#platform-list). Native package verification uses macOS 15 runners for Apple Silicon and Intel.
 
-The source checkout uses the same launcher with an installed Node 22 or newer when no bundled runtime is present. See [the development guide](development.md) for setup and packaging commands.
+The source checkout uses the same launcher with an installed Node 22 or newer. For a rehearsal with the exact bundled runtime, launch from Terminal with `KARHUTLA_USE_BUNDLED_NODE=1 ./Start-Karhutla.command`. See [the development guide](development.md) for source setup and packaging commands.

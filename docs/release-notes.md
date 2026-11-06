@@ -1,15 +1,9 @@
-karhutla 1.1.1 improves first-open approval on Mac updates.
+karhutla 1.1.2 makes Mac setup simpler.
 
-The Mac launcher now keeps a reusable copy of Node in **~/Library/Application Support/Karhutla/RuntimeCache**. Updates containing the same runtime verify and reuse that file without replacing it or resetting its first-open approval.
+**Start-Karhutla.command** now tries a working installed Node.js 22 or newer first, including the usual Homebrew and official-installer locations. It starts the performance directly with that installation and leaves the bundled runtime and its cache alone. Older or non-working installations are skipped; if no compatible Node is found, the existing bundled-runtime fallback still works offline.
 
-The first launch using this arrangement may still require **Open Anyway** for both **Start-Karhutla.command** and **node** in **System Settings → Privacy & Security**. After approving Node, run the launcher again. Future downloaded launchers may still require approval; Node should require it again only when its binary changes or the cache is removed. The package preserves quarantine and macOS security settings. It is not a notarized application.
+Install Node.js LTS once with the official macOS installer, extract the Karhutla ZIP, then double-click **Start-Karhutla.command**. macOS may still ask you to approve the downloaded launcher in **System Settings → Privacy & Security → Open Anyway**. Installing Node does not remove that launcher approval. An unapproved Node installation or the bundled fallback may still need its own approval.
 
-Choose **macos-arm64** for Apple Silicon or **macos-x64** for Intel. Extract the whole ZIP into a new local folder. Import your exported settings through **Operator → Setup → Settings file**. The included rehearsal preset remains **presets/current-performance.json**, with blank Wi-Fi fields.
+The shorter README links to **docs/mac-setup.md**, a step-by-step illustrated guide using Apple’s example approval screens. The guide and pictures are included in each download.
 
-The release also includes the completed rehearsal updates:
-
-- Remote Operator at **/operator-remote**, with a six-digit PIN and remembered device access. Host audio stays on the performance computer.
-- Independent phone mixer controls and smoother scene transitions that retain your manual mix.
-- A higher, more pronounced phone drone, continuous heavy-rain loops and a smoother Main orangutan release.
-
-Existing settings files remain compatible. Remote-control PINs, private keys and running performance saves are excluded from GitHub and release downloads. Keep the previous rehearsed release available.
+Choose **macos-arm64** for Apple Silicon, **macos-x64** for Intel, or **windows-x64** for Windows. Windows startup and performance behavior are unchanged. Your included rehearsal preset remains **presets/current-performance.json**; import it through **Operator → Setup → Settings file**, or import your own private export.

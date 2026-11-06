@@ -55,11 +55,15 @@ async function capture(command, args, options = {}) {
   }
 }
 
-async function startWrapper(root, temporary) {
+async function startWrapper(root, temporary, { installed = false } = {}) {
   const process = launch(path.join(root, 'Start-Karhutla.command'), ['--port', '0', '--no-browser'], {
     // Intentionally start outside the app folder, with no system Node or helper
     // commands on PATH. The double-click wrapper must find its own runtime.
-    cwd: temporary, env: { ...globalThis.process.env, PATH: '', KARHUTLA_NO_BROWSER: '1', KARHUTLA_RUNTIME_CACHE: path.join(temporary, 'Reusable runtime cache with spaces') },
+    cwd: temporary, env: {
+      ...globalThis.process.env, PATH: installed ? path.dirname(globalThis.process.execPath) : '',
+      KARHUTLA_USE_BUNDLED_NODE: installed ? '0' : '1', KARHUTLA_NO_BROWSER: '1',
+      KARHUTLA_RUNTIME_CACHE: path.join(temporary, installed ? 'Unused installed runtime cache' : 'Reusable runtime cache with spaces'),
+    },
   });
   try {
     const base = await deadline(new Promise((resolve, reject) => {
@@ -139,7 +143,7 @@ export async function smokeMacPackage({ output, arch }) {
 
     const runtimeCache = path.join(temporary, 'Reusable runtime cache with spaces');
     const cachedNode = path.join(runtimeCache, manifest.files.find(file => file.path === 'runtime/bin/node').sha256, 'node');
-    const env = { ...process.env, PATH: '', KARHUTLA_NO_BROWSER: '1', KARHUTLA_RUNTIME_CACHE: runtimeCache };
+    const env = { ...process.env, PATH: '', KARHUTLA_USE_BUNDLED_NODE: '1', KARHUTLA_NO_BROWSER: '1', KARHUTLA_RUNTIME_CACHE: runtimeCache };
     const invalid = await capture(command, ['--port', 'invalid', '--no-browser'], { cwd: temporary, env });
     assert.equal(invalid.code, 1, 'The .command wrapper must preserve startup error exit codes.');
     assert.match(invalid.output, /PORT must be a whole number/);
@@ -187,7 +191,12 @@ export async function smokeMacPackage({ output, arch }) {
     const cachedAfter = await stat(cachedNode);
     assert.equal(cachedAfter.ino, cachedBefore.ino, 'Updates must reuse the same approved runtime file.');
     assert.equal(cachedAfter.mtimeMs, cachedBefore.mtimeMs, 'Updates must leave existing runtime metadata untouched.');
-    console.log(`Mac package smoke passed: ${verified.files} verified files, ${publicFiles.length} byte-identical public URLs, executable ZIP extraction, actual .command with no system Node, fresh Start/cues4-5/Restart without manual initialization, prepared-settings persistence, SIGTERM/restart/SIGHUP and runtime reuse across a separately extracted update (${arch}).`);
+    active = await startWrapper(root, temporary, { installed: true });
+    assert.equal((await (await request(active.base, '/api/health')).json()).status, 'ok');
+    assert.ok(active.output().includes(`Using installed Node.js: ${process.execPath}`), 'The launcher must use the installed Node found on PATH.');
+    await stopWrapper(active); active = null;
+    await assert.rejects(access(path.join(temporary, 'Unused installed runtime cache')), { code: 'ENOENT' });
+    console.log(`Mac package smoke passed: ${verified.files} verified files, ${publicFiles.length} byte-identical public URLs, executable ZIP extraction, installed Node startup without cache access, bundled fallback with no system Node, fresh Start/cues4-5/Restart, prepared-settings persistence, SIGTERM/restart/SIGHUP and runtime reuse across a separately extracted update (${arch}).`);
     return { files: verified.files, publicUrls: publicFiles.length, architecture: arch };
   } finally {
     if (active) await stopWrapper(active).catch(error => console.error(error.message));
