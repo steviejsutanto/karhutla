@@ -161,7 +161,17 @@ The phone is a full-screen rain instrument: grainy orange-red patches that fade 
 
 Numbered clouds and overlapping rain appear on the main map. Joined/pouring counts exclude the operator mouse. **Fit active rain** brings active brush areas into view; offscreen contributions are also counted explicitly. Phone statistics always show assigned-region averages, including while pressing or dragging: wetness and moisture are means across the region's modeled land patches; heat averages the current source fire patches. Moving the rain does not change the scope or temporarily blank the readings. Spatial background cooling still follows each individual fire patch. The out count and pouring count refer to that region. These are performance-model values, not live field measurements.
 
-LAN mode binds this one prototype to `0.0.0.0`; it does not configure a tunnel, router forwarding, or other services. Wi-Fi client isolation can prevent phone-to-laptop access. If the operating system blocks incoming Node connections, allow this prototype's local-network connection. No phone app, login, microphone permission, or certificate is needed for this HTTP/WebSocket control test. Audio remains a later stage.
+LAN mode binds this one prototype to `0.0.0.0`; it does not configure a tunnel, router forwarding, or other services. Wi-Fi client isolation can prevent phone-to-laptop access. If the operating system blocks incoming Node connections, allow this prototype's local-network connection. No phone app, login, microphone permission, or certificate is needed for this HTTP/WebSocket connection.
+
+## Remote operator
+
+Start with the launcher or `npm run start:lan`. Scan the audience QR code on the controller, replace `/audience` with `/operator-remote`, and enter the six-digit PIN shown on the host in **Operator → Setup → Remote control**. Both `/operator-remote` and `/operator-remote/` open the PIN entry page or the remembered controller. Scene transport, shared mixer settings, timings and landscape state continue to come from the one host server, so both operator pages receive the same live updates. This route always uses a silent remote preview, including when opened on the host. Keep the host Operator page open with Main sound enabled and keep the host awake; it remains the Main audio owner.
+
+The server saves the PIN and random pairing secret in the private, ignored local file `data/remote-operator.json`. Existing secret-only installations gain a PIN without replacing their secret or remembered browser access. A same-origin POST exchanges the PIN for a one-year HttpOnly, SameSite=Strict cookie, which authorizes remote operator HTTP requests and WebSocket connections across browser and server restarts. Five unsuccessful attempts temporarily block PIN entry from that device's address. Previously saved long private links remain supported; their valid token fragment remains bookmarkable. Unpaired remote browsers retain audience/display access only. Audience and projection requests cannot pair or write performance settings. The PIN and pairing secret are absent from public session data, performance saves, exported settings and release packages.
+
+Bookmark the simple `/operator-remote` address to return later. **Reset PIN & devices** rotates the saved PIN and secret, closes paired operator connections and invalidates previous private links and remembered access. A normal server restart retains them. The address still depends on the host's LAN address: if the router changes it, choose **Refresh address** and update the bookmark. Remote control remains on the same local network, without internet hosting. The audience QR code contains only the audience address and never the PIN.
+
+Settings export/import does not transfer the private key. To retain it when moving to a new release folder, copy `data/remote-operator.json` privately into that folder before starting its server; the new host address may still require updating the bookmark.
 
 ## Shared authority and preservation
 
@@ -232,12 +242,16 @@ Reusable drawing functions, transparent frames, GIF previews, a sprite sheet, an
 - `GET /api/snapshot`: current saved snapshot.
 - `POST /api/snapshot/refresh`: download, filter, save, and return a fresh snapshot. Send `Content-Type: application/json`.
 - `GET /api/health`: server and refresh status.
-- `GET /api/session`: current LAN join URL and room information.
+- `GET /api/session`: current LAN join URL, room information, `operatorAllowed` and `localOperator` access flags; no pairing secret.
 - `GET /api/qr.svg`: QR code generated locally for that URL.
+- `GET /api/operator/remote`: host-only PIN, simple `remoteUrl(s)` ending in `/operator-remote`, and legacy private pairing `url(s)`; addresses are available when LAN mode has a network address.
+- `GET /api/qr.svg?view=operator`: host-only private operator pairing QR code.
+- `POST /api/operator/pair`: exchange a six-digit `{pin}` or legacy `{token}` for a remote operator cookie; repeated failures return `429` and `Retry-After`.
+- `POST /api/operator/remote/renew`: host-only PIN and token rotation; closes paired operator connections and returns the replacement credentials.
 - `WS /ws?role=participant&clientId=...`: normalized `space: "region"` hold controls, assigned-region summaries, and acknowledgments.
-- `WS /ws?role=operator&clientId=...`: local operator geographic hold controls and a full baseline followed by revisioned state deltas; `resync` requests a fresh baseline.
-- `POST /api/bootstrap`: one-time local operator migration or fresh start.
-- `POST /api/reset`, `/api/strength`, `/api/parameters`: local operator actions.
+- `WS /ws?role=operator&clientId=...`: host-local or paired operator geographic hold controls and a full baseline followed by revisioned state deltas; `resync` requests a fresh baseline.
+- `POST /api/bootstrap`: one-time operator migration or fresh start.
+- `POST /api/reset`, `/api/strength`, `/api/parameters`: authorized operator actions.
 
 ## Local verification · 29 October 2026
 

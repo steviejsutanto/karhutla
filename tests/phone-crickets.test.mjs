@@ -25,8 +25,8 @@ function fixture() {
   return { context, parameter, phrases: new PhoneCricketPhrases({ context, parameter }) };
 }
 
-test('phone balances retain quiet rain/crickets and lower the revised drone by one octave and 1.5 dB', () => {
-  assert.equal(PHONE_DRONE_PITCH_RATIO, 2);
+test('phone balances retain rain and cricket trims while the drone rises a major third at its existing level', () => {
+  assert.ok(Math.abs(12 * Math.log2(PHONE_DRONE_PITCH_RATIO / 2) - 4) < 1e-12);
   assert.ok(Math.abs(20 * Math.log10(PHONE_RAIN_TRIM) + 4.5) < 1e-12);
   assert.ok(Math.abs(20 * Math.log10(PHONE_DRONE_GAIN_TRIM) - 3) < 1e-12);
   assert.ok(Math.abs(20 * Math.log10(PHONE_DRONE_GAIN_TRIM / 10 ** (4.5 / 20)) + 1.5) < 1e-12);

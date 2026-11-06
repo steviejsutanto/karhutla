@@ -1,16 +1,15 @@
-karhutla 1.1.0 brings the latest rehearsal updates into the Windows and Mac downloads.
+karhutla 1.1.1 improves first-open approval on Mac updates.
 
-- Phones now show a finite rainwater supply with automatic refill and a 2× aiming magnifier. Shared joining instructions and reconnect behavior are updated.
-- Scene 4 transfers a gently distorted drone to phones. The ending adds steady phone crickets and occasional bird calls, with independent Main-only orangutan controls.
-- Main stereo placement is wider, held tones move more gently, and Main mute/unmute fades smoothly.
-- The previous rain and haze selections are retained, alongside the newer steady phone cricket and revised phone ending balance. All playback recordings and source attribution are included.
+The Mac launcher now keeps a reusable copy of Node in **~/Library/Application Support/Karhutla/RuntimeCache**. Updates containing the same runtime verify and reuse that file without replacing it or resetting its first-open approval.
 
-Fresh installations use 54% audience rain and a 52-second Final rain rise. Imported or previously saved settings retain their values. Existing 1.0.3 settings files remain compatible; the two new orangutan controls start at 100% when absent from an older file.
+The first launch using this arrangement may still require **Open Anyway** for both **Start-Karhutla.command** and **node** in **System Settings → Privacy & Security**. After approving Node, run the launcher again. Future downloaded launchers may still require approval; Node should require it again only when its binary changes or the cache is removed. The package preserves quarantine and macOS security settings. It is not a notarized application.
 
-Your current rehearsal mixer, performance and timing settings are included as **presets/current-performance.json**. Import that file through **Operator → Setup → Settings file** to use the captured settings. Its Wi-Fi fields are blank; enter venue Wi-Fi details after importing.
+Choose **macos-arm64** for Apple Silicon or **macos-x64** for Intel. Extract the whole ZIP into a new local folder. Import your exported settings through **Operator → Setup → Settings file**. The included rehearsal preset remains **presets/current-performance.json**, with blank Wi-Fi fields.
 
-Choose **windows-x64**, **macos-arm64** (Apple Silicon), or **macos-x64** (Intel). Extract the whole ZIP into a new local folder, stop the previous version, then run **Start-Karhutla.cmd** on Windows or **Start-Karhutla.command** on Mac. Import your exported settings through **Operator → Setup → Settings file**.
+The release also includes the completed rehearsal updates:
 
-The matching runtime, recordings, visuals and satellite snapshot are included; no separate Node installation is needed. Existing first-run scene and Windows browser-opening fixes are retained. Mac first-open instructions are in **docs/mac.md**.
+- Remote Operator at **/operator-remote**, with a six-digit PIN and remembered device access. Host audio stays on the performance computer.
+- Independent phone mixer controls and smoother scene transitions that retain your manual mix.
+- A higher, more pronounced phone drone, continuous heavy-rain loops and a smoother Main orangutan release.
 
-Fully reload Operator, Projection and phones after changing versions so their code and decoded recordings refresh. Rehearse the new version with the actual audio output, projector, router and audience phones. Keep the previous rehearsed release available.
+Existing settings files remain compatible. Remote-control PINs, private keys and running performance saves are excluded from GitHub and release downloads. Keep the previous rehearsed release available.

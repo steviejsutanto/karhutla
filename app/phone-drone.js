@@ -1,13 +1,15 @@
 // The Main chord travels to phones as a softly driven, band-limited voice.
 // Six native oscillators, one static shaper, no worklet or per-sample JS.
 const disconnect = node => { try { node?.disconnect(); } catch {} };
-export const PHONE_DRONE_PITCH_RATIO = 2;
+export const PHONE_DRONE_PITCH_SEMITONES = 16;
+export const PHONE_DRONE_PITCH_RATIO = 2 ** (PHONE_DRONE_PITCH_SEMITONES / 12);
 export const PHONE_DRONE_GAIN_TRIM = 10 ** (3 / 20);
-export const PHONE_DRONE_MOVING_BANK_WEIGHT = .28;
-export const PHONE_DRONE_BEAT_OFFSET_HZ = .8;
+export const PHONE_DRONE_MOVING_BANK_WEIGHT = .38;
+export const PHONE_DRONE_BEAT_OFFSET_HZ = 1.4;
+export const PHONE_DRONE_BEAT_SPREAD_HZ = .3;
 export const PHONE_DRONE_HARMONICS = Object.freeze([0, 1, .18, .10, .04]);
 export const phoneDroneFrequency = (frequencies, index) => Math.max(20,
-  frequencies[index] * PHONE_DRONE_PITCH_RATIO - (index < 3 ? 0 : PHONE_DRONE_BEAT_OFFSET_HZ + .2 * (index - 3)));
+  frequencies[index] * PHONE_DRONE_PITCH_RATIO - (index < 3 ? 0 : PHONE_DRONE_BEAT_OFFSET_HZ + PHONE_DRONE_BEAT_SPREAD_HZ * (index - 3)));
 export function phoneDroneWeight(scene, score) {
   if (scene?.id === 'forest-takeover') return score?.forestTakeoverProgress ?? 0;
   if (scene?.id === 'final-rain') return 1 - (score?.finalRainProgress ?? 0);
@@ -37,8 +39,8 @@ export class PhoneDroneAudio {
         oscillator.type = 'sine';
         if (this.wave && oscillator.setPeriodicWave) oscillator.setPeriodicWave(this.wave);
         oscillator.frequency.value = phoneDroneFrequency(frequencies, index);
-        // Slightly more of the moving bank deepens beating. A small fixed
-        // offset keeps it moving even where the Main banks reach unison.
+        // A stronger moving bank deepens beating. Its small fixed offsets
+        // keep a clear slow pulse even where the Main banks reach unison.
         partial.gain.value = (amplitudes[index % 3] ?? .3) * (index < 3 ? 1 - PHONE_DRONE_MOVING_BANK_WEIGHT : PHONE_DRONE_MOVING_BANK_WEIGHT);
         oscillator.connect(partial); partial.connect(drive); oscillator.start(now + .02);
         oscillators.push(oscillator); partials.push(partial);
@@ -71,5 +73,5 @@ export class PhoneDroneAudio {
     this.retiring.delete(voice);
   }
   destroy() { this.stop(); for (const voice of this.retiring) this._disposeVoice(voice); }
-  getMetrics() { return { oscillatorCount: this.voice?.oscillators.length ?? 0, retiringOscillatorCount: [...this.retiring].reduce((sum, voice) => sum + voice.oscillators.length, 0), pitchSemitones: 12, trimDb: 3, movingBankWeight: PHONE_DRONE_MOVING_BANK_WEIGHT, beatOffsetHz: PHONE_DRONE_BEAT_OFFSET_HZ, upperHarmonics: PHONE_DRONE_HARMONICS.slice(2), staticDrive: 2.8, distortion: 'static soft drive', oversample: 'none' }; }
+  getMetrics() { return { oscillatorCount: this.voice?.oscillators.length ?? 0, retiringOscillatorCount: [...this.retiring].reduce((sum, voice) => sum + voice.oscillators.length, 0), pitchSemitones: PHONE_DRONE_PITCH_SEMITONES, trimDb: 3, movingBankWeight: PHONE_DRONE_MOVING_BANK_WEIGHT, beatOffsetHz: PHONE_DRONE_BEAT_OFFSET_HZ, beatSpreadHz: PHONE_DRONE_BEAT_SPREAD_HZ, upperHarmonics: PHONE_DRONE_HARMONICS.slice(2), staticDrive: 2.8, distortion: 'static soft drive', oversample: 'none' }; }
 }

@@ -41,21 +41,22 @@ const customVersion103Preset = () => {
 const migratedPreset = preset => {
   const migrated = structuredClone(preset);
   Object.assign(migrated.soundSettings.mixer, { orangutan: 1, orangutanTail: 1 });
+  migrated.soundSettings.phoneMixer = { overall: 1, crackle: 1, rain: 1, crickets: 1, birds: 1, drone: 1 };
   return migrated;
 };
 const records = [{ longitude: 101.125, latitude: -1.125 }];
 const options = { records, snapshotVersion: 'compatibility-fixture', clock: () => 1000, wallClock: () => 10000, persistencePath: null };
 
-test('complete 1.0.3 presets migrate only the new wildlife trims and retain old defaults or custom choices', async () => {
+test('complete 1.0.3 presets gain new wildlife and phone mixer defaults while retaining old choices', async () => {
   for (const preset of [version103Preset(), customVersion103Preset()]) {
     const before = structuredClone(preset), expected = migratedPreset(preset);
     assert.deepEqual(validateSettingsPreset(preset), expected);
     assert.deepEqual(preset, before, 'Validation does not rewrite the old settings file.');
     const target = new SharedRoom(options);
-    await target.setSoundSettings({ mixer: { orangutan: .2, orangutanTail: 1.8 }, level: .9 });
+    await target.setSoundSettings({ mixer: { orangutan: .2, orangutanTail: 1.8 }, phoneMixer: { overall: .1, birds: 2, drone: 0 }, level: .9 });
     await target.importSettingsPreset(preset);
     assert.deepEqual(target.exportSettingsPreset(), expected,
-      'New wildlife channels get release defaults, not unrelated destination settings.');
+      'New wildlife and phone channels get release defaults, not unrelated destination settings.');
     assert.equal(target.bootstrapAvailable, true);
     assert.equal(target.sceneState().id, 'arrival');
     assert.equal(target.sceneState().paused, true);
@@ -85,7 +86,7 @@ test('migrated 1.0.3 imports persist, re-export completely and work with first-u
   }
 });
 
-test('full and settings-only 1.0.3 saves restore existing settings while adding both wildlife defaults', async t => {
+test('full and settings-only 1.0.3 saves restore existing settings with wildlife and phone defaults', async t => {
   const directory = await mkdtemp(path.join(os.tmpdir(), 'karhutla-settings-103-save-'));
   t.after(() => rm(directory, { recursive: true, force: true }));
   const preset = customVersion103Preset(), expected = migratedPreset(preset);
@@ -132,6 +133,8 @@ test('incomplete or malformed legacy mixers still reject atomically instead of r
     preset => { preset.soundSettings.mixer.bells = '1'; },
     preset => { preset.soundSettings.mixer.bells = 2.1; },
     preset => { preset.soundSettings.mixer = null; },
+    preset => { preset.soundSettings.phoneMixer = { overall: 1 }; },
+    preset => { preset.soundSettings.phoneMixer = { overall: 1, crackle: 1, rain: 1, crickets: 1, birds: '1', drone: 1 }; },
     preset => { preset.schemaVersion = 2; },
   ]) {
     const invalid = customVersion103Preset(); mutate(invalid);
@@ -140,6 +143,7 @@ test('incomplete or malformed legacy mixers still reject atomically instead of r
   }
   const current = migratedPreset(customVersion103Preset());
   Object.assign(current.soundSettings.mixer, { orangutan: 0, orangutanTail: 2 });
+  Object.assign(current.soundSettings.phoneMixer, { overall: 0, birds: 1.7, drone: 2 });
   await room.importSettingsPreset(current);
   assert.deepEqual(room.exportSettingsPreset(), current, 'Valid new wildlife trims also retain their exact values.');
 });

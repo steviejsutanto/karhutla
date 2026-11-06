@@ -83,6 +83,22 @@ test('shared main mixer reaches the fallback audio path while phone levels stay 
   assert.equal(calls.length, 1, 'main mixer never changes phone output');
 });
 
+test('shared phone trims reach phones without changing the participant volume or Main mixer', () => {
+  const calls = [], engine = { setPhoneMixer: value => calls.push(['phone', value]), setMixer: value => calls.push(['main', value]), setLevel: value => calls.push(['level', value]) };
+  const phoneMixer = { overall: .7, birds: 1.4, drone: 0 };
+  const settings = { phoneMixer, mixer: { crickets: .2 }, level: .1 };
+  applySharedSound(engine, settings, { phone: true });
+  assert.deepEqual(calls, [['phone', phoneMixer]]);
+  applySharedSound(engine, { ...settings, phoneMixer: { ...phoneMixer } }, { phone: true });
+  assert.equal(calls.length, 1, 'Repeated settings cannot restart live trim ramps.');
+  applySharedSound(engine, { ...settings, phoneMixer: { ...phoneMixer, rain: .3 } }, { phone: true });
+  assert.deepEqual(calls[1], ['phone', { ...phoneMixer, rain: .3 }]);
+  applySharedSound(engine, settings);
+  assert.deepEqual(calls.slice(2), [['main', settings.mixer], ['level', .1]]);
+  applySharedSound(engine, { ...settings, phoneMixer: { overall: 0 } });
+  assert.equal(calls.length, 4, 'A phone-only edit cannot touch the Main output.');
+});
+
 
 test('forest takeover has its own fourth cue, countdown and rain instruction before the fifth-cue finale', () => {
   assert.deepEqual(PERFORMANCE_SCENES, ['arrival', 'instructions', 'participation', 'forest-takeover', 'final-rain', 'afterglow', 'ended']);

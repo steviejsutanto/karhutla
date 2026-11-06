@@ -191,7 +191,7 @@ test('actual Unix wrapper locates its bundled runtime in paths with spaces witho
   await writeFile(path.join(temporary, 'runtime/bin/node'), '#!/bin/sh\nprintf "BUNDLED_RUNTIME\\n"\nprintf "<%s>\\n" "$@"\nprintf "PATH=<%s>\\n" "$PATH"\nexit 7\n');
   await chmod(path.join(temporary, 'runtime/bin/node'), 0o755);
   const child = spawn(path.join(temporary, 'Start-Karhutla.command'), ['--port', '0', '--no-browser', 'value with spaces'], {
-    cwd: os.tmpdir(), env: { ...process.env, PATH: '' }, stdio: ['ignore', 'pipe', 'pipe'],
+    cwd: os.tmpdir(), env: { ...process.env, PATH: '', KARHUTLA_RUNTIME_CACHE: path.join(temporary, 'isolated runtime cache') }, stdio: ['ignore', 'pipe', 'pipe'],
   });
   let output = '';
   child.stdout.on('data', data => { output += data; }); child.stderr.on('data', data => { output += data; });
@@ -215,7 +215,8 @@ test('actual Node and shared CLI execute through a symlinked package path instea
   }
   // Use the real test runtime, not the synthetic shell stub in the argument
   // forwarding test. No system Node can be resolved from the child's PATH.
-  await symlink(process.execPath, path.join(actual, 'runtime/bin/node'));
+  await copyFile(process.execPath, path.join(actual, 'runtime/bin/node'));
+  await chmod(path.join(actual, 'runtime/bin/node'), 0o755);
   await symlink(actual, alias, 'dir');
   const entry = path.join(alias, 'scripts/start-karhutla.mjs');
   assert.notEqual(entry, await realpath(entry), 'The fixture must exercise different argv and canonical module paths.');
@@ -223,7 +224,7 @@ test('actual Node and shared CLI execute through a symlinked package path instea
     'The URL-only fallback canonicalizes symlinked entry paths.');
   assert.equal(isMain({ url: pathToFileURL(path.join(actual, 'scripts/check-package.mjs')).href }, entry), false);
   const child = spawn(path.join(alias, 'Start-Karhutla.command'), ['--port', 'invalid', '--no-browser'], {
-    cwd: os.tmpdir(), env: { ...process.env, PATH: '' }, stdio: ['ignore', 'pipe', 'pipe'],
+    cwd: os.tmpdir(), env: { ...process.env, PATH: '', KARHUTLA_RUNTIME_CACHE: path.join(canonical, 'isolated runtime cache') }, stdio: ['ignore', 'pipe', 'pipe'],
   });
   let output = '';
   child.stdout.on('data', data => { output += data; }); child.stderr.on('data', data => { output += data; });

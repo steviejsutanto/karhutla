@@ -74,6 +74,19 @@ test('exhaustion stops rain while preserving the physical touch and sends a real
   assert.equal(f.connection.begin([.5, .5]), true);
 });
 
+test('live phone mixer summaries reach the audio consumer without resetting an active gesture', t => {
+  const f = fixture(t); f.welcome(); f.summary();
+  f.connection.begin([.5, .5]); f.acknowledge();
+  const settings = { phoneMixer: { overall: .8, crackle: .4, rain: 1.2, crickets: .7, birds: 1.5, drone: 1.8 } };
+  const sent = f.connection.socket.sent.length;
+  f.summary({ own: { id: f.connection.clientId, holding: true }, soundSettings: settings });
+  assert.deepEqual(f.states.at(-1).message.soundSettings, settings);
+  assert.equal(f.connection.holding, true);
+  assert.equal(f.connection.inputHeld, true);
+  assert.equal(f.connection.socket.sent.length, sent, 'A mixer broadcast is not a new input gesture.');
+  assert.deepEqual(f.errors, []);
+});
+
 test('bell cues use their own current-epoch callback and Main-only publication without changing a held gesture', t => {
   const { connection, welcome, baseline, bells, errors } = fixture(t, 'operator');
   const detail = { eventId: 'bell-1', key: '400,0', position: [.3, .4], radiusDegrees: .85, wallAt: 1000 };

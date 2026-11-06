@@ -181,6 +181,34 @@ test('both release targets preserve only the two public preset files without pri
   }
 });
 
+test('permanent remote operator credentials stay out of every staged release, manifest and ZIP', async t => {
+  const { root } = await releaseFixture(t);
+  for (const directory of ['tests', 'docs']) await mkdir(path.join(root, directory));
+  await writeFile(path.join(root, 'Start-Karhutla.command'), '#!/bin/sh\n');
+  const privateFiles = ['data/remote-operator.json', 'data/remote-operator.json.tmp', 'data/remote-operator.json.bak', 'data/remote-operator.json.123.tmp', 'data/.remote-operator.json.123.tmp'];
+  const credential = JSON.stringify({ version: 1, secret: 'private-remote-operator-fixture' });
+  for (const file of privateFiles) await writeFile(path.join(root, file), credential);
+  for (const platform of ['windows-x64', 'macos-arm64', 'macos-x64']) {
+    const stage = await mkdtemp(path.join(os.tmpdir(), 'karhutla-private-remote-link-'));
+    t.after(() => rm(stage, { recursive: true, force: true }));
+    const files = await stageProjectFiles(root, stage, { platform });
+    for (const file of privateFiles) {
+      assert.equal(includeProjectFile(file, { platform }), false, `${platform}: ${file}`);
+      assert.equal(files.includes(file), false);
+      await assert.rejects(access(path.join(stage, file)), { code: 'ENOENT' });
+    }
+    const runtime = { version: 'fixture', platform: platform.startsWith('macos-') ? 'darwin' : 'win32', architecture: platform.split('-')[1] };
+    const manifest = await createPackageManifest(stage, runtime, []);
+    assert.equal(JSON.stringify(manifest).includes('remote-operator'), false);
+    const zip = path.join(stage, 'release.zip');
+    await writeZip(stage, [...manifest.files.map(entry => entry.path), 'package-manifest.json'], zip, 'karhutla');
+    const archive = await readFile(zip);
+    assert.equal(readZipFile(archive, 'karhutla/app/server.mjs').toString(), (await readFile(path.join(root, 'app/server.mjs'))).toString());
+    for (const file of privateFiles) assert.throws(() => readZipFile(archive, `karhutla/${file}`), /missing/);
+    assert.equal(readZipFile(archive, 'karhutla/package-manifest.json').includes(Buffer.from('private-remote-operator-fixture')), false);
+  }
+});
+
 test('public preset validation rejects corrupt schema, running-state data and either Wi-Fi credential field', async t => {
   const { root } = await releaseFixture(t);
   assert.deepEqual(await validatePublicPreset(root), [], 'Older minimal fixtures have no preset directory.');

@@ -5,6 +5,9 @@ import { DEFAULT_PROGRAM_NOTES, sceneClock, sceneRemaining, scenePresentation, s
 import { DEFAULT_SCORE_SETTINGS, SCENE_DURATION_LIMITS } from '/scene-score.js';
 
 const $ = id => document.getElementById(id), frame = $('operator-preview');
+const remoteRoute = /^\/operator-remote\/?$/.test(location.pathname);
+document.body.dataset.operatorAccess = 'locked';
+if (remoteRoute) document.title = 'karhutla · remote operator';
 // View changes only reveal existing nodes. The preview owns Main audio and
 // must stay attached, including while Setup is open.
 const workspaceTabs = [...document.querySelectorAll('[data-workspace-tab]')];
@@ -39,7 +42,7 @@ $('scene-restart-shortcut').addEventListener('click', () => {
   selectWorkspace('setup');
   $('scene-restart').focus();
 });
-const metrics = window.__performanceOperator = { allowed: false, connected: false, lastState: null, scene: null, soundSettings: null, actions: [], errors: [] };
+const metrics = window.__performanceOperator = { allowed: false, localOperator: false, remoteControl: false, connected: false, lastState: null, scene: null, soundSettings: null, actions: [], errors: [] };
 let latestState = null, sound = null, scene = null, pending = 0, soundTimer = null, soundPatch = {}, soundWaiters = [], strengthTimer = null, timingTimer = null, settingsDirty = false, scoreSettingsDirty = false, lastSoundSettings = '', connectionNotice = true;
 const parameterLabels = { fireReturnSeconds: ['Fire return', 'How quickly unfinished fire returns after rain leaves.'], rainResponseSeconds: ['Surface response', 'How quickly held rain damps the surface flames.'], deepCoolingSeconds: ['Ground cooling', 'How long rain takes to cool the deeper fire.'], extinctionHoldSeconds: ['Extinction hold', 'How long cooled ground must stay wet to settle out.'] };
 $('ground-timing').innerHTML = Object.entries(PARAMETER_LIMITS).map(([key, limits]) => `<label class="slider-label">${parameterLabels[key][0]} <output data-parameter-value="${key}">${DEFAULT_PARAMETERS[key]} s</output><input type="range" data-parameter="${key}" min="${limits.min}" max="${limits.max}" step="${limits.step}" value="${DEFAULT_PARAMETERS[key]}"><span class="slider-hint">${parameterLabels[key][1]}</span></label>`).join('');
@@ -103,7 +106,8 @@ function renderScene(next) {
   }
 }
 function receiveState(message) {
-  if (sound) $('operator-sound').querySelector('.sound-enable').disabled = $('operator-sound').dataset.soundState === 'starting';
+  if (!metrics.allowed) return;
+  if (sound) $('operator-sound').querySelector('.sound-enable').disabled = metrics.remoteControl || $('operator-sound').dataset.soundState === 'starting';
   latestState = message; metrics.lastState = message; metrics.connected = true;
   renderScene(message.scene);
   const condition = message.soundCondition;
@@ -120,36 +124,38 @@ function receiveState(message) {
     const signature = JSON.stringify(message.soundSettings);
     if (sound && !soundTimer && signature !== lastSoundSettings) { sound.applySharedSettings(message.soundSettings); lastSoundSettings = signature; }
   }
-  if (connectionNotice) notify('Connected. Operator controls are ready.');
+  if (connectionNotice) notify(metrics.remoteControl ? 'Connected to the host. Remote controls are ready.' : 'Connected. Operator controls are ready.');
 }
 window.addEventListener('message', event => {
   if (event.origin !== location.origin || event.source !== frame.contentWindow) return;
+  if (!metrics.allowed) return;
   if (event.data?.type === 'wildfire-preview-state') receiveState(event.data.state);
   if (event.data?.type === 'wildfire-preview-actors') text('operator-crowd', `${event.data.state.joinedCount || 0} phones · ${event.data.state.activeCount || 0} raining`);
   if (event.data?.type === 'wildfire-preview-connection') {
     const status = event.data.status;
     metrics.connected = status === 'connected';
-    if (status === 'disconnected') notify('Preview disconnected. Waiting for the venue to reconnect.', false, true);
+    if (status === 'disconnected') { notify('Preview disconnected. Waiting for the venue to reconnect.', false, true); void refreshSession(); }
     else if (status === 'connecting') notify('Connecting the preview to the venue…', false, true);
     else if (status === 'connected' && connectionNotice) notify('Connected. Operator controls are ready.');
   }
 });
 function mountAudition() {
-  if (sound || !frame.contentWindow?.__wildfireSound) return;
-  sound = mountSoundControls($('operator-sound'), { mode: 'operator', engine: frame.contentWindow.__wildfireSound, shared: true,
+  if (!metrics.allowed || sound || !frame.contentWindow?.__wildfireSound) return;
+  sound = mountSoundControls($('operator-sound'), { mode: 'operator', engine: frame.contentWindow.__wildfireSound, shared: true, remoteControl: metrics.remoteControl,
     onSettings(patch) {
-      for (const [key, value] of Object.entries(patch)) soundPatch[key] = (key === 'mixer' || key === 'macros') ? { ...soundPatch[key], ...value } : value;
+      for (const [key, value] of Object.entries(patch)) soundPatch[key] = ['mixer', 'macros', 'phoneMixer'].includes(key) ? { ...soundPatch[key], ...value } : value;
       const saved = new Promise(resolve => soundWaiters.push(resolve));
       clearTimeout(soundTimer); text('sound-save-state', 'Saving shared sound settings…');
       soundTimer = setTimeout(async () => {
         const patchToSave = soundPatch, waiters = soundWaiters; soundPatch = {}; soundWaiters = []; soundTimer = null;
-        try { await action('/api/sound-settings', patchToSave); text('sound-save-state', 'Shared sound settings saved.'); }
+        let saved = false;
+        try { await action('/api/sound-settings', patchToSave); saved = true; text('sound-save-state', 'Shared sound settings saved.'); }
         catch { text('sound-save-state', 'Sound settings could not save. Check the venue connection.'); }
-        finally { for (const resolve of waiters) resolve(); }
+        finally { for (const resolve of waiters) resolve(saved); }
       }, 160);
       return saved;
     } });
-  $('operator-sound').querySelector('.sound-enable').disabled = !latestState || $('operator-sound').dataset.soundState === 'starting';
+  $('operator-sound').querySelector('.sound-enable').disabled = metrics.remoteControl || !latestState || $('operator-sound').dataset.soundState === 'starting';
   if (latestState?.soundSettings) { sound.applySharedSettings(latestState.soundSettings); lastSoundSettings = JSON.stringify(latestState.soundSettings); }
 }
 frame.addEventListener('load', mountAudition);
@@ -236,17 +242,146 @@ $('settings-file').addEventListener('change', event => {
     notify('Settings imported.');
   });
 });
-async function initialize() {
+let sessionTask = null, sessionReady = false, pairingError = '', remoteLink = '', pinBusy = false, pinRetryUntil = 0;
+function showRemoteLink(data) {
+  const available = data.enabled && typeof data.remoteUrl === 'string' && /^[0-9]{6}$/.test(data.pin);
+  $('remote-operator-share').hidden = !available;
+  $('remote-operator-url').value = available ? data.remoteUrl : '';
+  text('remote-operator-pin', available ? data.pin : '------');
+  remoteLink = available ? data.remoteUrl : '';
+  text('remote-operator-status', available ? 'Ready. Open /operator-remote on your other device and enter the PIN once. The controller will remember access.' : data.enabled && !data.pin ? 'Restart Karhutla once to enable the new controller address and PIN.' : 'No shared network address is available. Connect this computer to Wi-Fi or Ethernet and launch with Start-Karhutla, then refresh the address.');
+}
+async function refreshRemoteLink(renew = false) {
+  if (!metrics.localOperator || metrics.remoteControl) return;
+  $('remote-operator-refresh').disabled = true;
+  $('remote-operator-renew').disabled = true;
+  try {
+    const response = await fetch(`/api/operator/remote${renew ? '/renew' : ''}`, renew ? { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Wildfire-Role': 'operator' }, body: '{}' } : { cache: 'no-store', headers: { 'X-Wildfire-Role': 'operator' } });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'The private link could not be read.');
+    showRemoteLink(data);
+    if (renew) text('remote-operator-status', 'PIN reset. Remote controllers are disconnected. Enter the new PIN on each controller to reconnect.');
+  } catch (error) { text('remote-operator-status', error.message); }
+  finally { $('remote-operator-refresh').disabled = false; $('remote-operator-renew').disabled = false; }
+}
+$('remote-operator-refresh').addEventListener('click', () => void refreshRemoteLink());
+$('remote-operator-renew').addEventListener('click', () => void refreshRemoteLink(true));
+$('remote-operator-copy').addEventListener('click', async () => {
+  if (!remoteLink) return;
+  try {
+    await navigator.clipboard.writeText(remoteLink);
+    text('remote-operator-status', 'Controller address copied. Open it on the other device using the same Wi-Fi, enter the PIN, then bookmark the page.');
+  } catch {
+    $('remote-operator-url').focus(); $('remote-operator-url').select();
+    text('remote-operator-status', 'The controller address is selected. Copy it and open it on the other device, then enter the PIN.');
+  }
+});
+function refreshSession() {
+  if (!sessionTask) sessionTask = readSession().finally(() => { sessionTask = null; });
+  return sessionTask;
+}
+async function refreshPairedSession() {
+  // An earlier poll may have captured the session before Set-Cookie arrived.
+  // Finish that read, then explicitly check the newly paired browser.
+  await sessionTask;
+  await refreshSession();
+}
+async function readSession() {
   try {
     const response = await fetch('/api/session', { cache: 'no-store' }); if (!response.ok) throw new Error('The venue session could not be read.');
-    const session = await response.json(); metrics.allowed = session.operatorAllowed === true; $('operator-controls').disabled = !metrics.allowed;
+    const session = await response.json(), wasAllowed = metrics.allowed;
+    metrics.allowed = session.operatorAllowed === true;
+    metrics.localOperator = session.localOperator === true;
+    metrics.remoteControl = remoteRoute || !metrics.localOperator;
+    $('operator-controls').disabled = !metrics.allowed || settingsTransferBusy;
+    document.body.dataset.operatorAccess = metrics.allowed ? 'connected' : 'locked';
+    $('operator-access-help').hidden = metrics.allowed;
+    $('remote-controller-note').hidden = !metrics.allowed || !metrics.remoteControl;
+    $('remote-operator-panel').hidden = !metrics.localOperator || metrics.remoteControl;
     renderScene(session.scene);
-    if (!metrics.allowed) { notify('Open the operator page on the venue laptop to use these controls.', true); return; }
+    if (!metrics.allowed) {
+      if (frame.hasAttribute('src')) frame.removeAttribute('src');
+      sound = null; latestState = null; metrics.connected = false;
+      const message = pairingError || 'Enter the operator PIN to connect this device.';
+      if (wasAllowed || !sessionReady || $('operator-notice').textContent !== message) notify(message, true, true);
+      sessionReady = true;
+      return;
+    }
     const join = new URL(session.audienceUrl || session.joinUrl); join.pathname = '/audience';
-    $('operator-audience-link').href = join.href; $('operator-join-url').href = join.href; text('operator-join-url', join.href); $('operator-qr').src = `/api/qr.svg?view=audience&address=${encodeURIComponent(join.host)}`;
-    notify('Connected. Start timed performance when the audience is ready.');
-    mountAudition(); readSnapshot();
-  } catch (error) { notify(error.message, true); }
+    $('operator-audience-link').href = join.href; $('operator-join-url').href = join.href; text('operator-join-url', join.href);
+    const audienceQR = `/api/qr.svg?view=audience&address=${encodeURIComponent(join.host)}`;
+    if ($('operator-qr').getAttribute('src') !== audienceQR) $('operator-qr').src = audienceQR;
+    const previewURL = `/projection?operator-preview=1${metrics.remoteControl ? '&remote-control=1' : ''}`;
+    if (frame.getAttribute('src') !== previewURL) {
+      sound = null; latestState = null;
+      frame.src = previewURL;
+      frame.title = metrics.remoteControl ? 'Remote landscape preview: hold the map to rain' : 'Operator landscape preview: hold the map to rain and audition fire patches';
+      text('operator-preview-hint', metrics.remoteControl ? 'Hold the landscape to rain. Mixer changes control Main sound on the host computer.' : 'Enable main sound, then hold either view to rain and audition patches.');
+      notify(metrics.remoteControl ? 'Connected to the host. Loading the shared landscape…' : 'Connected. Start timed performance when the audience is ready.');
+      void readSnapshot();
+    }
+    if (metrics.localOperator && !metrics.remoteControl && (!sessionReady || document.body.dataset.workspaceView === 'setup')) void refreshRemoteLink();
+    sessionReady = true;
+  } catch (error) { notify(`${error.message} Retrying the connection…`, true, true); }
+}
+$('operator-pin-form').addEventListener('submit', async event => {
+  event.preventDefault();
+  if (pinBusy || Date.now() < pinRetryUntil || !$('operator-pin-form').reportValidity()) return;
+  const pin = $('operator-pin').value.trim();
+  if (!/^[0-9]{6}$/.test(pin)) return;
+  pinBusy = true; $('operator-pin-submit').disabled = true;
+  $('operator-pin-status').dataset.error = 'false'; text('operator-pin-status', 'Connecting this device…');
+  try {
+    const response = await fetch('/api/operator/pair', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Wildfire-Role': 'operator' }, body: JSON.stringify({ pin }) });
+    const result = await response.json();
+    if (response.status === 429) {
+      const seconds = Math.max(1, Number(response.headers.get('Retry-After')) || 60);
+      pinRetryUntil = Date.now() + seconds * 1000;
+    }
+    if (!response.ok) throw new Error(result.error || 'The PIN could not be checked. Try again.');
+    pairingError = ''; $('operator-pin').value = ''; text('operator-pin-status', 'Connected. This device will remember access.');
+    await refreshPairedSession();
+    if (!metrics.allowed) throw new Error('Access could not be remembered. Allow cookies for this page and try again.');
+  } catch (error) { $('operator-pin-status').dataset.error = 'true'; text('operator-pin-status', error.message); }
+  finally { pinBusy = false; $('operator-pin-submit').disabled = Date.now() < pinRetryUntil; }
+});
+$('operator-pin').addEventListener('input', () => {
+  if (!pinBusy && Date.now() >= pinRetryUntil) text('operator-pin-status', '');
+});
+setInterval(() => {
+  if (!pinRetryUntil) return;
+  const remaining = Math.ceil((pinRetryUntil - Date.now()) / 1000);
+  if (remaining > 0) text('operator-pin-status', `Too many attempts. Try again in ${remaining} seconds.`);
+  else { pinRetryUntil = 0; $('operator-pin-submit').disabled = pinBusy; text('operator-pin-status', 'You can try the PIN again.'); }
+}, 1000);
+$('operator-access-retry').addEventListener('click', async () => { await pairFromLocation(); await refreshPairedSession(); });
+async function pairFromLocation() {
+  const fragment = new URLSearchParams(location.hash.slice(1)), token = fragment.get('remote');
+  if (fragment.has('remote')) {
+    pairingError = '';
+    let invalidLink = false;
+    try {
+      const response = await fetch('/api/operator/pair', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Wildfire-Role': 'operator' }, body: JSON.stringify({ token }) });
+      invalidLink = response.status === 403;
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'This private link is no longer valid. Get a new link from the host computer.');
+      // Keep a valid private fragment so the browser can bookmark the full
+      // reconnecting link. Fragments never travel in HTTP requests/referrers.
+    } catch (error) {
+      pairingError = error.message;
+      if (invalidLink && new URLSearchParams(location.hash.slice(1)).get('remote') === token) {
+        fragment.delete('remote');
+        const rest = fragment.toString();
+        history.replaceState(null, '', `${location.pathname}${location.search}${rest ? `#${rest}` : ''}`);
+      }
+    }
+  }
+}
+window.addEventListener('hashchange', async () => { await pairFromLocation(); await refreshPairedSession(); });
+async function initialize() {
+  await pairFromLocation();
+  await refreshSession();
+  setInterval(() => void refreshSession(), 5000);
 }
 initialize();
 setInterval(() => {

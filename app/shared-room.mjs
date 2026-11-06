@@ -331,7 +331,7 @@ export class SharedRoom extends EventEmitter {
 
   sceneState() { return this.scenes.state(this.clock(), this.wallClock()); }
 
-  soundSettingsState() { return { ...this.soundSettings, macros: { ...this.soundSettings.macros }, mixer: { ...this.soundSettings.mixer } }; }
+  soundSettingsState() { return { ...this.soundSettings, macros: { ...this.soundSettings.macros }, mixer: { ...this.soundSettings.mixer }, phoneMixer: { ...this.soundSettings.phoneMixer } }; }
 
   globalSound() {
     let outCount = 0, heat = 0, moisture = 0, surfaceWetness = 0;

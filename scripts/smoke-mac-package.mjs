@@ -59,7 +59,7 @@ async function startWrapper(root, temporary) {
   const process = launch(path.join(root, 'Start-Karhutla.command'), ['--port', '0', '--no-browser'], {
     // Intentionally start outside the app folder, with no system Node or helper
     // commands on PATH. The double-click wrapper must find its own runtime.
-    cwd: temporary, env: { ...globalThis.process.env, PATH: '', KARHUTLA_NO_BROWSER: '1' },
+    cwd: temporary, env: { ...globalThis.process.env, PATH: '', KARHUTLA_NO_BROWSER: '1', KARHUTLA_RUNTIME_CACHE: path.join(temporary, 'Reusable runtime cache with spaces') },
   });
   try {
     const base = await deadline(new Promise((resolve, reject) => {
@@ -137,10 +137,14 @@ export async function smokeMacPackage({ output, arch }) {
     assert.equal(native.code, 0, `Bundled Mac runtime cannot execute.\n${native.output}`);
     assert.deepEqual(JSON.parse(native.output), { platform: 'darwin', arch, version: manifest.runtime.version });
 
-    const env = { ...process.env, PATH: '', KARHUTLA_NO_BROWSER: '1' };
+    const runtimeCache = path.join(temporary, 'Reusable runtime cache with spaces');
+    const cachedNode = path.join(runtimeCache, manifest.files.find(file => file.path === 'runtime/bin/node').sha256, 'node');
+    const env = { ...process.env, PATH: '', KARHUTLA_NO_BROWSER: '1', KARHUTLA_RUNTIME_CACHE: runtimeCache };
     const invalid = await capture(command, ['--port', 'invalid', '--no-browser'], { cwd: temporary, env });
     assert.equal(invalid.code, 1, 'The .command wrapper must preserve startup error exit codes.');
     assert.match(invalid.output, /PORT must be a whole number/);
+    const cachedBefore = await stat(cachedNode);
+    assert.deepEqual(await readFile(cachedNode), await readFile(runtime));
     const occupied = net.createServer(socket => socket.end('still running'));
     await new Promise((resolve, reject) => { occupied.once('error', reject); occupied.listen(0, '0.0.0.0', resolve); });
     try {
@@ -175,7 +179,15 @@ export async function smokeMacPackage({ output, arch }) {
     await stopWrapper(active, 'SIGHUP'); active = null;
     const afterHangup = JSON.parse(await readFile(path.join(root, 'data/performance-state.json'), 'utf8'));
     assert.equal(afterHangup.strength, .37); assert.equal(afterHangup.soundSettings.level, .42);
-    console.log(`Mac package smoke passed: ${verified.files} verified files, ${publicFiles.length} byte-identical public URLs, executable ZIP extraction, actual .command with no system Node, fresh Start/cues4-5/Restart without manual initialization, prepared-settings persistence and SIGTERM/restart/SIGHUP (${arch}).`);
+    const updatedExtraction = path.join(temporary, 'Separately downloaded update with spaces');
+    assert.equal((await capture('/usr/bin/ditto', ['-x', '-k', archive, updatedExtraction])).code, 0);
+    active = await startWrapper(path.join(updatedExtraction, directories[0].name), temporary);
+    assert.equal((await (await request(active.base, '/api/health')).json()).status, 'ok');
+    await stopWrapper(active); active = null;
+    const cachedAfter = await stat(cachedNode);
+    assert.equal(cachedAfter.ino, cachedBefore.ino, 'Updates must reuse the same approved runtime file.');
+    assert.equal(cachedAfter.mtimeMs, cachedBefore.mtimeMs, 'Updates must leave existing runtime metadata untouched.');
+    console.log(`Mac package smoke passed: ${verified.files} verified files, ${publicFiles.length} byte-identical public URLs, executable ZIP extraction, actual .command with no system Node, fresh Start/cues4-5/Restart without manual initialization, prepared-settings persistence, SIGTERM/restart/SIGHUP and runtime reuse across a separately extracted update (${arch}).`);
     return { files: verified.files, publicUrls: publicFiles.length, architecture: arch };
   } finally {
     if (active) await stopWrapper(active).catch(error => console.error(error.message));

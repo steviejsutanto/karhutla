@@ -98,7 +98,7 @@ test('phone crickets and bird calls both rise 3.5 dB while their relative balanc
   assert.ok(Math.abs(20 * Math.log10(PHONE_BIRD_LEVEL / previousBird) - 3.5) < 1e-12);
 });
 
-test('Main alone allocates the small reverb graph and phone bird presence does not add a convolver', () => {
+test('Main alone allocates the longer dark reverb graph and phone bird presence does not add a convolver', () => {
   const param = () => ({ value: 0, setTargetAtTime() {} });
   const context = { sampleRate: 8000, currentTime: 0, createGain: node, createBiquadFilter: node,
     createConvolver: node, createBuffer(channels, length, sampleRate) {
@@ -107,10 +107,11 @@ test('Main alone allocates the small reverb graph and phone bird presence does n
     } };
   function node() { return { connections: [], gain: param(), frequency: param(), Q: param(), connect(to) { this.connections.push(to); }, disconnect(to) { this.connections = to ? this.connections.filter(value => value !== to) : []; } }; }
   const main = new SceneWildlifeAudio({ context, destination: {}, mode: 'operator' });
-  assert.ok(main.reverb); assert.equal(main.reverb.gain.gain.value, .12); assert.equal(main.reverb.convolver.buffer.numberOfChannels, 2);
-  assert.equal(main.reverb.convolver.buffer.length, 13200);
+  assert.ok(main.reverb); assert.equal(main.reverb.gain.gain.value, .24); assert.equal(main.reverb.convolver.buffer.numberOfChannels, 2);
+  assert.equal(main.reverb.convolver.buffer.length, 22400);
+  assert.deepEqual(main.gain.connections, [main.finalRelease], 'The final release covers dry voice and reverb together.');
   const phone = new SceneWildlifeAudio({ context, destination: {}, mode: 'phone' });
-  assert.equal(phone.reverb, null); assert.equal(phone.presence, null); assert.equal(phone.filter.frequency.value, 4200);
+  assert.equal(phone.reverb, null); assert.equal(phone.finalRelease, null); assert.equal(phone.presence, null); assert.equal(phone.filter.frequency.value, 4200);
   const convolver = main.reverb.convolver; main.destroy(); phone.destroy(); assert.equal(convolver.buffer, null); assert.equal(convolver.connections.length, 0);
 });
 

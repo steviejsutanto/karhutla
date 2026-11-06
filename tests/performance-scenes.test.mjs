@@ -337,6 +337,42 @@ test('main mixer rejects invalid keys, shapes, and values before applying any so
   assert.ok(Object.entries(DEFAULT_SOUND_SETTINGS.mixer).every(([key, value]) => value === (key === 'bells' ? 1.6 : 1)));
 });
 
+test('phone mixer patches preserve authored balance and deep-merge independently of Main and automation', () => {
+  const unity = { overall: 1, crackle: 1, rain: 1, crickets: 1, birds: 1, drone: 1 };
+  assert.deepEqual(DEFAULT_SOUND_SETTINGS.phoneMixer, unity);
+  const input = { overall: .8, birds: 1.5, crackle: 0 };
+  const first = soundSettingsPatch(DEFAULT_SOUND_SETTINGS, { phoneMixer: input });
+  const second = soundSettingsPatch(first, { phoneMixer: { drone: 2, crickets: .7 } });
+  assert.deepEqual(first.phoneMixer, { ...unity, overall: .8, birds: 1.5, crackle: 0 });
+  assert.deepEqual(second.phoneMixer, { ...first.phoneMixer, drone: 2, crickets: .7 });
+  assert.deepEqual(second.mixer, DEFAULT_SOUND_SETTINGS.mixer);
+  assert.deepEqual(second.macros, DEFAULT_SOUND_SETTINGS.macros);
+  assert.equal(second.level, DEFAULT_SOUND_SETTINGS.level);
+  assert.equal(second.automation, true, 'A live phone balance must not disable automatic score shaping.');
+  input.birds = 0; second.phoneMixer.birds = 0;
+  assert.equal(first.phoneMixer.birds, 1.5, 'Incoming patches and returned settings cannot mutate previous balances.');
+  assert.deepEqual(DEFAULT_SOUND_SETTINGS.phoneMixer, unity);
+  const manual = soundSettingsPatch(first, { macros: { forest: .2 } });
+  assert.equal(soundSettingsPatch(manual, { phoneMixer: { drone: .5 } }).automation, false);
+  const { phoneMixer, ...legacy } = manual;
+  const migrated = soundSettingsPatch(legacy, {});
+  assert.deepEqual(migrated.phoneMixer, unity, 'Earlier saved sound settings retain the authored phone mix.');
+  assert.deepEqual(migrated.mixer, manual.mixer);
+});
+
+test('phone mixer validation rejects malformed or unbounded controls before changing any setting', () => {
+  for (const phoneMixer of [null, [], 1, '1', { voice: 1 }, { __proto__: { birds: 1 } }]) {
+    assert.throws(() => soundSettingsPatch(DEFAULT_SOUND_SETTINGS, { automation: false, phoneMixer }), /phone.*mixer/i);
+  }
+  for (const key of ['overall', 'crackle', 'rain', 'crickets', 'birds', 'drone']) {
+    for (const value of [-.01, 2.01, Infinity, -Infinity, NaN, '1', null, true, undefined, {}]) {
+      assert.throws(() => soundSettingsPatch(DEFAULT_SOUND_SETTINGS, { phoneMixer: { [key]: value } }), /phone.*mixer/i);
+    }
+    for (const value of [0, 2]) assert.equal(soundSettingsPatch(DEFAULT_SOUND_SETTINGS, { phoneMixer: { [key]: value } }).phoneMixer[key], value);
+  }
+  assert.deepEqual(DEFAULT_SOUND_SETTINGS.phoneMixer, { overall: 1, crackle: 1, rain: 1, crickets: 1, birds: 1, drone: 1 });
+});
+
 test('instruction crossfade and participation transfer use one pauseable authority clock for every role', async () => {
   const { room, advance } = await fixture();
   const phone = room.connect({ clientId: 'score-phone', scope: 'indonesia' });

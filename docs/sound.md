@@ -837,3 +837,158 @@ total water, simulation parameters and cell count were preserved. Fully
 reload Operator, Projection and phones to replace decoded source banks and
 the phone gain module. Evidence: `output/rain-haze-restore-phone-lift-tests.txt`
 and `output/rain-haze-restore-phone-lift-live-verification.json`.
+
+
+## Live phone mixer on Operator
+
+The Operator's Mixer tab now includes a separate **Phone sound** section with
+Overall phone level, Crackle, Rain, Crickets, Bird calls and Distorted drone
+sliders. Each ranges from 0–200%; 100% retains the current authored balance.
+Reset phone mixer returns only these six controls to 100%. Main layer/output
+controls remain independent.
+
+Phone trims are saved as `soundSettings.phoneMixer`, broadcast to connected
+phones, restored for late/reconnecting phones and included in settings-file
+export/import. Earlier saves and presets receive unity defaults. Each remote
+channel has a small native gain stage downstream of its asset envelope;
+Overall phone level covers every phone path before existing output protection.
+Audible edits use short rounded ramps while preserving scene and cricket-fade
+automation. Slider changes do not create or resume an audio context, fetch
+recordings or restart sources. Participants still enable audio locally and
+choose their device's media volume.
+
+Phone-only updates skip unrelated Main/macro/automation changes. Concurrent
+channel edits merge in the Operator's existing save batch; pending sliders
+resist stale server echoes, and a failed save restores confirmed phone values.
+Reload Operator and phones once to load this feature; subsequent changes
+arrive live without refreshing pages.
+
+Muted, hidden, disabled or suspended phones commit trim targets immediately;
+unfinished ramps also settle before the audio context resumes. This prevents
+a channel set to zero from briefly replaying its earlier gain after returning.
+The six trims add 81 bytes to the default phone summary; existing compactness
+budgets retain their original margin with that exact schema allowance.
+
+Final validation: 702 checks passed and one Windows-only launch check skipped.
+Browser checks verified all six slider values reaching a phone in one batch,
+saved values after reload, independent resets, stale-echo protection, failed
+save rollback and narrow-screen layout. An enabled native phone in Scene 4
+reached exact silence through the drone and overall trims while keeping the
+same six oscillators and crackle source. Phone-only edits called no unrelated
+macro, Main mixer, automation or local-level setters. Verification used a
+silent test sink and isolated server, both closed afterward.
+
+The live server restarted and returned to Ended with all phone controls at
+100%, preserving the authored balance, rain strength, Main settings, source
+observations, identities, physical parameters, total water and cell count.
+Evidence: `output/phone-mixer-full-tests.txt`,
+`output/phone-mixer-settings-tests.txt`,
+`output/playwright/phone-mixer-ui-report.json`,
+`output/playwright/phone-mixer-enabled-ui-report.json` and
+`output/live-phone-mixer-verification.json`.
+
+
+## Scene fades retain the current Main mix
+
+The Scene 1→2 haze surge came from removing the arrival-only −6 dB recording
+trim at the cue boundary, immediately before the timed fade. That calibration
+now follows the opening haze through Instructions. Native audio comparison
+measured the first-half-second surge falling from 5.836 dB to 0.000 dB, at
+both unity and a reduced Main haze fader setting.
+
+Main cue transitions capture the outgoing pre-mixer scene balance and macro
+character, then move toward the destination endpoint on its cue trajectory.
+Early, skipped, repeated, rapid and reverse cues no longer invent a full
+forest starting level or abruptly remove the remaining haze/drone. Captures
+include field attenuation so reversing the ending cannot restore a faded
+rain layer to full amplitude while its bus reopens. Manual texture settings
+remain manual; downstream mixer trims stay live and are never baked twice
+into a captured scene weight.
+
+Main output volume now has its own smooth 160 ms native trim, separate from
+the score master. This removes ending-volume steps when a new master curve
+is scheduled. The common trim also covers the Main wildlife return exactly
+once. Voice and Tail controls remain independent and live through reversed
+cues, including zero→nonzero changes on the same ongoing call. Inactive or
+interrupted contexts settle the requested output level before resuming.
+
+The Operator also protects pending Main output, macro and automation edits
+from older shared-state packets. A reproduced 25% output edit previously
+returned to 55%, and 22% Manual haze returned to 35% Automatic; both now retain
+the pending edit. Confirmed later remote edits take over after release, failed
+saves restore confirmed values, and old failures cannot undo newer edits.
+Existing Main channel and phone mixer guards remain in effect.
+
+For manual phone cues, an early Forest takeover→Final rain carries the
+current distorted-drone weight instead of jumping to full strength. Returning
+phones to Arrival/Instructions uses a 350 ms native master exit while holding
+only already-sounding sources, then cleans up in silence. Mute, hide, disable
+or interruption discards that exit so it cannot replay on resume. The normal
+phone entry, transfer and ending curves remain sample-identical.
+
+Final validation: 723 automated checks passed; one Windows-only check skipped.
+Independent native verification passed 23 objective checks across 29 scenarios,
+including forward/early/rapid/reverse cues, manual mode, custom/zero trims,
+ending output edits, pause/resume and live orangutan-tail changes. All output
+remained finite and unclipped; the normal phone ending's maximum sample
+difference was zero. An actual isolated Operator/iframe check also retained
+muted haze and 60% forest through a cue inside the save debounce, with a
+monotonically falling haze gain. These are native/browser checks, not a claim
+of listening on every phone or loudspeaker system.
+
+The running server serves the final checked files directly; no restart,
+performance reset or live setting mutation was needed. Reload the host
+Operator, any controller pages and phones once, then enable Main sound again.
+All isolated verification browsers and servers were closed.
+
+Evidence: `output/scene-transition-final-tests.txt`,
+`output/scene-transition-live-verification.json`,
+`output/scene-transitions/native-transition-summary.json`,
+`output/scene-transitions/native-transition-final.json`,
+`output/playwright/scene-transition-ui-report.json` and
+`output/playwright/main-controls-echo-final-report.json`.
+
+## Drone beating, rain loop and orangutan release · 7 November 2026
+
+The phone distorted drone rises four semitones from its previous register
+(a major third; now sixteen semitones above Main). The moving bank increases
+from 28% to 38%, with minimum pair offsets of 1.4, 1.7 and 2 Hz instead of
+0.8, 1 and 1.2 Hz. This gives the beating more depth and speed while retaining
+six native oscillators, the existing harmonic spectrum and output trim.
+The live phone Drone slider continues to control its balance.
+
+The restored `rain-storm-v23` recording contains about 700 ms of near-silence
+at its tail. The former 400 ms trim limit left part of it in the loop overlap.
+Rain loop preparation now removes quiet edges for up to two seconds or 10%
+of the recording before the existing equal-power join. The selected rain
+recording, its interior weather dynamics and the native looping perspectives
+are retained; cricket rests keep their separate short join.
+
+Main orangutan reverb increases from 12% wet / 1.65 seconds to 24% wet /
+2.8 seconds, retaining the dark 1.4 kHz return. Each phrase now has a smooth
+three-second release that keeps its original position after a pause. A native
+gate shared by dry voice and reverb reaches exact silence over the last six
+seconds of the ending (or the full phone fade when shorter). Reverse cues
+hold that gate at its current level while the existing scene fade carries the
+call, so the old ending deadline cannot cut it off. Voice and Tail sliders
+remain independent; phones still never load or play the orangutan recording.
+
+Validation: 218 audio checks pass. Native drone rendering measured the
+four-semitone shift and deeper beating (isolated pair: 5.95→9.76 dB,
+1→1.7 Hz). The actual heavy-rain loop's 4.11 dB join dip is removed, with
+all six original rain sources continuous for 150 seconds. Fourteen Main
+orangutan cases cover real phrases, custom endings, pause/resume, live trims,
+mute and reverse carry; phone wildlife remains sample-identical. These are
+native audio measurements, not physical speaker listening tests.
+
+The active packaged server now serves the three checked audio modules too;
+its scene/settings were preserved and it was not restarted. Reload Operator
+and phones once, then re-enable sound. Verification browsers and isolated
+servers have been closed.
+
+Evidence: `output/audio-refinements-nov7-audio-tests.txt`,
+`output/audio-refinements-nov7-live-verification.json`,
+`output/playwright/phone-drone-v37-native-results.json`,
+`output/playwright/phone-drone-v37-mixer-results.json`,
+`output/playwright/rain-loop-audit/summary.json` and
+`output/orangutan-reverb-fade/native-summary.json`.

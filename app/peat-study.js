@@ -15,12 +15,13 @@ import { mountAudienceInstructions } from '/audience-instructions.js';
 const $ = id => document.getElementById(id);
 mountAudienceInstructions($('projection-instructions').querySelector('ol'));
 const operatorPreview = new URLSearchParams(location.search).get('operator-preview') === '1';
+let remoteControl = operatorPreview && new URLSearchParams(location.search).get('remote-control') === '1';
 document.body.dataset.operatorPreview = String(operatorPreview);
 let previewAllowed = false, currentScene = null;
-const sound = mountSoundControls($('study-sound'), { mode: 'projection' });
+const sound = mountSoundControls($('study-sound'), { mode: 'projection', remoteControl });
 $('study-sound').querySelector('button').disabled = true;
 if (operatorPreview) {
-  for (const node of [$('peat-canvas'), $('section-canvas')]) { node.tabIndex = 0; node.setAttribute('aria-label', 'Operator preview. Hold to rain and hear the touched patches.'); }
+  for (const node of [$('peat-canvas'), $('section-canvas')]) { node.tabIndex = 0; node.setAttribute('aria-label', remoteControl ? 'Remote operator preview. Hold to rain.' : 'Operator preview. Hold to rain and hear the touched patches.'); }
 }
 const soundCells = new Map();
 let soundField = createParticipantSoundField(), localSoundGeo = null, localSoundHolding = false;
@@ -190,7 +191,7 @@ function receiveBellFeedback(message) {
 // Main's preview emits this only after an audible bell is admitted. Every
 // display paints the server echo, so Main cannot flash twice for one bell.
 window.addEventListener('wildfire-bell', event => {
-  if (operatorPreview && previewAllowed) connection?.sendBellFeedback(event.detail);
+  if (operatorPreview && previewAllowed && !remoteControl) connection?.sendBellFeedback(event.detail);
 });
 function syncStudySound() {
   const patches = layout ? [...layout.fireKeys].map(key => soundCells.get(key)).filter(Boolean) : [];
@@ -208,7 +209,7 @@ function syncSoundParticipants() {
   sound.setPatchVoices(patchSoundVoices(actors, soundField, options));
   // The local tester shares the Main extinction and cooled-ground tap route.
   if (!operatorPreview) return;
-  const eligible = previewAllowed && localBellGestureAllowed && sound.enabled && !sound.muted && !sound.hidden && sceneAllowsRain(currentScene);
+  const eligible = !remoteControl && previewAllowed && localBellGestureAllowed && sound.enabled && !sound.muted && !sound.hidden && sceneAllowsRain(currentScene);
   if (!eligible) localBellGestureAllowed = false;
   const interaction = nationalPhoneInteraction(soundField.patches, localSoundGeo ? countryPoint(localSoundGeo) : null, {
     holding: localSoundHolding && eligible, eligible, preferredKey: localSoundFocusKey,
@@ -217,7 +218,7 @@ function syncSoundParticipants() {
   sound.setLocalInteraction?.(interaction);
 }
 function touchSoundAt(geo) {
-  if (!localSoundHolding) localBellGestureAllowed = sound.state === 'ready' && sound.enabled && !sound.muted && !sound.hidden;
+  if (!localSoundHolding) localBellGestureAllowed = !remoteControl && sound.state === 'ready' && sound.enabled && !sound.muted && !sound.hidden;
   localSoundGeo = [...geo]; localSoundHolding = true;
   syncSoundParticipants();
 }
@@ -525,6 +526,9 @@ async function initialize() {
   await loadRegion('indonesia');
   const session = await fetch('/api/session', { cache: 'no-store' }).then(response => response.json());
   previewAllowed = operatorPreview && session.operatorAllowed === true;
+  remoteControl ||= previewAllowed && session.localOperator === false;
+  if (remoteControl) { sound.setLocalBellAudition?.(false); sound.setMuted(true); }
+  document.body.dataset.remoteControl = String(remoteControl);
   syncScene(session.scene);
   if (operatorPreview && !previewAllowed) text('projection-caption', 'Operator preview is available on the venue laptop.');
   connection = new SharedConnection({
@@ -535,7 +539,7 @@ async function initialize() {
       sound.setMacroCondition(message.soundCondition);
       if (sound.applySharedSettings) sound.applySharedSettings(message.soundSettings); else applySharedSound(sound, message.soundSettings);
       syncScene(message.scene);
-      $('study-sound').querySelector('button').disabled = $('study-sound').dataset.soundState === 'starting';
+      $('study-sound').querySelector('button').disabled = remoteControl || $('study-sound').dataset.soundState === 'starting';
       if (operatorPreview && window.parent !== window) window.parent.postMessage({ type: 'wildfire-preview-state', state: message }, location.origin);
       applyCells(message.simulation, reset);
       rainStrength = Number.isFinite(message.strength) ? message.strength : DEFAULT_RAIN_STRENGTH;

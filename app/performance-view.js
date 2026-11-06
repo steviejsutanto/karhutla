@@ -50,12 +50,25 @@ export function sceneInstruction(scene) {
 const sharedSoundCache = new WeakMap();
 export function applySharedSound(engine, settings, { phone = false } = {}) {
   if (!engine || !settings) return;
-  const signature = JSON.stringify({ phone, settings });
-  if (sharedSoundCache.get(engine) === signature) return;
-  sharedSoundCache.set(engine, signature);
+  const previous = sharedSoundCache.get(engine);
+  const macrosSignature = JSON.stringify(settings.macros), phoneMixerSignature = JSON.stringify(settings.phoneMixer);
+  const signature = JSON.stringify(phone ? { phone, macros: settings.macros, phoneMixer: settings.phoneMixer }
+    : { phone, automation: settings.automation, macros: settings.macros, mixer: settings.mixer, level: settings.level });
+  if (previous?.signature === signature) return;
+  sharedSoundCache.set(engine, { signature, phone, macrosSignature, phoneMixerSignature });
+  if (phone) {
+    // Remote volume edits do not select manual texture shaping or rewrite
+    // the scene's active cricket fade before restoring automation.
+    if (previous?.phone !== true || previous.macrosSignature !== macrosSignature) {
+      if (settings.macros) engine.setMacros(settings.macros);
+      engine.setAutomation?.(true);
+    }
+    if (settings.phoneMixer && (previous?.phone !== true || previous.phoneMixerSignature !== phoneMixerSignature)) engine.setPhoneMixer?.(settings.phoneMixer);
+    return;
+  }
   if (settings.macros) engine.setMacros(settings.macros);
-  if (!phone && settings.mixer) engine.setMixer?.(settings.mixer);
+  if (settings.mixer) engine.setMixer?.(settings.mixer);
   // setMacros intentionally selects manual mode, so restore the shared switch last.
-  engine.setAutomation?.(phone ? true : settings.automation !== false);
-  if (!phone && Number.isFinite(settings.level)) engine.setLevel(settings.level);
+  engine.setAutomation?.(settings.automation !== false);
+  if (Number.isFinite(settings.level)) engine.setLevel(settings.level);
 }

@@ -1,7 +1,8 @@
 import http from 'node:http';
 import os from 'node:os';
-import { readFile } from 'node:fs/promises';
+import { link, mkdir, open, readFile, rename, unlink } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
+import { createHash, randomBytes, randomInt, timingSafeEqual } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { WebSocketServer, WebSocket } from 'ws';
@@ -15,6 +16,8 @@ const workspaceRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)),
 const staticFiles = new Map([
   ['/operator', ['app/operator.html', 'text/html; charset=utf-8']],
   ['/operator/', ['app/operator.html', 'text/html; charset=utf-8']],
+  ['/operator-remote', ['app/operator.html', 'text/html; charset=utf-8']],
+  ['/operator-remote/', ['app/operator.html', 'text/html; charset=utf-8']],
   ['/operator.html', ['app/operator.html', 'text/html; charset=utf-8']],
   ['/operator.js', ['app/operator.js', 'text/javascript; charset=utf-8']],
   ['/operator.css', ['app/operator.css', 'text/css; charset=utf-8']],
@@ -27,6 +30,8 @@ const staticFiles = new Map([
   ['/audience/', ['app/peat-phone.html', 'text/html; charset=utf-8']],
   ['/sound-engine.js', ['app/sound-engine.js', 'text/javascript; charset=utf-8']],
   ['/phone-crickets.js', ['app/phone-crickets.js', 'text/javascript; charset=utf-8']],
+  ['/phone-mixer.mjs', ['app/phone-mixer.mjs', 'text/javascript; charset=utf-8']],
+  ['/app/phone-mixer.mjs', ['app/phone-mixer.mjs', 'text/javascript; charset=utf-8']],
   ['/phone-drone.js', ['app/phone-drone.js', 'text/javascript; charset=utf-8']],
   ['/main-spatial.js', ['app/main-spatial.js', 'text/javascript; charset=utf-8']],
   ['/scene-wildlife.js', ['app/scene-wildlife.js', 'text/javascript; charset=utf-8']],
@@ -117,6 +122,73 @@ function sendJSON(response, status, body) {
 const normalizeIP = value => (value || '').replace(/^::ffff:/, '');
 const loopback = address => address === '::1' || /^127\./.test(address);
 const privateIP = address => /^10\./.test(address) || /^192\.168\./.test(address) || /^172\.(1[6-9]|2\d|3[01])\./.test(address);
+const operatorCookie = 'karhutla-operator';
+const newOperatorSecret = () => randomBytes(32).toString('base64url');
+function newOperatorPin(previous) {
+  let pin;
+  do { pin = String(randomInt(1000000)).padStart(6, '0'); } while (pin === previous);
+  return pin;
+}
+async function readOperatorSecret(file) {
+  const saved = JSON.parse(await readFile(file, 'utf8'));
+  if (!saved || saved.version !== 1 || typeof saved.secret !== 'string' || !/^[A-Za-z0-9_-]{43}$/.test(saved.secret)
+    || Buffer.from(saved.secret, 'base64url').toString('base64url') !== saved.secret
+    || (saved.pin !== undefined && (typeof saved.pin !== 'string' || !/^\d{6}$/.test(saved.pin)))) throw new Error('The saved private operator link is invalid.');
+  return { secret: saved.secret, pin: saved.pin };
+}
+async function saveOperatorSecret(file, credentials, exclusive = false) {
+  await mkdir(path.dirname(file), { recursive: true });
+  const temporary = path.join(path.dirname(file), `.${path.basename(file)}.${randomBytes(12).toString('hex')}.tmp`);
+  let handle;
+  try {
+    handle = await open(temporary, 'wx', 0o600);
+    await handle.writeFile(`${JSON.stringify({ version: 1, ...credentials })}\n`, 'utf8');
+    await handle.sync();
+    await handle.close(); handle = null;
+    // Initial creation must not overwrite a key published by a simultaneous
+    // launcher. Linking a completed file also prevents reading partial JSON.
+    if (exclusive) await link(temporary, file);
+    else await rename(temporary, file);
+  } finally {
+    await handle?.close().catch(() => {});
+    await unlink(temporary).catch(() => {});
+  }
+}
+async function addOperatorPin(file, credentials) {
+  if (credentials.pin !== undefined) return credentials;
+  // A stable derivation from the existing random secret lets simultaneous
+  // upgrades agree without a crash-prone lock or changing remembered access.
+  // New installations and explicit resets use independently random PINs.
+  const bytes = createHash('sha256').update('karhutla/operator-pin/v1\0').update(credentials.secret).digest();
+  const migrated = { secret: credentials.secret, pin: String(bytes.readUIntBE(0, 6) % 1000000).padStart(6, '0') };
+  await saveOperatorSecret(file, migrated);
+  return migrated;
+}
+async function loadOperatorSecret(file) {
+  if (file === null) return { secret: newOperatorSecret(), pin: newOperatorPin() };
+  try {
+    try { return await addOperatorPin(file, await readOperatorSecret(file)); }
+    catch (error) { if (error.code !== 'ENOENT') throw error; }
+    const credentials = { secret: newOperatorSecret(), pin: newOperatorPin() };
+    try { await saveOperatorSecret(file, credentials, true); return credentials; }
+    catch (error) { if (error.code !== 'EEXIST') throw error; }
+    return await addOperatorPin(file, await readOperatorSecret(file));
+  } catch (error) {
+    throw new Error(`The saved private operator link could not be opened at ${file}. Check that the file is readable and valid, and its folder is writable.`, { cause: error });
+  }
+}
+function secretMatches(value, secret) {
+  if (typeof value !== 'string' || value.length !== secret.length) return false;
+  const candidate = Buffer.from(value);
+  const expected = Buffer.from(secret);
+  return candidate.length === expected.length && timingSafeEqual(candidate, expected);
+}
+function cookieValue(request, name) {
+  const cookies = String(request.headers.cookie || '').split(';');
+  const values = cookies.map(cookie => cookie.trim()).filter(cookie => cookie.startsWith(`${name}=`));
+  // Ambiguous duplicate cookies never grant control.
+  return values.length === 1 ? values[0].slice(name.length + 1) : null;
+}
 
 export function localNetworkInfo(interfaces = os.networkInterfaces()) {
   const addresses = [];
@@ -161,6 +233,24 @@ export async function createPerformanceServer(options = {}) {
     return network;
   };
   const persistencePath = options.persistencePath === undefined ? path.join(root, 'data/performance-state.json') : options.persistencePath;
+  const remoteOperatorPath = options.remoteOperatorPath === undefined
+    ? persistencePath === null ? null : path.join(path.dirname(persistencePath), 'remote-operator.json')
+    : options.remoteOperatorPath;
+  const savedOperator = await loadOperatorSecret(remoteOperatorPath);
+  let remoteOperatorSecret = savedOperator.secret, remoteOperatorPin = savedOperator.pin;
+  let remoteOperatorRenewing = false;
+  const pairingFailures = new Map(), pairingNow = options.clock || (() => performance.now());
+  const pairingLimit = request => {
+    const now = pairingNow();
+    for (const [address, entry] of pairingFailures) if (entry.expiresAt <= now) pairingFailures.delete(address);
+    const address = normalizeIP(request.socket.remoteAddress);
+    return { address, now, entry: pairingFailures.get(address) };
+  };
+  const pairingLocked = (response, retryMs) => {
+    const seconds = Math.max(1, Math.ceil(retryMs / 1000));
+    response.setHeader('Retry-After', String(seconds));
+    return sendJSON(response, 429, { error: `Too many incorrect PIN attempts. Try again in ${seconds} seconds.`, retryAfterSeconds: seconds });
+  };
   let savedSnapshot = null;
   try { savedSnapshot = JSON.parse(await readFile(path.join(root, 'data/fire-snapshot.json'), 'utf8')); }
   catch { /* The operator can fetch the first snapshot later. */ }
@@ -178,24 +268,32 @@ export async function createPerformanceServer(options = {}) {
     const payload = JSON.stringify(event);
     for (const connection of sockets.values()) if (connection.readyState === WebSocket.OPEN && connection.bufferedAmount < 65536) connection.send(payload);
   } });
-  const operatorAllowed = (request, currentNetwork = refreshNetwork()) => {
+  const localOperator = (request, currentNetwork = refreshNetwork()) => {
     const address = normalizeIP(request.socket.remoteAddress);
     return loopback(address) || currentNetwork.ownAddresses.has(address);
   };
+  const pairedOperator = request => lanEnabled && secretMatches(cookieValue(request, operatorCookie), remoteOperatorSecret);
+  const operatorAllowed = (request, currentNetwork = refreshNetwork()) => localOperator(request, currentNetwork) || pairedOperator(request);
   const sameOrigin = request => !request.headers.origin || request.headers.origin === `http://${request.headers.host}`;
   const readOnlyRequest = request => {
     if (request.headers['x-wildfire-role'] === 'projection' || request.headers['x-wildfire-role'] === 'participant') return true;
     // A projection opened on the host is still a display. Its browser fetches
     // carry the page location even though its IP also belongs to the operator.
-    try { return /^\/(?:projection|study|audience)(?:\/|$)/.test(new URL(request.headers.referer).pathname); }
+    try { return /^\/(?:projection|study|audience|join)(?:\/|$)/.test(new URL(request.headers.referer).pathname); }
     catch { return false; }
   };
   const port = () => server.address()?.port || configuredPort;
+  const remoteOperatorLinks = () => {
+    const currentNetwork = refreshNetwork();
+    const urls = lanEnabled ? currentNetwork.addresses.map(address => `http://${address}:${port()}/operator#remote=${remoteOperatorSecret}`) : [];
+    const remoteUrls = lanEnabled ? currentNetwork.addresses.map(address => `http://${address}:${port()}/operator-remote`) : [];
+    return { enabled: urls.length > 0, url: urls[0] || null, urls, pin: remoteOperatorPin, remoteUrl: remoteUrls[0] || null, remoteUrls };
+  };
   const session = request => {
     const currentNetwork = refreshNetwork();
     const joinUrls = lanEnabled && currentNetwork.addresses.length ? currentNetwork.addresses.map(address => `http://${address}:${port()}/join`) : [`http://127.0.0.1:${port()}/join`];
     const audienceUrls = joinUrls.map(value => { const url = new URL(value); url.pathname = '/audience'; return url.href; });
-    return { joinUrl: joinUrls[0], joinUrls, audienceUrl: audienceUrls[0], audienceUrls, scene: room.sceneState(), soundSettings: room.soundSettingsState(), lanEnabled, bootstrapAvailable: room.bootstrapAvailable, strength: room.strength, operatorAllowed: operatorAllowed(request, currentNetwork), networkAvailable: !lanEnabled || currentNetwork.addresses.length > 0 };
+    return { joinUrl: joinUrls[0], joinUrls, audienceUrl: audienceUrls[0], audienceUrls, scene: room.sceneState(), soundSettings: room.soundSettingsState(), lanEnabled, bootstrapAvailable: room.bootstrapAvailable, strength: room.strength, operatorAllowed: operatorAllowed(request, currentNetwork), localOperator: localOperator(request, currentNetwork), networkAvailable: !lanEnabled || currentNetwork.addresses.length > 0 };
   };
   let revision = 0, lastPhoneBroadcast = -Infinity;
   const ACTOR_INTERVAL_MS = 1000 / 30;
@@ -303,6 +401,59 @@ export async function createPerformanceServer(options = {}) {
     response.setHeader('Referrer-Policy', 'same-origin');
     try {
       const url = new URL(request.url, 'http://127.0.0.1');
+      if (url.pathname === '/api/operator/remote' || url.pathname === '/api/operator/remote/renew') {
+        const method = url.pathname.endsWith('/renew') ? 'POST' : 'GET';
+        if (request.method !== method) { response.setHeader('Allow', method); return sendJSON(response, 405, { error: `Use ${method}.` }); }
+        if (!localOperator(request) || readOnlyRequest(request)) return sendJSON(response, 403, { error: 'Open Operator on the host computer to share or reset its private control link.' });
+        if (!sameOrigin(request)) return sendJSON(response, 403, { error: 'Open Operator on the host computer to manage remote control.' });
+        if (method === 'POST') {
+          if (!(request.headers['content-type'] || '').startsWith('application/json')) return sendJSON(response, 415, { error: 'Expected application/json.' });
+          if (remoteOperatorRenewing) return sendJSON(response, 409, { error: 'The private operator link is already being reset. Wait a moment and try again.' });
+          remoteOperatorRenewing = true;
+          try {
+            const nextCredentials = { secret: newOperatorSecret(), pin: newOperatorPin(remoteOperatorPin) };
+            if (remoteOperatorPath !== null) {
+              try { await saveOperatorSecret(remoteOperatorPath, nextCredentials); }
+              catch { return sendJSON(response, 500, { error: 'The new private operator link could not be saved. The existing link and connected controllers still work. Check that the data folder is writable and try again.' }); }
+            }
+            remoteOperatorSecret = nextCredentials.secret;
+            remoteOperatorPin = nextCredentials.pin;
+            pairingFailures.clear();
+            for (const [connectionId, connection] of sockets) if (connection.remoteOperator) {
+              // Revoke held rain immediately; a suspended device can leave the
+              // WebSocket close handshake pending for several seconds.
+              room.disconnect(connectionId);
+              connection.close(4003, 'The private operator link was reset. Open the current private link from the host computer.');
+            }
+            scheduleActors();
+          } finally {
+            remoteOperatorRenewing = false;
+          }
+        }
+        return sendJSON(response, 200, remoteOperatorLinks());
+      }
+      if (url.pathname === '/api/operator/pair') {
+        if (request.method !== 'POST') { response.setHeader('Allow', 'POST'); return sendJSON(response, 405, { error: 'Use POST.' }); }
+        if (!sameOrigin(request) || readOnlyRequest(request)) return sendJSON(response, 403, { error: 'Open the private operator link to connect this device.' });
+        if (!(request.headers['content-type'] || '').startsWith('application/json')) return sendJSON(response, 415, { error: 'Expected application/json.' });
+        const body = await jsonBody(request, 1024);
+        const attempt = pairingLimit(request);
+        const validToken = secretMatches(body?.token, remoteOperatorSecret);
+        if (!validToken && attempt.entry?.blockedUntil > attempt.now) return pairingLocked(response, attempt.entry.blockedUntil - attempt.now);
+        const validPin = typeof body?.pin === 'string' && /^\d{6}$/.test(body.pin) && secretMatches(body.pin, remoteOperatorPin);
+        if (!lanEnabled || (!validToken && !validPin)) {
+          const entry = attempt.entry || { failures: 0, expiresAt: attempt.now + 60000, blockedUntil: 0 };
+          entry.failures++;
+          if (entry.failures >= 5) entry.expiresAt = entry.blockedUntil = attempt.now + 60000;
+          if (!pairingFailures.has(attempt.address) && pairingFailures.size >= 1024) pairingFailures.delete(pairingFailures.keys().next().value);
+          pairingFailures.set(attempt.address, entry);
+          if (entry.blockedUntil) return pairingLocked(response, entry.blockedUntil - attempt.now);
+          return sendJSON(response, 403, { error: 'The PIN or private link is incorrect or has been reset. Check the current PIN in Operator → Setup on the host computer.' });
+        }
+        pairingFailures.delete(attempt.address);
+        response.setHeader('Set-Cookie', `${operatorCookie}=${remoteOperatorSecret}; HttpOnly; SameSite=Strict; Path=/; Max-Age=31536000`);
+        return sendJSON(response, 200, { operatorAllowed: true, localOperator: localOperator(request) });
+      }
       if (url.pathname === '/api/session') {
         if (request.method !== 'GET') return sendJSON(response, 405, { error: 'Use GET.' });
         return sendJSON(response, 200, session(request));
@@ -311,13 +462,17 @@ export async function createPerformanceServer(options = {}) {
       if (url.pathname === '/api/sound-settings' && request.method === 'GET') return sendJSON(response, 200, room.soundSettingsState());
       if (url.pathname === '/api/settings/export') {
         if (request.method !== 'GET') { response.setHeader('Allow', 'GET'); return sendJSON(response, 405, { error: 'Use GET.' }); }
-        if (!operatorAllowed(request) || readOnlyRequest(request)) return sendJSON(response, 403, { error: 'Only the operator page on the host computer can export settings.' });
-        if (!sameOrigin(request)) return sendJSON(response, 403, { error: 'Open the local prototype to export settings.' });
+        if (!operatorAllowed(request) || readOnlyRequest(request)) return sendJSON(response, 403, { error: 'Open Operator on the host computer or use its private control link to export settings.' });
+        if (!sameOrigin(request)) return sendJSON(response, 403, { error: 'Open Operator to export settings.' });
         return sendJSON(response, 200, room.exportSettingsPreset());
       }
       if (url.pathname === '/api/qr.svg') {
         if (request.method !== 'GET') return sendJSON(response, 405, { error: 'Use GET.' });
-        const join = new URL(session(request).joinUrl);
+        const operatorQR = url.searchParams.get('view') === 'operator';
+        if (operatorQR && (!localOperator(request) || readOnlyRequest(request) || !sameOrigin(request))) return sendJSON(response, 403, { error: 'Open Operator on the host computer to share its private control code.' });
+        const remote = operatorQR ? remoteOperatorLinks() : null;
+        if (operatorQR && !remote.enabled) return sendJSON(response, 409, { error: lanEnabled ? 'Connect the host computer to Wi-Fi or Ethernet first.' : 'Start Karhutla in LAN mode to enable remote control.' });
+        const join = new URL(operatorQR ? remote.url : session(request).joinUrl);
         if (url.searchParams.get('view') === 'peat') join.pathname = '/study/phone';
         if (url.searchParams.get('view') === 'audience') join.pathname = '/audience';
         const svg = await QRCode.toString(join.href, { type: 'svg', errorCorrectionLevel: 'M', margin: 2, width: 280 });
@@ -343,8 +498,8 @@ export async function createPerformanceServer(options = {}) {
           response.setHeader('Allow', 'POST');
           return sendJSON(response, 405, { error: 'Use POST.' });
         }
-        if (!operatorAllowed(request) || readOnlyRequest(request)) return sendJSON(response, 403, { error: 'Only the operator page on the host computer can change performance settings.' });
-        if (!sameOrigin(request)) return sendJSON(response, 403, { error: 'Open the local prototype to change performance settings.' });
+        if (!operatorAllowed(request) || readOnlyRequest(request)) return sendJSON(response, 403, { error: 'Open Operator on the host computer or use its private control link to change performance settings.' });
+        if (!sameOrigin(request)) return sendJSON(response, 403, { error: 'Open Operator to change performance settings.' });
         if (!(request.headers['content-type'] || '').startsWith('application/json')) return sendJSON(response, 415, { error: 'Expected application/json.' });
         const body = await jsonBody(request);
         if (!body || typeof body !== 'object' || Array.isArray(body)) return sendJSON(response, 400, { error: 'Expected a JSON object.' });
@@ -404,7 +559,7 @@ export async function createPerformanceServer(options = {}) {
     const clientId = url.searchParams.get('clientId');
     if (!['operator', 'participant', 'projection'].includes(role) || !clientId || !/^[a-zA-Z0-9_-]{1,128}$/.test(clientId)) return rejectUpgrade('400 Bad Request', 'Invalid role or clientId.');
     if (!['region', 'indonesia'].includes(scope)) return rejectUpgrade('400 Bad Request', 'Invalid audience scope.');
-    if (role === 'operator' && !operatorAllowed(request)) return rejectUpgrade('403 Forbidden', 'Operator access is local to the host computer.');
+    if (role === 'operator' && !operatorAllowed(request)) return rejectUpgrade('403 Forbidden', 'Use the private operator link from the host computer to control this performance.');
     socket.setNoDelay(true);
     webSockets.handleUpgrade(request, socket, head, connection => {
       let welcome;
@@ -413,6 +568,8 @@ export async function createPerformanceServer(options = {}) {
       const connectionId = welcome.connectionId;
       sockets.set(connectionId, connection);
       connection.role = role;
+      connection.remoteOperator = role === 'operator' && !localOperator(request);
+      connection.operatorSecret = connection.remoteOperator ? cookieValue(request, operatorCookie) : null;
       connection.baseline = null;
       connection.stateSending = false;
       connection.actorSending = false;
@@ -422,6 +579,10 @@ export async function createPerformanceServer(options = {}) {
       connection.on('error', () => {});
       connection.on('message', (raw, binary) => {
         try {
+          if (connection.remoteOperator && !secretMatches(connection.operatorSecret, remoteOperatorSecret)) {
+            connection.close(4003, 'The private operator link was reset. Open the current private link from the host computer.');
+            return;
+          }
           if (binary) throw new Error('Only JSON control messages are accepted.');
           const message = JSON.parse(raw.toString());
           if (message.type === 'bell') {

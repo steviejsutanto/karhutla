@@ -16,6 +16,16 @@ If the port is occupied, the launcher reports it and leaves the existing process
 
 The included snapshot, sounds, visuals, QR code and audience interaction work without internet. **Fetch latest fires** needs internet and changes the source landscape. Python, FFmpeg and audio-generation models are not required to run the performance.
 
+## Control from another device
+
+Connect a phone, tablet or second computer to the same Wi-Fi as the host and scan the audience QR code. In its browser address, replace `/audience` with `/operator-remote`. Enter the six-digit PIN shown on the host in **Operator → Setup → Remote control**. Both operator pages show the live performance and can change scene cues, mixer levels and settings.
+
+Keep the host's Operator page open with Main sound enabled and keep the computer awake. Main audio continues through its selected Windows output; the remote controller stays silent. The launcher and projector remain on the host, and internet is unnecessary for remote control.
+
+Bookmark the simple `/operator-remote` address to return later. The browser remembers access for one year across browser and server restarts. Clearing browser data requires entering the PIN again. If the router changes the host's address, choose **Refresh address** and update the bookmark; the devices must still share the same network. **Reset PIN & devices** disconnects remembered controllers and replaces the PIN. Keep the PIN private. Existing long private operator links also work.
+
+The PIN and private key live in `data/remote-operator.json`, excluded from GitHub, release packages and settings exports. Copy that file privately into a new release folder to preserve the same PIN and remembered access; a new folder otherwise creates its own credentials.
+
 ## Transfer your settings
 
 On the source computer, open **Operator → Setup → Settings file → Export settings**. Save any pending timing or audience edits first. Copy that JSON file to the other computer, then choose **Import settings** in the same section.

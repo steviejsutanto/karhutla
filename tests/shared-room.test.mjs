@@ -74,6 +74,31 @@ test('public room snapshots copy the complete main mixer without disabling autom
   assert.deepEqual(fresh.soundSettingsState().mixer, DEFAULT_SOUND_SETTINGS.mixer);
 });
 
+test('live phone balances reach existing and newly joined phones without changing Main or landscape progress', async () => {
+  const { room } = await fixture();
+  const first = join(room, 'phone-balance-first');
+  const before = { scene: room.sceneState(), simulation: room.simulation.serialize(), main: room.soundSettingsState().mixer };
+  const patch = { overall: .8, birds: 1.5, crackle: 0 };
+  await room.setSoundSettings({ phoneMixer: patch });
+  const result = await room.setSoundSettings({ phoneMixer: { crickets: .7, drone: 2 } });
+  const late = join(room, 'phone-balance-late');
+  const expected = { overall: .8, crackle: 0, rain: 1, crickets: .7, birds: 1.5, drone: 2 };
+  const states = [result, room.wireState(), room.phoneState(first.connectionId), room.phoneState(late.connectionId), room._envelope()];
+  for (const state of states) {
+    assert.deepEqual(state.soundSettings.phoneMixer, expected);
+    state.soundSettings.phoneMixer.birds = 0;
+  }
+  patch.birds = 0;
+  assert.deepEqual(room.soundSettingsState().phoneMixer, expected, 'Snapshots and input patches cannot change the live mixer by alias.');
+  assert.deepEqual(room.soundSettingsState().mixer, before.main);
+  assert.equal(room.soundSettingsState().automation, true);
+  assert.deepEqual(room.sceneState(), before.scene);
+  assert.deepEqual(room.simulation.serialize(), before.simulation);
+  const beforeInvalid = room.soundSettingsState();
+  await assert.rejects(room.setSoundSettings({ level: .2, phoneMixer: { birds: 1, unknown: 0 } }), /phone.*mixer/i);
+  assert.deepEqual(room.soundSettingsState(), beforeInvalid, 'An invalid live phone edit cannot partially change Main output.');
+});
+
 test('old full and settings-only room saves gain unity mixer levels and retain existing sound choices', async () => {
   const directory = await mkdtemp(path.join(os.tmpdir(), 'wildfire-legacy-mixer-'));
   try {
@@ -83,11 +108,12 @@ test('old full and settings-only room saves gain unity mixer levels and retain e
       await first.room.setSoundSettings({ automation: false, macros: { rain: .6 }, level: .3, localPitchIndex: 9 });
       const saved = JSON.parse(await readFile(persistencePath, 'utf8'));
       delete saved.soundSettings.mixer;
+      delete saved.soundSettings.phoneMixer;
       await writeFile(persistencePath, JSON.stringify(saved));
       const { room } = await fixture({ persistencePath }, false);
       assert.equal(room.bootstrapAvailable, settingsOnly);
-      assert.deepEqual(room.soundSettingsState(), { ...saved.soundSettings, mixer: DEFAULT_SOUND_SETTINGS.mixer });
-      await room.setSoundSettings({ mixer: { rain: .25, outDrone: 2 } });
+      assert.deepEqual(room.soundSettingsState(), { ...saved.soundSettings, mixer: DEFAULT_SOUND_SETTINGS.mixer, phoneMixer: DEFAULT_SOUND_SETTINGS.phoneMixer });
+      await room.setSoundSettings({ mixer: { rain: .25, outDrone: 2 }, phoneMixer: { rain: .4, birds: 1.5 } });
       assert.equal(room.soundSettingsState().automation, false);
       const current = JSON.parse(await readFile(persistencePath, 'utf8'));
       assert.deepEqual(current.soundSettings, room.soundSettingsState());
@@ -686,10 +712,14 @@ test('phone summaries contain only the assigned region and own control state, wi
   assert.equal(first.joinedCount, welcomes.length);
   const { scene, ...regional } = first;
   // Includes the compact list of authority-owned bird event indices.
-  assert.ok(JSON.stringify(regional).length < 1320, 'Regional state stays compact independently of the shared score.');
+  // Six new phone trims add one 81-byte property to the default fixture;
+  // retain the original margins for every other summary field.
+  const phoneMixerAllowance = JSON.stringify({ phoneMixer: DEFAULT_SOUND_SETTINGS.phoneMixer }).length - 1;
+  assert.equal(phoneMixerAllowance, 81);
+  assert.ok(JSON.stringify(regional).length < 1320 + phoneMixerAllowance, 'Regional state stays compact independently of the shared score.');
   const { programNotes, ...scoreSettings } = scene.settings;
   assert.equal(typeof programNotes, 'string');
-  assert.ok(JSON.stringify({ ...first, scene: { ...scene, settings: scoreSettings } }).length < 3300,
+  assert.ok(JSON.stringify({ ...first, scene: { ...scene, settings: scoreSettings } }).length < 3300 + phoneMixerAllowance,
     'The shared score stays compact independently of editable program-note length.');
 });
 

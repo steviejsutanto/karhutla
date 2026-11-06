@@ -18,6 +18,7 @@ const customPreset = room => {
   Object.assign(preset.soundSettings, { automation: false, level: .42, localPitchIndex: 6 });
   preset.soundSettings.macros.haze = .6;
   preset.soundSettings.mixer.bells = .8;
+  preset.soundSettings.phoneMixer = { overall: .8, crackle: .6, rain: 1.2, crickets: .7, birds: 1.5, drone: 1.8 };
   return preset;
 };
 const sceneClock = room => {
@@ -51,6 +52,7 @@ test('settings presets round-trip complete configuration without exporting or ch
   assert.equal(imported.simulation.totalWater, 123);
   const exported = target.exportSettingsPreset();
   exported.soundSettings.mixer.bells = 2;
+  exported.soundSettings.phoneMixer.birds = 0;
   exported.sceneSettings.programNotes = 'Changed outside the room';
   assert.deepEqual(target.exportSettingsPreset(), preset, 'Exported objects cannot mutate room settings.');
 });
@@ -80,6 +82,12 @@ test('invalid preset values and unknown or incomplete nested settings are reject
     value => { value.soundSettings.mixer.bells = 2.1; },
     value => { value.soundSettings.mixer.unknown = 0; },
     value => { delete value.soundSettings.mixer.bells; },
+    value => { value.soundSettings.phoneMixer = null; },
+    value => { value.soundSettings.phoneMixer.drone = Infinity; },
+    value => { value.soundSettings.phoneMixer.overall = -1; },
+    value => { value.soundSettings.phoneMixer.birds = 2.1; },
+    value => { value.soundSettings.phoneMixer.extra = 1; },
+    value => { delete value.soundSettings.phoneMixer.crickets; },
     value => { value.soundSettings = null; },
   ];
   for (const mutate of mutations) {
@@ -89,6 +97,21 @@ test('invalid preset values and unknown or incomplete nested settings are reject
     assert.deepEqual(room.exportSettingsPreset(), beforePreset);
     assert.deepEqual(landscape(room), beforeLandscape);
   }
+});
+
+test('presets exported before the phone mixer gain unity without changing their other controls or running progress', async () => {
+  const source = new SharedRoom(roomOptions), target = new SharedRoom(roomOptions);
+  await target.bootstrap({}); await target.setScene({ scene: 'participation' }); await target.setScene({ action: 'pause' });
+  target.scenes.elapsed = 12345; target.simulation.totalWater = 123;
+  const preset = customPreset(source), before = landscape(target);
+  delete preset.soundSettings.phoneMixer;
+  const expected = { ...preset, soundSettings: { ...preset.soundSettings,
+    phoneMixer: { overall: 1, crackle: 1, rain: 1, crickets: 1, birds: 1, drone: 1 } } };
+  assert.deepEqual(validateSettingsPreset(preset), expected);
+  await target.importSettingsPreset(preset);
+  assert.deepEqual(target.exportSettingsPreset(), expected);
+  assert.deepEqual(withoutTiming(landscape(target)), withoutTiming(before));
+  assert.equal(Object.hasOwn(preset.soundSettings, 'phoneMixer'), false, 'Migration must not edit the original exported file.');
 });
 
 test('settings imports persist before and after bootstrap and restart in paused Arrival', async t => {

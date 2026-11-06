@@ -10,6 +10,7 @@ import { PHONE_CRICKET_RATE, PHONE_CRICKET_LEVEL } from '../app/sound-engine.js'
 import { MAIN_DRONE_OVERTONES } from '../app/sound-engine.js';
 import { requestPlaybackAudioSession } from '../app/sound-engine.js';
 import { MAIN_ENABLE_FADE_SECONDS, MAIN_DISABLE_FADE_SECONDS, ARRIVAL_HAZE_GAIN } from '../app/sound-engine.js';
+import { PHONE_MIXER_DEFAULTS, PHONE_MIXER_FADE_SECONDS } from '../app/sound-engine.js';
 import { OUTPUT_MAKEUP_DB, OUTPUT_MAKEUP_GAIN, MAIN_OUTPUT_MAKEUP_DB, MAIN_OUTPUT_MAKEUP_GAIN, OUTPUT_LIMIT_CEILING, OUTPUT_LIMIT_INPUT_RANGE, outputDynamics, smoothPeakLimit, outputProtectionCurve, prepareRecording, recordingPreparation } from '../app/audio-loudness.js';
 
 class FakeParam {
@@ -84,6 +85,7 @@ class FakeContext {
     for (const node of this.scheduledStops) if (node.stoppedAt <= this.currentTime && !node.ended) { node.ended = true; this.scheduledStops.delete(node); node.onended?.(); }
   }
 }
+const roleGain = engine => engine.master.gain.value * (engine.mainLevelGain?.gain.value ?? 1);
 const flush = () => new Promise(resolve => setImmediate(resolve));
 function harness(t, options = {}) {
   const events = [], context = new FakeContext(events), statuses = [], requests = [];
@@ -107,7 +109,8 @@ test('Main keeps transient headroom at saved full-scale settings while phone dyn
       mode === 'operator' ? [-6, 6, 2, .02, .2] : [-1, 1, 20, .001, .08]);
     assert.equal(engine.getMetrics().loudness.makeupDb, settings.makeupDb);
     assert.equal(engine.getMetrics().loudness.peakKnee, settings.peakKnee);
-    assert.deepEqual(engine.master.connections, [engine.outputMakeup]);
+    assert.deepEqual(engine.master.connections, [mode === 'operator' ? engine.mainLevelGain : engine.outputMakeup]);
+    if (mode === 'operator') assert.deepEqual(engine.mainLevelGain.connections, [engine.outputMakeup]);
     assert.deepEqual(engine.outputMakeup.connections, [engine.compressor]);
     assert.deepEqual(engine.compressor.connections, [engine.outputHeadroom]);
     assert.equal(engine.outputHeadroom.gain.value, 1 / OUTPUT_LIMIT_INPUT_RANGE);
@@ -445,9 +448,9 @@ test('only a phone activation requests playback, synchronously before creating o
   assert.equal(engine.timer, null); assert.equal(engine.state, 'suspended');
   assert.equal(events.filter(event => event === 'resume').length, resumeCount, 'An interruption does not trigger a forced resume.');
   engine.setMuted(true); context.state = 'running'; context.onstatechange();
-  assert.equal(engine.timer, null); assert.equal(engine.state, 'muted'); assert.equal(engine.master.gain.value, 0);
+  assert.equal(engine.timer, null); assert.equal(engine.state, 'muted'); assert.equal(roleGain(engine), 0);
   engine.setHidden(true); engine.setMuted(false); context.onstatechange();
-  assert.equal(engine.timer, null); assert.equal(engine.state, 'suspended'); assert.equal(engine.master.gain.value, 0);
+  assert.equal(engine.timer, null); assert.equal(engine.state, 'suspended'); assert.equal(roleGain(engine), 0);
   assert.equal(reads, readCount, 'Mute, visibility and interruption handling do not reconfigure the session.');
 });
 
@@ -518,7 +521,7 @@ test('mute, hidden, reset, disable, and destroy cleanly retain intended state', 
   assert.equal(await engine.enable(), true); assert.equal(engine.getMetrics().muted, false); assert.equal(engine.getMetrics().state, 'ready');
   engine.setHidden(true); assert.equal(engine.getMetrics().state, 'suspended'); assert.equal(engine.timer, null);
   engine.setHidden(false); await flush(); assert.equal(engine.getMetrics().state, 'ready');
-  assert.equal(engine.master.gain.value, .7);
+  assert.equal(roleGain(engine), .7);
   engine.reset('new-epoch'); assert.equal(engine.voices.size, 0); assert.equal(engine.patches.size, 0);
   engine.disable(); assert.equal(engine.getMetrics().state, 'off'); assert.equal(engine.getMetrics().activeSources, 0);
   engine.destroy(); assert.equal(context.state, 'closed'); assert.equal(engine.timer, null); assert.equal(engine.suspendTimer, null);
@@ -1196,9 +1199,9 @@ test('instructions transfer haze to forest over twelve show-clock seconds withou
   engine.setProgression({ sourceCount: 0, outCount: 0, heat: 0 });
   engine.setParticipants([participant('held')]); engine.setSceneState({ id: 'instructions', elapsedMs: 0 });
   await engine.enable(); await flush();
-  assert.equal(engine.layers.get('haze').gain.gain.value, .046); assert.equal(engine.layers.get('forest').gain.gain.value, 0);
+  assert.equal(engine.layers.get('haze').gain.gain.value, .046 * ARRIVAL_HAZE_GAIN); assert.equal(engine.layers.get('forest').gain.gain.value, 0);
   context.advance(6); engine._tick();
-  assert.equal(engine.layers.get('haze').gain.gain.value, .023); assert.ok(Math.abs(engine.layers.get('forest').gain.gain.value - .12) < 1e-12);
+  assert.equal(engine.layers.get('haze').gain.gain.value, .023 * ARRIVAL_HAZE_GAIN); assert.ok(Math.abs(engine.layers.get('forest').gain.gain.value - .12) < 1e-12);
   assert.equal(engine.getMetrics().sceneScore.mix.mainForest, .5); assert.equal(engine.voices.size, 0);
   context.advance(6); engine._tick();
   assert.equal(engine.layers.get('haze').gain.gain.value, 0); assert.ok(Math.abs(engine.layers.get('forest').gain.gain.value - .24) < 1e-12);
@@ -1229,7 +1232,7 @@ test('participation replaces main burning with the two shared harmonic banks tha
   assert.ok([...engine.toneGrains].filter(grain => !grain.background).every(grain => grain.attack >= .001 && grain.attack <= .004));
   engine.setSceneState({ id: 'final-rain', elapsedMs: 0, rainIntensity: 1 });
   assert.equal(engine.voices.has('active'), true); assert.equal(engine.voices.has('out'), true);
-  assert.equal(engine.layers.get('rain').gain.gain.value, 0); assert.equal(engine.getMetrics().mainDrone.gain, 0);
+  assert.equal(engine.layers.get('rain').gain.gain.value, 0); assert.equal(engine.getMetrics().mainDrone.gain, MAIN_DRONE_LEVEL, 'A manual early final cue retains its outgoing drone before fading.');
   context.advance(60); engine._tick();
   assert.ok(engine.layers.get('rain').gain.gain.value > 0); assert.equal(engine.getMetrics().mainDrone.gain, 0);
   engine.disable(); context.advance(MAIN_DISABLE_FADE_SECONDS + .03); assert.equal(engine.mainDrone, null);
@@ -1269,9 +1272,9 @@ test('the native rain and insect overlap ends at thirty seconds while Main carri
   assert.equal(fieldCurve[2], .02); assert.equal(fieldCurve[3], 29.98);
   assert.equal(fieldCurve[1][0], 1); assert.equal(fieldCurve[1].at(-1), 0);
   assert.ok(fieldCurve[1].slice(1).every((value, index) => value <= fieldCurve[1][index]));
-  assert.ok(mainCurve[1].slice(0, -1).every(value => Math.abs(value - .55) < 1e-6), 'The role master stays open through the PA-only hold and handoff.');
+  assert.ok(mainCurve[1].slice(0, -1).every(value => Math.abs(value - 1) < 1e-6), 'The scene master stays open through the PA-only hold and handoff.');
   assert.equal(phoneCurve[2], 69); assert.equal(phoneCurve[3], 60, 'The complete phone fade starts after PA hold, handoff and phone-only hold.');
-  assert.ok(Math.abs(mainCurve[1][0] - .55) < 1e-6); assert.equal(mainCurve[1].at(-1), 0);
+  assert.ok(Math.abs(mainCurve[1][0] - 1) < 1e-6); assert.equal(mainCurve[1].at(-1), 0);
   assert.ok(Math.abs(phoneCurve[1][0] - .55) < 1e-6); assert.equal(phoneCurve[1].at(-1), 0);
   assert.equal(mainCurve[2] + mainCurve[3], 54); assert.equal(phoneCurve[2] + phoneCurve[3], 129);
   assert.equal(main.engine.fieldBus.gain.events.some(event => event[0] === 'set' && event[2] === 30), false);
@@ -1324,11 +1327,11 @@ test('paused, resumed and reloaded scene envelopes preserve configured phase bou
     }
     context.advance(40); engine._tick(); assert.equal(engine.getMetrics().outputGains[mode === 'phone' ? 'phone' : 'main'], 0);
     engine.setSceneState({ id: 'ended', paused: false }); engine.setLevel(1);
-    assert.equal(engine.master.gain.value, 0); assert.equal(engine.fieldBus.gain.value, 0);
+    assert.equal(roleGain(engine), 0); assert.equal(engine.fieldBus.gain.value, 0);
     assert.equal(engine.setSceneState({ id: 'afterglow', elapsedMs: NaN }), false);
     assert.equal(engine.setSceneState({ id: 'instructions', elapsedMs: 0 }), true);
     engine.setSceneState(null); assert.equal(engine.getMetrics().sceneScore, null);
-    assert.equal(engine.master.gain.value, 1, 'Unscored legacy clients retain their original master behavior.');
+    assert.equal(roleGain(engine), 1, 'Unscored legacy clients retain their original master behavior.');
   }
 });
 
@@ -1342,7 +1345,7 @@ test('old Safari replaces an active role envelope by cancelling its start before
   const replacement = engine.master.gain.events.slice(before);
   assert.deepEqual(replacement[0], ['cancel', 0]);
   assert.equal(replacement[1][0], 'set'); assert.equal(replacement[1][2], 5);
-  assert.equal(engine.master.gain.value, .55 * cricketRetreatParameters(5000).gain);
+  assert.equal(roleGain(engine), .55 * cricketRetreatParameters(5000).gain);
 });
 
 test('strict audio parameters catch both past-start clamping and floating-point endpoint overlap', () => {
@@ -1603,14 +1606,14 @@ test('mixer boosts remain inside scene masks and the complete role ending, while
   for (const node of main.engine.mixerNodes.values()) assert.ok(node.connections.includes(main.engine.mix) || node.connections.includes(main.engine.fieldBus));
   assert.deepEqual(main.engine.mix.connections, [main.engine.highpass]); assert.deepEqual(main.engine.highpass.connections, [main.engine.master]);
   main.engine.setSceneState({ id: 'ended', elapsedMs: 0 }); main.engine.setMixer(boosts);
-  assert.equal(main.engine.master.gain.value, 0); assert.equal(main.engine.voices.size, 0);
+  assert.equal(roleGain(main.engine), 0); assert.equal(main.engine.voices.size, 0);
   phone.engine.setProgression({ sourceCount: 2, outCount: 1 }); phone.engine.setPatches([patch('phone', 1)]); await phone.engine.enable();
   const phoneBed = phone.engine.getMetrics().phoneBed, phoneGains = [...phone.engine.layers.values()].map(layer => layer.gain.gain.value), phoneMasterEvents = phone.engine.master.gain.events.length;
   phone.engine.setMixer(Object.fromEntries(Object.keys(boosts).map(name => [name, 0]))); phone.engine._tick(); phone.engine.setMixer(boosts);
   assert.deepEqual(phone.engine.getMetrics().phoneBed, phoneBed); assert.deepEqual([...phone.engine.layers.values()].map(layer => layer.gain.gain.value), phoneGains);
   assert.equal(phone.engine.mixerNodes.size, 0); assert.equal(phone.engine.master.gain.events.length, phoneMasterEvents);
-  assert.deepEqual(phone.engine.layers.get('crackle').gain.connections, [phone.engine.fieldBus]);
-  assert.deepEqual(phone.engine.layers.get('crickets').gain.connections, [phone.engine.mix]);
+  assert.deepEqual(phone.engine.layers.get('crackle').gain.connections, [phone.engine.phoneMixerNodes.get('crackle')]);
+  assert.deepEqual(phone.engine.layers.get('crickets').gain.connections, [phone.engine.phoneMixerNodes.get('crickets')]);
 });
 
 test('rain has independent circular passages and spatial depths with fixed source gain and gentle Main output compression', async t => {
@@ -1627,8 +1630,8 @@ test('rain has independent circular passages and spatial depths with fixed sourc
   for (let tick = 0; tick < 40; tick++) { context.advance(.3); engine._tick(); }
   assert.deepEqual([...layer.sources], records); assert.equal(layer.gain.gain.events.length, gainEvents);
   assert.equal(engine.compressor.threshold.value, -6); assert.equal(engine.compressor.ratio.value, 2); assert.equal(engine.compressor.knee.value, 6);
-  engine.setSceneState({ id: 'final-rain', rainIntensity: .2 }); assert.equal(engine.getMetrics().macros.rain, .2);
-  engine.setSceneState({ id: 'final-rain', paused: true, rainIntensity: .2 }); context.advance(3); engine._tick(); assert.equal(engine.getMetrics().macros.rain, .2);
+  engine.setSceneState({ id: 'final-rain', rainIntensity: .2 }); assert.equal(engine.getMetrics().macros.rain, .65);
+  engine.setSceneState({ id: 'final-rain', paused: true, rainIntensity: .2 }); context.advance(3); engine._tick(); assert.equal(engine.getMetrics().macros.rain, .65);
   engine.setSceneState({ id: 'afterglow', rainIntensity: 1, elapsedMs: 2000 }); assert.equal(layer.gain.gain.value, .125);
   engine.disable(); context.advance(MAIN_DISABLE_FADE_SECONDS + .03);
   assert.ok(records.every(record => record.nodes.every(node => node.disconnected)));
@@ -1671,7 +1674,7 @@ test('three insect recordings retain independent phase and perspective while the
   assert.ok(slots[0].space.filter.frequency.value > slots[2].space.filter.frequency.value);
   const initial = { gain: layer.gain.gain.value, cutoff: layer.filter.frequency.value, pan: Math.abs(slots[0].space.panner.pan.value) };
   engine.setSceneState({ id: 'afterglow', elapsedMs: 34000 });
-  assert.equal(engine.master.gain.value, engine.level); assert.equal(layer.gain.gain.value, initial.gain);
+  assert.equal(roleGain(engine), engine.level); assert.equal(layer.gain.gain.value, initial.gain);
   assert.equal(engine.getMetrics().outputGains.field, 0);
   assert.equal(layer.filter.frequency.value, initial.cutoff); assert.equal(Math.abs(slots[0].space.panner.pan.value), initial.pan);
   const halfTail = cricketRetreatParameters(58900); assert.ok(halfTail.tail > 0 && halfTail.tail < 1);
@@ -1983,13 +1986,13 @@ test('forest takeover raises a full forest on an already-cold map while subduing
   await engine.setLayerVariations('forest', endpoints('forest'));
   engine.setPatches([patch('cold', 0, true)]); engine.setMacros({ forest: 0, rain: 1, ash: 1, moisture: 1 });
   engine.setSceneState({ id: 'participation', elapsedMs: 12000, paused: true }); await engine.enable(); await flush();
-  engine.setSceneState({ id: 'forest-takeover', elapsedMs: 0, paused: true }); assert.equal(engine.layers.get('forest').gain.gain.value, 0);
+  engine.setAutomation(true); engine.setSceneState({ id: 'forest-takeover', elapsedMs: 0, paused: true }); assert.equal(engine.layers.get('forest').gain.gain.value, 0);
   engine.setSceneState({ id: 'forest-takeover', elapsedMs: 30000, paused: true }); engine._tick();
   assert.equal(engine.getMetrics().macros.forest, 1); assert.ok(engine.layers.get('forest').gain.gain.value > .2);
   assert.equal(engine._mainDroneGain(), 0);
   assert.ok(Math.abs(engine._sceneScore().mix.mainOther - .08) < 1e-12); assert.equal(engine.layers.get('rain').gain.gain.value, 0);
   assert.deepEqual(MAIN_DRONE_MIDI, [37, 44, 51]);
-  assert.equal(engine.master.gain.value, engine.level); context.advance(1); engine._tick(); assert.ok(engine.layers.get('forest').gain.gain.value > .2);
+  assert.equal(roleGain(engine), engine.level); context.advance(1); engine._tick(); assert.ok(engine.layers.get('forest').gain.gain.value > .2);
 });
 
 test('cue 4 follows new holds and releases while keeping live cooling tones audible against the returning forest', async t => {
@@ -2003,6 +2006,7 @@ test('cue 4 follows new holds and releases while keeping live cooling tones audi
   engine.setPatchVoices([{ ...cooled('entry'), holding: false }, cooled('new')]);
   assert.equal(soft.voices.has('entry'), false); assert.ok(soft.tails.has(entry));
   const current = soft.voices.get('new'); assert.ok(current);
+  context.advance(MAIN_ENABLE_FADE_SECONDS + .01); engine._tick();
   assert.equal(current.mixer.gain.value, .3, 'Interaction remains audible as the forest dominates.');
   assert.equal(soft.hazeOnlyBlend, 1);
   assert.equal(current.partials[0].gain.value, 0, 'Full takeover removes the clear fundamental.');
@@ -2174,7 +2178,7 @@ test('phone holds play quiet rain through the phone master and never create exti
   assert.equal(engine.phoneWeather, null); assert.equal(engine.localBells, null); assert.equal(engine.getMetrics().mainBells, null);
   assert.equal(engine.phoneRain.getMetrics().rainLoopCount, 0);
   engine.setPhoneInteraction({ holding: true, patchKey: 'local', extinguished: false, eligible: true }); await flush();
-  const rain = engine.phoneRain.voice; assert.ok(rain); assert.deepEqual(rain.gain.connections, [engine.fieldBus]);
+  const rain = engine.phoneRain.voice; assert.ok(rain); assert.deepEqual(rain.gain.connections, [engine.phoneMixerNodes.get('rain')]);
   context.advance(.2); assert.ok(engine.getMetrics().phoneRain.rainGain > 0);
   engine.setPhoneInteraction({ holding: true, patchKey: 'out', extinguished: true, eligible: true });
   assert.equal(engine.phoneRain.voice, rain, 'Moving onto out ground keeps the same quiet rain passage.');
@@ -2188,7 +2192,7 @@ test('phone holds play quiet rain through the phone master and never create exti
   engine.setPhoneInteraction(null); engine.setPhoneInteraction({ holding: true, eligible: true }); assert.ok(engine.phoneRain.voice);
   engine.setHidden(true); assert.equal(engine.phoneRain.active, false); assert.equal(engine.phoneRain.voice, null);
   engine.setHidden(false); await flush(); engine.reset('phone-new-round'); assert.equal(engine.phoneRain.interaction.holding, false);
-  engine.setSceneState({ id: 'ended', elapsedMs: 0 }); assert.equal(engine.phoneRain.active, false); assert.equal(engine.master.gain.value, 0);
+  engine.setSceneState({ id: 'ended', elapsedMs: 0 }); assert.equal(engine.phoneRain.active, false); assert.equal(roleGain(engine), 0);
 });
 
 test('Main canonical extinction rings spatial global bells without a local audition and preserves the complete output route', async t => {
@@ -2271,14 +2275,14 @@ test('final rain enters the native field fade at its composed level while the PA
     engine.setSceneState({ id: 'afterglow', elapsedMs: seconds * 1000, rainIntensity: Math.max(0, 1 - seconds / 30), paused: true, settings });
     const score = engine._sceneScore();
     assert.equal(rain.gain.gain.value, endpoint * score.mix.mainRain, 'The composed rain level is attenuated by the field bus once.');
-    assert.equal(engine.master.gain.value, engine.level * score.mainGain);
+    assert.equal(roleGain(engine), engine.level * score.mainGain);
     assert.equal(engine.fieldBus.gain.value, score.mainFieldGain);
-    assert.equal(engine.master.gain.value, engine.level, 'Blackout cannot close the PA master before its cricket cue.');
+    assert.equal(roleGain(engine), engine.level, 'Blackout cannot close the PA master before its cricket cue.');
     assert.equal(engine._effectiveMacros().rain, Math.max(0, 1 - seconds / 30));
   }
-  assert.equal(engine.fieldBus.gain.value, 0); assert.equal(engine.master.gain.value, engine.level);
+  assert.equal(engine.fieldBus.gain.value, 0); assert.equal(roleGain(engine), engine.level);
   engine.setSceneState({ id: 'afterglow', elapsedMs: 54000, paused: true, settings });
-  assert.equal(engine.master.gain.value, 0); context.advance(1); engine._tick(); assert.equal(engine.getMetrics().outputGains.main, 0);
+  assert.equal(roleGain(engine), 0); context.advance(1); engine._tick(); assert.equal(engine.getMetrics().outputGains.main, 0);
 });
 
 test('editable residue timing, source removal, reseeding and ending cancel all finite outputs', async t => {
@@ -2295,7 +2299,7 @@ test('editable residue timing, source removal, reseeding and ending cancel all f
   engine.setPatchVoices([sourceVoice('new', { extinguished: true })]); assert.equal(engine.patchSoftTones.residues.size, 0);
   engine.setPatchVoices([sourceVoice('end', { holding: true })]); engine.setPatchVoices([sourceVoice('end', { extinguished: true })]);
   engine.setSceneState({ id: 'ended', elapsedMs: 0 });
-  assert.equal(engine.master.gain.value, 0); assert.equal(engine.patchSoftTones.residues.size, 0); assert.equal(engine.patchSoftTones.textureSources.size, 0);
+  assert.equal(roleGain(engine), 0); assert.equal(engine.patchSoftTones.residues.size, 0); assert.equal(engine.patchSoftTones.textureSources.size, 0);
   engine.disable(); assert.equal(engine.patchSoftTones.voices.size, 0);
 });
 
@@ -2577,7 +2581,7 @@ test('Main enable and rapid mute reversals follow one rounded final output gate 
   const fieldSource = engine.ashSource;
   engine.setMuted(true); const cleanup = engine.mainStopClock;
   assert.ok(cleanup); assert.equal(fieldSource.disconnected, false);
-  assert.equal(engine.master.gain.value, .55, 'The user fade leaves the composed scene envelope open.');
+  assert.equal(roleGain(engine), .55, 'The user fade leaves the composed scene envelope open.');
   context.advance(MAIN_DISABLE_FADE_SECONDS / 2);
   assert.equal(context.state, 'running'); assert.ok(engine.getMetrics().mainActivation.gain > 0);
   const before = engine.getMetrics().mainActivation.gain;
@@ -2608,7 +2612,7 @@ test('Main fade cleanup survives incoming held patches, preserves ending silence
   engine.setPatchVoices([sourceVoice('steady', { holding: true, heat: .05, moisture: 1 })]);
   assert.equal(engine.patchSoftTones.voices.get('steady'), voice); assert.notEqual(voice.disposed, true);
   engine.setSceneState({ id: 'ended', elapsedMs: 0 });
-  assert.equal(engine.master.gain.value, 0); assert.equal(engine.fieldBus.gain.value, 0);
+  assert.equal(roleGain(engine), 0); assert.equal(engine.fieldBus.gain.value, 0);
   const clock = engine.mainStopClock;
   engine.destroy(); assert.equal(clock.onended, null); assert.equal(context.state, 'closed');
   assert.equal(engine.mainStopClock, null); assert.equal(engine.getMetrics().activeSources, 0);
@@ -2625,4 +2629,264 @@ test('Main extinction edges observed during a device interruption never become s
   await engine.enable(); engine._tick();
   assert.equal(engine.localBells.bellsTriggered, 0); assert.equal(engine.mainQuench.getMetrics().triggered, 0);
   assert.equal(engine.getMetrics().mainActivation.gain, 0);
+});
+
+test('phone mixer settings do not activate audio, and saved trims initialize before the first sound', async t => {
+  const { engine, context, events, requests } = harness(t, { mode: 'phone' });
+  assert.deepEqual(engine.getMetrics().phoneMixer, PHONE_MIXER_DEFAULTS);
+  assert.equal(engine.setPhoneMixer({ overall: .6, crackle: 0, birds: 1.7, drone: .4 }), true);
+  assert.equal(engine.context, null); assert.deepEqual(events, []); assert.deepEqual(requests, []);
+  for (const invalid of [{ birds: -1 }, { rain: 2.1 }, { overall: NaN }, { birds: '1' }, { orangutan: 1 }, [], null]) {
+    const before = { ...engine.phoneMixer }; assert.equal(engine.setPhoneMixer(invalid), false); assert.deepEqual(engine.phoneMixer, before);
+  }
+  await engine.enable();
+  for (const [name, value] of Object.entries(engine.phoneMixer)) assert.equal(engine.phoneMixerNodes.get(name).gain.value, value);
+  assert.equal(engine.phoneMixerRamps.size, 0, 'A late enabled phone starts directly at its saved trims behind the existing quiet activation.');
+  assert.deepEqual(engine.highpass.connections, [engine.phoneMixerNodes.get('overall')]);
+  assert.deepEqual(engine.phoneMixerNodes.get('overall').connections, [engine.master]);
+  assert.deepEqual(engine.master.connections, [engine.outputMakeup], 'Every phone trim remains before the existing output protection.');
+  const trims = [...engine.phoneMixerNodes.values()]; engine.destroy();
+  assert.ok(trims.every(node => node.disconnected)); assert.equal(engine.phoneMixerNodes.size, 0);
+  assert.equal(engine.setPhoneMixer({ overall: 1 }), false);
+});
+
+test('each phone asset has one independent trim downstream of its own score and gesture envelopes', async t => {
+  const { engine } = harness(t, { mode: 'phone' }); await engine.enable();
+  assert.equal(engine.phoneMixerNodes.size, 6);
+  assert.deepEqual(engine.layers.get('crackle').gain.connections, [engine.phoneMixerNodes.get('crackle')]);
+  assert.deepEqual(engine.layers.get('crickets').gain.connections, [engine.phoneMixerNodes.get('crickets')]);
+  assert.equal(engine.phoneRain.destination, engine.phoneMixerNodes.get('rain'));
+  assert.equal(engine.phoneDrone.destination, engine.phoneMixerNodes.get('drone'));
+  assert.deepEqual(engine.wildlife.gain.connections, [engine.phoneMixerNodes.get('birds')]);
+  for (const name of ['crackle', 'rain', 'drone']) assert.deepEqual(engine.phoneMixerNodes.get(name).connections, [engine.fieldBus]);
+  for (const name of ['crickets', 'birds']) assert.deepEqual(engine.phoneMixerNodes.get(name).connections, [engine.mix]);
+  const gates = Object.fromEntries([...engine.phoneMixerNodes].map(([name, node]) => [name, node]));
+  engine.setPhoneMixer({ rain: 0 });
+  for (const name of ['crackle', 'crickets', 'birds', 'drone', 'overall']) assert.equal(gates[name].gain.events.length, 0, `${name} is unaffected by the rain trim`);
+  const tail = gates.rain.gain.events.at(-1); assert.deepEqual(tail, ['linear', 0, PHONE_MIXER_FADE_SECONDS]);
+  assert.equal(engine.getMetrics().phoneMixer.rain, 0);
+});
+
+test('live phone mixer reversals are continuous and cannot overwrite the precomputed ending or restart sources', async t => {
+  const { engine, context, events, requests } = harness(t, { mode: 'phone' });
+  engine.setSceneState({ id: 'afterglow', startedAt: 1, elapsedMs: 60000 }); await engine.enable();
+  const masterEvents = engine.master.gain.events.slice(), cricketEvents = engine.layers.get('crickets').gain.gain.events.slice();
+  const fieldEvents = engine.fieldBus.gain.events.slice(), sourceNodes = context.nodes.filter(node => node.nodeType === 'source');
+  const beforeRequests = requests.slice(), beforeResumeCount = events.filter(event => event === 'resume').length;
+  engine.setPhoneMixer({ overall: 0, crickets: .3, birds: 1.9, crackle: .7, rain: 1.2, drone: .4 });
+  context.advance(PHONE_MIXER_FADE_SECONDS / 2);
+  const overall = engine.phoneMixerNodes.get('overall'); engine.setPhoneMixer({ overall: 2 });
+  assert.equal(overall.gain.events.filter(event => event[0] === 'set').at(-1)[1], .5, 'A reversal starts at the audible midpoint, not the previous destination.');
+  assert.equal(engine.phoneMixerRamps.get('overall').from, .5);
+  context.advance(PHONE_MIXER_FADE_SECONDS); engine.setPhoneMixer({ overall: 0 });
+  assert.deepEqual(overall.gain.events.at(-1), ['linear', 0, context.currentTime + PHONE_MIXER_FADE_SECONDS]);
+  const stableEvents = overall.gain.events.slice(); engine.setPhoneMixer({ overall: 0 });
+  assert.deepEqual(overall.gain.events, stableEvents, 'Identical received settings never stack automation.');
+  assert.deepEqual(engine.master.gain.events, masterEvents); assert.deepEqual(engine.layers.get('crickets').gain.gain.events, cricketEvents);
+  assert.deepEqual(engine.fieldBus.gain.events, fieldEvents);
+  assert.deepEqual(context.nodes.filter(node => node.nodeType === 'source'), sourceNodes); assert.deepEqual(requests, beforeRequests);
+  assert.equal(events.filter(event => event === 'resume').length, beforeResumeCount);
+  engine.setSceneState({ id: 'ended', elapsedMs: 0 }); const endedMaster = engine.master.gain.events.slice();
+  engine.setPhoneMixer({ overall: 2, rain: 2, crickets: 2, birds: 2 });
+  assert.equal(engine._outputGain(), 0); assert.deepEqual(engine.master.gain.events, endedMaster);
+  assert.equal(engine.phoneRain.getMetrics().rainLoopCount, 0);
+});
+
+test('phone mixer changes remain silent while muted or hidden and never alter Main audio', async t => {
+  const { engine, context, requests, events } = harness(t, { mode: 'phone' });
+  engine.setSceneState({ id: 'participation', elapsedMs: 12000 }); await engine.enable();
+  engine.setMuted(true); const before = { requests: requests.length, resumes: events.filter(event => event === 'resume').length, contextState: context.state };
+  engine.setPhoneMixer({ overall: 2, crackle: 2 }); assert.equal(engine.muted, true); assert.equal(engine._outputGain(), 0);
+  engine.setHidden(true); engine.setPhoneMixer({ overall: 1.4, birds: .8 }); assert.equal(engine._outputGain(), 0);
+  assert.equal(requests.length, before.requests); assert.equal(events.filter(event => event === 'resume').length, before.resumes);
+  assert.equal(engine.phoneMixer.overall, 1.4); assert.equal(context.state, before.contextState, 'Mixer changes never resume or suspend the device context.');
+  const main = harness(t, { mode: 'operator' }); await main.engine.enable();
+  const nodes = main.context.nodes.length, master = main.engine.master.gain.events.slice(), mixer = { ...main.engine.mixer };
+  assert.equal(main.engine.setPhoneMixer({ overall: 0, rain: 0, birds: 0 }), false);
+  assert.equal(main.engine.phoneMixerNodes.size, 0); assert.equal(main.engine.getMetrics().phoneMixer, null);
+  assert.equal(main.context.nodes.length, nodes); assert.deepEqual(main.engine.master.gain.events, master); assert.deepEqual(main.engine.mixer, mixer);
+});
+
+test('suspended phone trim changes commit exact targets before resume without activating audio', async t => {
+  const { engine, context, events, requests } = harness(t, { mode: 'phone' });
+  engine.setSceneState({ id: 'participation', elapsedMs: 12000 }); await engine.enable();
+  await context.suspend();
+  const resumeCount = events.filter(event => event === 'resume').length, requestCount = requests.length;
+  const masterEvents = engine.master.gain.events.slice(), cricketEvents = engine.layers.get('crickets').gain.gain.events.slice();
+  engine.setPhoneMixer({ overall: 0, birds: 0, drone: .4 });
+  for (const [name, value] of Object.entries(engine.phoneMixer)) {
+    assert.equal(engine.phoneMixerNodes.get(name).gain.value, value);
+    assert.deepEqual(engine.phoneMixerNodes.get(name).gain.events.at(-1), ['set', value, context.currentTime]);
+  }
+  assert.equal(engine.phoneMixerRamps.size, 0); assert.equal(context.state, 'suspended');
+  assert.equal(events.filter(event => event === 'resume').length, resumeCount); assert.equal(requests.length, requestCount);
+  assert.deepEqual(engine.master.gain.events, masterEvents); assert.deepEqual(engine.layers.get('crickets').gain.gain.events, cricketEvents);
+  await engine.enable();
+  assert.equal(context.state, 'running'); assert.equal(engine.phoneMixerNodes.get('overall').gain.value, 0);
+  assert.equal(engine.phoneMixerNodes.get('birds').gain.value, 0); assert.equal(engine.phoneMixerRamps.size, 0);
+});
+
+test('an interrupted same-target mute settles even when the next inactive edit changes another phone channel', async t => {
+  const { engine, context } = harness(t, { mode: 'phone' }); await engine.enable();
+  engine.setPhoneMixer({ overall: 0, birds: 0 }); context.advance(PHONE_MIXER_FADE_SECONDS / 2);
+  assert.equal(engine.phoneMixerRamps.get('birds').to, 0);
+  // Simulate an interruption before a queued statechange has been delivered.
+  context.state = 'interrupted'; engine.setPhoneMixer({ rain: .6 });
+  for (const name of ['overall', 'birds']) {
+    assert.deepEqual(engine.phoneMixerNodes.get(name).gain.events.at(-1), ['set', 0, context.currentTime]);
+    assert.equal(engine.phoneMixerRamps.has(name), false);
+  }
+  assert.equal(engine.phoneMixerNodes.get('rain').gain.value, .6); assert.equal(engine.phoneMixerRamps.size, 0);
+  await engine.enable();
+  assert.equal(engine.phoneMixerNodes.get('overall').gain.value, 0); assert.equal(engine.phoneMixerNodes.get('birds').gain.value, 0);
+  engine.setPhoneMixer({ overall: 1, birds: 1 }); context.advance(.03); context.state = 'interrupted'; context.onstatechange();
+  assert.equal(engine.phoneMixerRamps.size, 0, 'A device statechange settles pending trims even without another remote setting.');
+  assert.equal(engine.phoneMixerNodes.get('birds').gain.value, 1);
+});
+
+test('Main opening haze keeps its calibration across cues and current mixer trims stay downstream', async t => {
+  const { engine, context } = harness(t, { mode: 'operator', fetchImpl: successfulFetch });
+  await engine.setLayerVariations('haze', endpoints('haze')); await engine.setLayerVariations('forest', endpoints('forest'));
+  engine.setMixer({ haze: .37, forest: .25 }); engine.setSceneState({ id: 'arrival', startedAt: 1, elapsedMs: 0, paused: true });
+  await engine.enable(); await flush(); context.advance(2); engine._tick();
+  const haze = engine.layers.get('haze'), before = haze.gain.gain.value;
+  engine.setSceneState({ id: 'instructions', startedAt: 2, elapsedMs: 0 });
+  assert.equal(haze.gain.gain.value, before); assert.equal(engine.mixerNodes.get('haze').gain.value, .37);
+  for (let index = 0; index < 12; index++) { context.advance(1); engine._tick(); assert.ok(haze.gain.gain.value <= before); }
+  assert.equal(haze.gain.gain.value, 0);
+  engine.setMixer({ haze: 0 }); engine.setSceneState({ id: 'arrival', startedAt: 3, elapsedMs: 0 });
+  for (let index = 0; index < 6; index++) { context.advance(1); engine._tick(); assert.equal(engine.mixerNodes.get('haze').gain.value, 0); }
+  engine.setMixer({ haze: .6 }); assert.equal(engine.mixerNodes.get('haze').gain.value, .6);
+  assert.ok(haze.gain.gain.value > 0, 'Live mixer changes multiply the existing transition rather than restarting it.');
+});
+
+test('early, skipped and rapid Main cues carry their current amplitudes without inventing a forest hump', async t => {
+  const { engine, context } = harness(t, { mode: 'operator', fetchImpl: successfulFetch });
+  for (const id of ['haze', 'forest', 'rain']) await engine.setLayerVariations(id, endpoints(id));
+  engine.setSceneState({ id: 'instructions', startedAt: 1, elapsedMs: 2000 }); await engine.enable(); await flush();
+  const first = { ...engine._sceneScore().mix };
+  engine.setSceneState({ id: 'participation', startedAt: 2, elapsedMs: 0 });
+  assert.equal(engine._sceneScore().mix.mainForest, first.mainForest); assert.equal(engine._sceneScore().mix.mainHaze, first.mainHaze);
+  context.advance(3); engine._tick(); const partial = { ...engine._sceneScore().mix };
+  engine.setSceneState({ id: 'instructions', startedAt: 3, elapsedMs: 0 });
+  assert.equal(engine._sceneScore().mix.mainForest, partial.mainForest); assert.equal(engine._sceneScore().mix.mainHaze, partial.mainHaze);
+  context.advance(12); engine._tick(); engine.setSceneState({ id: 'arrival', startedAt: 4, elapsedMs: 0 }); context.advance(12); engine._tick();
+  engine.setSceneState({ id: 'participation', startedAt: 5, elapsedMs: 0 });
+  for (let index = 0; index < 13; index++) { engine._tick(); assert.equal(engine._sceneScore().mix.mainForest, 0); context.advance(1); }
+  engine.setSceneState({ id: 'forest-takeover', startedAt: 6, elapsedMs: 0 }); context.advance(5); engine._tick();
+  const outgoing = { ...engine._sceneScore().mix }, drone = engine.mainDrone;
+  engine.setSceneState({ id: 'final-rain', startedAt: 7, elapsedMs: 0 });
+  assert.equal(engine._sceneScore().mix.mainForest, outgoing.mainForest); assert.equal(engine._sceneScore().mix.mainDrone, outgoing.mainDrone);
+  for (let index = 0; index < 52; index++) {
+    context.advance(1); engine._tick();
+    assert.ok(engine._sceneScore().mix.mainForest <= outgoing.mainForest + 1e-12);
+    assert.ok(engine._sceneScore().mix.mainDrone <= outgoing.mainDrone + 1e-12);
+  }
+  assert.equal(engine.mainDrone, drone); assert.equal(engine._sceneScore().mix.mainForest, 0); assert.equal(engine._mainDroneGain(), 0);
+});
+
+test('Main takeover carries thin haze out smoothly and manual texture choices are never replaced by warm defaults', async t => {
+  const { engine, context } = harness(t, { mode: 'operator', fetchImpl: successfulFetch });
+  await engine.setLayerVariations('haze', endpoints('haze'));
+  engine.setSceneState({ id: 'participation', elapsedMs: 12000 }); await engine.enable(); await flush();
+  const haze = engine.layers.get('haze').gain.gain.value;
+  engine.setSceneState({ id: 'forest-takeover', elapsedMs: 0 }); assert.equal(engine.layers.get('haze').gain.gain.value, haze);
+  context.advance(15); engine._tick(); assert.ok(engine.layers.get('haze').gain.gain.value > 0 && engine.layers.get('haze').gain.gain.value < haze);
+  const macros = { haze: .17, forest: .23, ash: .31, rain: .64, moisture: .42 }; engine.setMacros(macros);
+  context.advance(15); engine._tick(); assert.deepEqual(engine._effectiveMacros(), macros);
+  engine.setSceneState({ id: 'final-rain', elapsedMs: 0, rainIntensity: .01 }); assert.deepEqual(engine._effectiveMacros(), macros);
+  context.advance(52); engine._tick(); assert.deepEqual(engine._effectiveMacros(), macros);
+});
+
+test('reverse Main rain cues preserve effective field attenuation and do not kill the outgoing rain source', async t => {
+  const { engine, context } = harness(t, { mode: 'operator', fetchImpl: successfulFetch });
+  await engine.setLayerVariations('rain', endpoints('rain')); engine.setSceneState({ id: 'afterglow', elapsedMs: 25000 });
+  await engine.enable(); await flush(); const records = [...engine.layers.get('rain').sources];
+  const before = engine._sceneScore(), rain = before.mix.mainRain * before.mainFieldGain;
+  engine.setSceneState({ id: 'participation', elapsedMs: 0 });
+  const initial = engine._sceneScore(); assert.ok(Math.abs(initial.mix.mainRain * initial.mainFieldGain - rain) < 1e-12);
+  assert.deepEqual([...engine.layers.get('rain').sources], records);
+  for (let index = 0; index < 12; index++) {
+    context.advance(1); engine._tick(); const score = engine._sceneScore();
+    assert.ok(score.mix.mainRain * score.mainFieldGain <= rain + 1e-12);
+  }
+  assert.equal(engine.layers.get('rain').gain.gain.value, 0); assert.equal(engine._fieldSceneGain(), 1);
+});
+
+test('Main output uses an independent finite trim during the ending and covers its wildlife bypass exactly once', async t => {
+  const { engine, context } = harness(t, { mode: 'operator' });
+  engine.setSceneState({ id: 'afterglow', elapsedMs: 10000 }); await engine.enable();
+  const master = engine.master.gain.events.slice(), field = engine.fieldBus.gain.events.slice(), crickets = engine.layers.get('crickets').gain.gain.events.slice();
+  assert.deepEqual(engine.wildlife.gain.connections, [engine.wildlife.finalRelease]);
+  assert.deepEqual(engine.wildlife.finalRelease.connections, [engine.mainLevelGain]);
+  engine.setLevel(.2);
+  assert.deepEqual(engine.master.gain.events, master); assert.deepEqual(engine.fieldBus.gain.events, field); assert.deepEqual(engine.layers.get('crickets').gain.gain.events, crickets);
+  assert.equal(engine.mainLevelGain.gain.events.findLast(event => event[0] === 'set')[1], .55);
+  assert.ok(Math.abs(engine.mainLevelGain.gain.events.at(-1)[2] - context.currentTime - .16) < 1e-12);
+  context.advance(.08); const from = engine._mainLevelAt(); engine.setLevel(0);
+  assert.ok(Math.abs(engine.mainLevelGain.gain.events.findLast(event => event[0] === 'set')[1] - from) < 1e-12);
+  context.advance(.2); assert.equal(engine._mainLevelAt(), 0);
+  assert.equal(engine.master.gain.events.filter(event => event[0] === 'curve').at(-1)[1].at(-1), 0);
+  context.advance(44); engine._tick(); assert.equal(engine._sceneGain(), 0);
+});
+
+test('phone early final-rain drone stays at its current weight and manual opening returns fade existing sound before cleanup', async t => {
+  const { engine, context } = harness(t, { fetchImpl: successfulFetch });
+  await engine.setLayerSource('crickets', '/phone-crickets-fixture.mp3');
+  engine.setProgression({ sourceCount: 100, outCount: 100, heat: 0 });
+  engine.setSceneState({ id: 'forest-takeover', elapsedMs: 5000 }); await engine.enable(); await flush();
+  const drone = engine.phoneDrone.voice, weight = engine._phoneDroneSceneWeight(); assert.ok(drone && weight > 0 && weight < 1);
+  engine.setSceneState({ id: 'final-rain', elapsedMs: 0 }); assert.equal(engine._phoneDroneSceneWeight(), weight); assert.equal(engine.phoneDrone.voice, drone);
+  context.advance(5); engine._tick(); assert.ok(engine._phoneDroneSceneWeight() <= weight);
+  const gate = engine.layers.get('crickets').sampleGate.gain.events.slice(), sources = [...engine.layers.get('crickets').sources];
+  engine.setSceneState({ id: 'instructions', elapsedMs: 0 });
+  assert.ok(engine.phoneSceneExit); assert.equal(engine.phoneDrone.voice, drone); assert.deepEqual(engine.layers.get('crickets').sampleGate.gain.events, gate);
+  const initial = engine.master.gain.events.findLast(event => event[0] === 'set'); assert.ok(initial[1] > 0);
+  const end = engine.master.gain.events.at(-1); assert.equal(end[0], 'linear'); assert.equal(end[1], 0); assert.equal(end[2], context.currentTime + .35);
+  context.advance(.15); engine._tick(); assert.deepEqual([...engine.layers.get('crickets').sources], sources); assert.deepEqual(engine.layers.get('crickets').sampleGate.gain.events, gate);
+  context.advance(.21); engine._tick(); assert.equal(roleGain(engine), 0); assert.equal(engine.phoneDrone.voice, null);
+  assert.equal(engine.layers.get('crickets').sampleGate.gain.value, 0);
+});
+
+test('a phone opening-return tail is discarded on mute, hide, disable or interruption and cannot revive on resume', async t => {
+  for (const action of ['mute', 'hide', 'disable', 'interrupt']) {
+    const { engine, context } = harness(t, { fetchImpl: successfulFetch });
+    engine.setProgression({ sourceCount: 10, outCount: 10, heat: 0 });
+    engine.setSceneState({ id: 'forest-takeover', elapsedMs: 15000 }); await engine.enable();
+    engine.setSceneState({ id: 'instructions', elapsedMs: 0 }); context.advance(.1);
+    assert.ok(engine.phoneSceneExit);
+    if (action === 'mute') { engine.setMuted(true); engine.setMuted(false); }
+    if (action === 'hide') { engine.setHidden(true); engine.setHidden(false); }
+    if (action === 'disable') { engine.disable(); await engine.enable(); }
+    if (action === 'interrupt') { context.state = 'interrupted'; context.onstatechange(); await engine.enable(); }
+    await flush(); context.advance(.3); engine._tick();
+    assert.equal(engine.phoneSceneExit, null, action); assert.equal(roleGain(engine), 0, action);
+    assert.equal(engine.phoneDrone.voice, null, action); assert.equal(engine.wildlife.shots.size, 0, action);
+  }
+});
+
+test('an interrupted Main output trim settles its exact target before the activation gate can reopen', async t => {
+  const { engine, context } = harness(t, { mode: 'operator' }); await engine.enable();
+  engine.setLevel(0); context.advance(.05); assert.ok(engine._mainLevelAt() > 0);
+  context.state = 'interrupted'; context.onstatechange();
+  assert.equal(engine._mainLevelAt(), 0); assert.equal(engine.mainLevelRamp, null);
+  await engine.enable(); assert.equal(engine.mainLevelGain.gain.value, 0);
+  context.advance(1); engine._tick(); assert.equal(engine.mainLevelGain.gain.value, 0);
+});
+
+test('Main voice and remaining-tail trims stay live and phase-preserving during a carried reverse fade', async t => {
+  const { engine, context } = harness(t, { mode: 'operator', fetchImpl: successfulFetch });
+  context.decodeAudioData = async () => context.createBuffer(1, 16 * 8000, 8000);
+  engine.setWildlifeSources({ orangutan: '/audio-assets/v3/orangutan-distant-v25.mp3' });
+  engine.setSceneState({ id: 'afterglow', elapsedMs: 43480 }); await engine.enable(); await flush(); context.advance(.05); engine._tick();
+  context.advance(11.5); engine._tick();
+  const shot = [...engine.wildlife.shots][0]; assert.ok(shot);
+  engine.setSceneState({ id: 'instructions', elapsedMs: 0 });
+  const base = .035 * .8 * .16;
+  engine.setMixer({ orangutanTail: .4 }); assert.ok(Math.abs(engine.wildlife.gain.gain.value - base * .4) < 1e-12);
+  engine.setMixer({ orangutanTail: 0 }); assert.equal(engine.wildlife.gain.gain.value, 0); assert.equal([...engine.wildlife.shots][0], shot);
+  engine.setMixer({ orangutanTail: 1.6, orangutan: .3 });
+  assert.ok(Math.abs(engine.wildlife.gain.gain.value - base * 1.6 * .3) < 1e-12);
+  assert.equal([...engine.wildlife.shots][0], shot, 'Fader changes preserve the existing call rather than replaying it.');
+  context.advance(12); engine._tick(); assert.equal(engine.wildlife.shots.size, 0);
 });

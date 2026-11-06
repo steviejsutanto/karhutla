@@ -33,7 +33,9 @@ test('orangutan trims immediately update the actual gain and remain independent 
   wildlife.setSources(sources); engine.wildlife = wildlife;
   engine._syncSceneWildlife();
   const full = wildlife.gain.gain.value;
-  close(full, .035 * .8 * engine.level);
+  // The voice trim now precedes the common smooth Main output stage.
+  // User volume is applied once by that stage, not baked into this asset.
+  close(full, .035 * .8);
   engine.setMixer({ crickets: 0 }); close(wildlife.gain.gain.value, full);
   engine.setMixer({ orangutan: .5 }); close(wildlife.gain.gain.value, full / 2);
   engine.setMixer({ orangutanTail: 0 }); close(wildlife.gain.gain.value, full / 2, 'Tail does not change the early voice.');

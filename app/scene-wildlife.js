@@ -30,27 +30,41 @@ export function wildlifeSourcesForRole(value, mode = 'phone') {
     ? { birds: [...value.birds] } : undefined;
 }
 
-// Main alone gets a small, dark room tail. Its wet path joins before the
+// Main alone gets a dark, distant room tail. Its wet path joins before the
 // existing wildlife gain, so both trims and the final retreat still govern it.
 function orangutanReverb(context, input, output) {
   if (!context.createConvolver || !context.createBuffer || !context.sampleRate) return null;
   const convolver = context.createConvolver(), filter = context.createBiquadFilter(), gain = context.createGain();
-  const seconds = 1.65, buffer = context.createBuffer(2, Math.ceil(context.sampleRate * seconds), context.sampleRate);
+  const seconds = 2.8, wet = .24, buffer = context.createBuffer(2, Math.ceil(context.sampleRate * seconds), context.sampleRate);
   for (let channel = 0; channel < 2; channel++) {
     const data = buffer.getChannelData(channel); let seed = 59173 + channel * 1937, low = 0;
     for (let i = 0; i < data.length; i++) {
       seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
       low = .72 * low + .28 * (seed / 4294967296 * 2 - 1);
       const time = i / context.sampleRate;
-      data[i] = low * smooth(time / .035) * Math.exp(-time / .36) * (1 - smooth((time - 1.3) / .35));
+      data[i] = low * smooth(time / .035) * Math.exp(-time / .62) * (1 - smooth((time - 2.1) / .7));
     }
   }
   convolver.buffer = buffer; convolver.normalize = true;
   filter.type = 'lowpass'; filter.frequency.value = 1400; filter.Q.value = .35;
-  gain.gain.value = .12;
+  gain.gain.value = wet;
   input.connect(convolver); convolver.connect(filter); filter.connect(gain); gain.connect(output);
-  return { convolver, filter, gain, seconds };
+  return { convolver, filter, gain, seconds, wet };
 }
+
+function orangutanPhraseEnvelope(parameter, at, age, total, duration) {
+  const attack = Math.min(.3, duration / 3), release = Math.min(3, total / 3), steps = 96;
+  // Follow the original phrase position after a pause: a nearly finished call
+  // must not return to full level merely because its source was resumed.
+  for (let index = 0; index <= steps; index++) {
+    const time = duration * index / steps;
+    const value = smooth(time / attack) * (1 - smooth((age + time - total + release) / release));
+    if (index === 0) parameter.setValueAtTime(value, at);
+    else parameter.linearRampToValueAtTime(value, at + time);
+  }
+}
+
+const finalReleaseLevel = (elapsedMs, durationMs, fadeMs) => 1 - smooth((elapsedMs - durationMs + fadeMs) / fadeMs);
 
 // One fixed gain per decoded recording, preserving its original dynamics.
 // Main retains its original whole-phrase preparation. Phone bird calls use the
@@ -127,7 +141,13 @@ export class SceneWildlifeAudio {
     this.filter.connect(this.gain);
     this.reverb = mode === 'operator' ? orangutanReverb(context, this.filter, this.gain) : null;
     this.reverbDirty = false;
-    this.gain.connect(destination); this.active = false; this.destroyed = false;
+    // A native final release includes the wet tail and reaches exact silence
+    // before Ended cleans up. The Main mixer and both voice trims stay upstream.
+    this.finalRelease = mode === 'operator' ? context.createGain() : null;
+    this.finalReleaseState = null;
+    if (this.finalRelease) { this.finalRelease.gain.value = 0; this.gain.connect(this.finalRelease); this.finalRelease.connect(destination); }
+    else this.gain.connect(destination);
+    this.active = false; this.destroyed = false;
   }
   setSources(value) {
     const sources = wildlifeSourcesForRole(value, this.mode);
@@ -173,6 +193,7 @@ export class SceneWildlifeAudio {
     // the existing cricket master reaching zero during the phone-only phase.
     const weight = this.mode === 'operator' ? .035 * level * wildlifeEnvelope(scene, elapsedMs, tailLevel) : PHONE_BIRD_LEVEL;
     this.gain.gain.setTargetAtTime(weight, now, .12);
+    this._syncFinalRelease(scene, elapsedMs, d);
     if (scene.paused) {
       // Freeze one-shot transport; resumption picks up its show-clock offset.
       this._clearShots(true); this._clearReverbHistory(); return;
@@ -203,9 +224,12 @@ export class SceneWildlifeAudio {
       const source = this.context.createBufferSource(), envelope = this.context.createGain();
       source.buffer = buffer; source.loop = false; source.playbackRate.value = event.rate;
       const at = now + .02, duration = Math.min(remaining, (buffer.duration - offset) / event.rate);
-      const release = this.mode === 'phone' ? Math.min(.08, duration / 4) : .65;
-      envelope.gain.setValueAtTime(0, at); envelope.gain.linearRampToValueAtTime(1, at + Math.min(this.mode === 'phone' ? .025 : .3, duration / 3));
-      envelope.gain.setValueAtTime(1, at + Math.max(duration / 3, duration - release)); envelope.gain.linearRampToValueAtTime(0, at + duration);
+      if (this.mode === 'operator') orangutanPhraseEnvelope(envelope.gain, at, age, buffer.duration / event.rate, duration);
+      else {
+        const release = Math.min(.08, duration / 4);
+        envelope.gain.setValueAtTime(0, at); envelope.gain.linearRampToValueAtTime(1, at + Math.min(.025, duration / 3));
+        envelope.gain.setValueAtTime(1, at + Math.max(duration / 3, duration - release)); envelope.gain.linearRampToValueAtTime(0, at + duration);
+      }
       source.connect(envelope); envelope.connect(this.filter);
       const shot = { source, envelope, id: event.id, variant: event.variant ?? null, sourceOffset: offset, durationSeconds: duration };
       source.onended = () => { disconnect(source); disconnect(envelope); this.shots.delete(shot); };
@@ -221,8 +245,44 @@ export class SceneWildlifeAudio {
     if (!resume) { for (const id of this.resumeEvents) this.seen.add(id); this.resumeEvents.clear(); }
     this.shots.clear();
   }
+  _setFinalRelease(value, now = this.context.currentTime) {
+    if (!this.finalRelease) return;
+    const parameter = this.finalRelease.gain;
+    parameter.cancelScheduledValues?.(now);
+    if (parameter.setValueAtTime) parameter.setValueAtTime(value, now);
+    else parameter.value = value;
+    this.finalReleaseState = { held: true, value };
+  }
+  _syncFinalRelease(scene, elapsedMs, durations) {
+    if (!this.finalRelease) return;
+    const now = this.context.currentTime, durationMs = durations.afterglowDurationMs, fadeMs = Math.min(6000, durations.phoneFadeMs);
+    const value = finalReleaseLevel(elapsedMs, durationMs, fadeMs);
+    this._setFinalRelease(value, now);
+    this.finalReleaseState = { at: now, elapsedMs, durationMs, fadeMs, paused: Boolean(scene.paused) };
+    if (scene.paused || elapsedMs >= durationMs) return;
+    const parameter = this.finalRelease.gain, startMs = Math.max(elapsedMs, durationMs - fadeMs);
+    parameter.setValueAtTime(value, now + (startMs - elapsedMs) / 1000);
+    for (let index = 1; index <= 64; index++) {
+      const timeMs = startMs + (durationMs - startMs) * index / 64;
+      parameter.linearRampToValueAtTime(finalReleaseLevel(timeMs, durationMs, fadeMs), now + (timeMs - elapsedMs) / 1000);
+    }
+  }
+  _finalReleaseLevelAt(now = this.context.currentTime) {
+    const state = this.finalReleaseState;
+    if (!state) return 0;
+    if (state.held) return state.value;
+    return finalReleaseLevel(state.elapsedMs + (state.paused ? 0 : Math.max(0, now - state.at) * 1000), state.durationMs, state.fadeMs);
+  }
+  holdFinalRelease() {
+    if (!this.finalRelease || this.finalReleaseState?.held) return;
+    // Reverse cues carry the current call under the engine's captured scene
+    // fade. Freeze this final gate too, without boosting it or retaining the
+    // previous ending's deadline while that carried call is still audible.
+    this._setFinalRelease(this._finalReleaseLevelAt());
+  }
   stop() {
     this.active = false;
+    this._setFinalRelease(0);
     this._clearShots();
     for (const request of this.requests.values()) request.controller.abort();
     this.requests.clear();
@@ -243,13 +303,14 @@ export class SceneWildlifeAudio {
   }
   destroy() {
     this.stop(); this.destroyed = true; this.buffers.clear(); this.preparation.clear();
-    disconnect(this.filter); disconnect(this.presence); disconnect(this.gain);
+    disconnect(this.filter); disconnect(this.presence); disconnect(this.gain); disconnect(this.finalRelease);
     if (this.reverb) { for (const node of [this.reverb.convolver, this.reverb.filter, this.reverb.gain]) disconnect(node); this.reverb.convolver.buffer = null; this.reverb = null; }
   }
   getMetrics() { return { active: this.active, slot: this.slot, phoneCount: this.count, playing: this.shots.size,
     decodedBytes: [...this.buffers.values()].reduce((sum, buffer) => sum + buffer.length * buffer.numberOfChannels * 4, 0),
     errors: Object.fromEntries(this.errors), preparation: Object.fromEntries(this.preparation), scheduled: [...this.seen],
-    reverb: this.reverb ? { seconds: this.reverb.seconds, wet: .12, lowpass: 1400 } : null,
+    reverb: this.reverb ? { seconds: this.reverb.seconds, wet: this.reverb.wet, lowpass: 1400 } : null,
+    finalRelease: this.finalRelease ? this._finalReleaseLevelAt() : null,
     birdLevel: PHONE_BIRD_LEVEL, birdRelativeToCricketsDb: PHONE_BIRD_RELATIVE_DB, birdPresenceHz: null,
     birdLowpassHz: this.mode === 'phone' ? 4200 : null }; }
 }

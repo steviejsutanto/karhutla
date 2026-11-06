@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { birdEvent, wildlifeEnvelope, SceneWildlifeAudio, normalizeWildlifeRecording, wildlifeSourcesForRole } from '../app/scene-wildlife.js';
-import { PhoneDroneAudio, phoneDroneWeight, phoneDroneFrequency, PHONE_DRONE_PITCH_RATIO, PHONE_DRONE_GAIN_TRIM, PHONE_DRONE_MOVING_BANK_WEIGHT } from '../app/phone-drone.js';
+import { PhoneDroneAudio, phoneDroneWeight, phoneDroneFrequency, PHONE_DRONE_PITCH_RATIO, PHONE_DRONE_PITCH_SEMITONES, PHONE_DRONE_GAIN_TRIM, PHONE_DRONE_MOVING_BANK_WEIGHT } from '../app/phone-drone.js';
 import { computeSceneScore, scoreDurations } from '../app/scene-score.js';
 import { soundLibrary, ambianceSources } from '../app/sound-library.js';
 import { SharedRoom } from '../app/shared-room.mjs';
@@ -59,8 +59,9 @@ test('the distorted phone drone follows Main pitch banks, enters in Scene 4 and 
   assert.equal(drone.voice.drive.oversample, 'none'); assert.equal(drone.voice.drive.curve.length, 513);
   assert.equal(drone.voice.gain.gain.value, .016 * PHONE_DRONE_GAIN_TRIM);
   assert.deepEqual(drone.voice.partials.map(node => node.gain.value), [.72, .24, .34, .72, .24, .34].map((amplitude, index) => amplitude * (index < 3 ? 1 - PHONE_DRONE_MOVING_BANK_WEIGHT : PHONE_DRONE_MOVING_BANK_WEIGHT)));
-  assert.equal(drone.getMetrics().movingBankWeight, .28);
-  assert.equal(drone.getMetrics().beatOffsetHz, .8);
+  assert.equal(drone.getMetrics().movingBankWeight, .38);
+  assert.equal(drone.getMetrics().beatOffsetHz, 1.4);
+  assert.equal(drone.getMetrics().pitchSemitones, PHONE_DRONE_PITCH_SEMITONES);
   assert.equal(drone.getMetrics().trimDb, 3, 'Presence changes preserve the previous output trim.');
   const first = [...drone.voice.oscillators];
   for (let i = 0; i < 50; i++) drone.update({ active: true, weight: .8, frequencies, amplitudes: [.72, .24, .34] });
@@ -68,6 +69,24 @@ test('the distorted phone drone follows Main pitch banks, enters in Scene 4 and 
   drone.update({ active: false }); assert.equal(drone.getMetrics().oscillatorCount, 0);
   assert.ok(first.every(node => node.stopped === .18));
   first[0].onended(); assert.ok(first.every(node => node.connections.length === 0));
+});
+
+test('phone drone raises its previous register by a major third and deepens faster beats without extra voices or gain', () => {
+  const context = new Context(), drone = new PhoneDroneAudio({ context, destination: {} });
+  const frequencies = [100, 150, 200, 100, 150, 200], original = [...frequencies];
+  drone.update({ active: true, weight: 1, frequencies, amplitudes: [.72, .24, .34] });
+  const voices = drone.voice.oscillators;
+  for (let index = 0; index < 3; index++) {
+    const previousPhoneHz = frequencies[index] * 2;
+    assert.ok(Math.abs(12 * Math.log2(voices[index].frequency.value / previousPhoneHz) - 4) < 1e-12);
+    assert.ok(Math.abs(voices[index].frequency.value - voices[index + 3].frequency.value - [1.4, 1.7, 2][index]) < 1e-12);
+    assert.ok(Math.abs(drone.voice.partials[index].gain.value + drone.voice.partials[index + 3].gain.value - [.72, .24, .34][index]) < 1e-12);
+  }
+  assert.deepEqual(frequencies, original, 'Phone pitch and beating never mutate Main frequencies.');
+  assert.equal(drone.voice.gain.gain.value, .032 * 10 ** (3 / 20), 'The existing output trim stays fixed.');
+  assert.equal(drone.getMetrics().oscillatorCount, 6);
+  assert.equal(drone.getMetrics().pitchSemitones, 16);
+  drone.destroy();
 });
 
 test('bird calls rotate across 28 phones with one owner, 4–8 second irregular rests and brief varied bird calls', () => {

@@ -20,9 +20,12 @@ export function validateSettingsPreset(preset) {
   const simulation = new RainSimulation();
   if (!simulation.setParameters(preset.parameters)) fail('Performance timing parameters are invalid.');
   completeObject(preset.sceneSettings, Object.keys(DEFAULT_SCENE_SETTINGS), 'scene settings');
-  completeObject(preset.soundSettings, Object.keys(DEFAULT_SOUND_SETTINGS), 'sound settings');
+  const hasPhoneMixer = object(preset.soundSettings) && Object.hasOwn(preset.soundSettings, 'phoneMixer');
+  const soundKeys = Object.keys(DEFAULT_SOUND_SETTINGS);
+  completeObject(preset.soundSettings, hasPhoneMixer ? soundKeys : soundKeys.filter(key => key !== 'phoneMixer'), 'sound settings');
   if (Object.values(preset.soundSettings).some(value => value === undefined)) fail('Every sound setting must have a value.');
   completeObject(preset.soundSettings.macros, Object.keys(DEFAULT_SOUND_SETTINGS.macros), 'sound macros');
+  if (hasPhoneMixer) completeObject(preset.soundSettings.phoneMixer, Object.keys(DEFAULT_SOUND_SETTINGS.phoneMixer), 'phone mixer');
   const mixerKeys = Object.keys(DEFAULT_SOUND_SETTINGS.mixer);
   const mixer = preset.soundSettings.mixer;
   const legacyMixer = object(mixer) && !Object.hasOwn(mixer, 'orangutan') && !Object.hasOwn(mixer, 'orangutanTail');

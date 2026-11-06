@@ -1,5 +1,6 @@
 import { computeSceneScore, DEFAULT_SCORE_SETTINGS, SCENE_DURATION_LIMITS, scoreDurations, finalRainProgressAt, FINAL_RAIN_RAMP_MS } from './scene-score.js';
 import { DEFAULT_PROGRAM_NOTES } from './performance-view.js';
+import { PHONE_MIXER_DEFAULTS, phoneMixerPatch } from './phone-mixer.mjs';
 
 export const AFTERGLOW_DURATION_MS = scoreDurations().afterglowDurationMs;
 export { FINAL_RAIN_RAMP_MS };
@@ -22,7 +23,7 @@ export const DEFAULT_SCENE_SETTINGS = Object.freeze({
   programNotes: DEFAULT_PROGRAM_NOTES,
   ...DEFAULT_SCORE_SETTINGS,
 });
-export const DEFAULT_SOUND_SETTINGS = Object.freeze({ automation: true, macros: Object.freeze({ haze: .35, forest: .5, ash: .25, rain: .15, moisture: .2 }), mixer: Object.freeze({ haze: 1, forest: 1, ash: 1, rain: 1, moisture: 1, crickets: 1, orangutan: 1, orangutanTail: 1, chimes: 1, outDrone: 1, lowDrone: 1, bells: 1.6, quench: 1, blob: 1, dragAsh: 1 }), level: .55, localPitchIndex: null });
+export const DEFAULT_SOUND_SETTINGS = Object.freeze({ automation: true, macros: Object.freeze({ haze: .35, forest: .5, ash: .25, rain: .15, moisture: .2 }), mixer: Object.freeze({ haze: 1, forest: 1, ash: 1, rain: 1, moisture: 1, crickets: 1, orangutan: 1, orangutanTail: 1, chimes: 1, outDrone: 1, lowDrone: 1, bells: 1.6, quench: 1, blob: 1, dragAsh: 1 }), phoneMixer: PHONE_MIXER_DEFAULTS, level: .55, localPitchIndex: null });
 const error = (message, status = 400) => Object.assign(new Error(message), { status });
 const object = value => value && typeof value === 'object' && !Array.isArray(value) && [Object.prototype, null].includes(Object.getPrototypeOf(value));
 const only = (value, keys) => object(value) && Object.keys(value).every(key => keys.includes(key));
@@ -54,7 +55,7 @@ export function restoreSceneSettings(settings, saved) {
 }
 
 export function soundSettingsPatch(settings, patch) {
-  if (!only(patch, ['automation', 'macros', 'mixer', 'level', 'localPitchIndex'])) throw error('Unknown sound setting.');
+  if (!only(patch, ['automation', 'macros', 'mixer', 'phoneMixer', 'level', 'localPitchIndex'])) throw error('Unknown sound setting.');
   if (patch.automation !== undefined && typeof patch.automation !== 'boolean') throw error('Sound automation must be on or off.');
   if (patch.level !== undefined && !unit(patch.level)) throw error('Sound level must be between zero and one.');
   if (patch.localPitchIndex !== undefined && patch.localPitchIndex !== null && (!Number.isSafeInteger(patch.localPitchIndex) || patch.localPitchIndex < 0 || patch.localPitchIndex > 34)) throw error('Choose a pitch between zero and thirty-four.');
@@ -62,7 +63,7 @@ export function soundSettingsPatch(settings, patch) {
   if (patch.mixer !== undefined && (!only(patch.mixer, Object.keys(DEFAULT_SOUND_SETTINGS.mixer)) || !Object.values(patch.mixer).every(value => typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 2))) throw error('Sound mixer levels must be between zero and two.');
   // Main speaker balances remain independent of the scene's automated macros.
   // Older saves receive unity for mixer channels they predate.
-  return { ...settings, ...patch, automation: patch.automation ?? (patch.macros ? false : settings.automation), macros: { ...settings.macros, ...patch.macros }, mixer: { ...DEFAULT_SOUND_SETTINGS.mixer, ...settings.mixer, ...patch.mixer } };
+  return { ...settings, ...patch, automation: patch.automation ?? (patch.macros ? false : settings.automation), macros: { ...settings.macros, ...patch.macros }, mixer: { ...DEFAULT_SOUND_SETTINGS.mixer, ...settings.mixer, ...patch.mixer }, phoneMixer: phoneMixerPatch(settings.phoneMixer, patch.phoneMixer) };
 }
 
 // The show clock is intentionally ephemeral. Restoring the fire simulation

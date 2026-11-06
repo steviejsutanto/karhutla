@@ -13,6 +13,14 @@ Start the timed performance or select any scene directly. The landscape is prepa
 
 The download includes the runtime, recordings, visuals and a fire snapshot. It runs offline; fetching new satellite observations needs internet.
 
+## Control from another device
+
+Connect the second device to the same Wi-Fi and scan the audience QR code. In its browser address, replace `/audience` with `/operator-remote`. Enter the six-digit PIN shown on the host in **Operator → Setup → Remote control**. Scene cues, mixer changes and setup edits stay synchronized across the operator pages.
+
+Bookmark the simple remote address to return later. The browser remembers access for one year, including across browser and server restarts. **Reset PIN & devices** disconnects remembered controllers and replaces the PIN. If the host's network address changes, use **Refresh address** and update the bookmark. Both devices must still use the same network. Existing long private operator links also work.
+
+Keep the host's Operator page open with Main sound enabled; audio continues through that computer. The remote device stays silent. Keep the operator PIN and long private links private.
+
 ## Move settings and install updates
 
 Use **Operator → Setup → Settings file → Export settings**. Copy that file to the other computer, then choose **Import settings** there.

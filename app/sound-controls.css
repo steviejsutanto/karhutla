@@ -70,6 +70,8 @@ body[data-scene='arrival'] #phone-sound .sound-enable, body[data-scene='instruct
 .sound-channel-group legend { padding: 0; margin-bottom: 14px; color: #bca38c; font-size: 10px; text-transform: uppercase; letter-spacing: .08em; }
 .sound-operator .sound-mixer-channels { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 17px 22px; }
 .sound-operator .sound-mixer-channel span { min-height: 32px; }
+.sound-operator .sound-phone-overall { margin-bottom: 22px; }
+.sound-operator .sound-phone-overall span { min-height: 0; }
 .sound-operator .sound-panel { max-width: none; }
 .sound-operator .sound-body { width: 100%; }
 .sound-operator .sound-automation { align-items: start; }
