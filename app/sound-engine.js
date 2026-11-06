@@ -5,6 +5,11 @@ import { computeSceneScore } from './scene-score.js';
 import { PatchSoftToneAudio, patchMidi, patchResidueId, patchFrequencyForMidi } from './patch-soft-tones.js';
 import { PhoneWeatherAudio } from './phone-weather.js';
 import { PhoneTapRainAudio } from './phone-tap-rain.js';
+import { PhoneDroneAudio, phoneDroneWeight } from './phone-drone.js';
+import { mainSpatialPosition } from './main-spatial.js';
+import { PhoneCricketPhrases, PHONE_CRICKET_RATE, PHONE_CRICKET_LEVEL } from './phone-crickets.js';
+export { PHONE_CRICKET_RATE, PHONE_CRICKET_LEVEL } from './phone-crickets.js';
+import { SceneWildlifeAudio, wildlifeSourcesForRole } from './scene-wildlife.js';
 import { MainQuenchAudio, normalizeQuenchSources } from './main-quench.js';
 import { createRainAreaTracker } from './rain-area.js';
 import { DragAshAudio } from './drag-ash.js';
@@ -13,7 +18,7 @@ import { prepareRecording, recordingPreparation, copyRecordingPreparation, outpu
 export { sampleMakeupGain } from './audio-loudness.js';
 export { PATCH_PENTATONIC_MIDI, patchMidi, patchResidueId, patchSoftToneParameters, patchResidueEnvelope } from './patch-soft-tones.js';
 export const SOUND_MACRO_DEFAULTS = Object.freeze({ haze: .35, forest: .5, ash: .25, rain: .15, moisture: .2 });
-export const SOUND_MIXER_DEFAULTS = Object.freeze({ haze: 1, forest: 1, ash: 1, dragAsh: 1, rain: 1, moisture: 1, crickets: 1, chimes: 1, outDrone: 1, lowDrone: 1, bells: 1.6, quench: 1, blob: 1 });
+export const SOUND_MIXER_DEFAULTS = Object.freeze({ haze: 1, forest: 1, ash: 1, dragAsh: 1, rain: 1, moisture: 1, crickets: 1, orangutan: 1, orangutanTail: 1, chimes: 1, outDrone: 1, lowDrone: 1, bells: 1.6, quench: 1, blob: 1 });
 export const SOUND_SAMPLE_URLS = Object.freeze({ crackle: '/audio-assets/fire-crackle.mp3', forest: '/audio-assets/burning-forest.mp3', crickets: '/audio-assets/crickets.mp3', roar: '/audio-assets/fire-roar.mp3', charcoal: '/audio-assets/charcoal.mp3', rain: '/audio-assets/rain.mp3' });
 
 /** Request media playback on supported phones; acceptance cannot prove audibility. */
@@ -51,7 +56,6 @@ export const PARTICIPANT_PARTIALS = Object.freeze([1, 2, 3, 4, 6, 8, 10, 12, 16]
 export const PARTICIPANT_GRAIN_AMPLITUDES = Object.freeze(PARTICIPANT_PARTIALS.map((_, index) => index ? .3 * Math.sqrt(4 / (PARTICIPANT_PARTIALS.length - 1)) : .3));
 export const PARTICIPANT_ASH_RMS_RATIO = .045;
 export const PHONE_CRACKLE_GAIN = 10 ** (7 / 20);
-export const PHONE_CRICKET_RATE = .76;
 export const TONE_REVERB_RETURN = .82 * 10 ** (6 / 20);
 export const MAIN_DRONE_MIDI = Object.freeze([37, 44, 51]);
 export const MAIN_DRONE_AMPLITUDES = Object.freeze([.72, .24, .34]);
@@ -143,9 +147,7 @@ export function participantToneParameters(participant = {}) {
 
 /** Map the shared normalized map into a room in front of the listener. */
 export function participantPosition(position = [.5, .5]) {
-  const x = clamp(Array.isArray(position) ? position[0] : position?.x, .5);
-  const y = clamp(Array.isArray(position) ? position[1] : position?.y, .5);
-  return { x, y, world: [(x - .5) * 7, 0, -(.8 + 6 * y)], pan: (x - .5) * 1.8, distanceGain: 1 / (1 + .8 * y) };
+  return mainSpatialPosition(position);
 }
 
 const loopInformation = new WeakMap();
@@ -303,8 +305,8 @@ export function phoneBedParameters(patches = [], _focusKey = null, { progression
   const moisture = Number.isFinite(progression?.moisture) ? clamp(progression.moisture) : count ? moistureSum / count : 0;
   const { fireWeight } = landscapeBlend(summary), cricketWeight = phoneCricketParameters(summary).weight;
   return { gain: summary.sourceCount ? .04 * PHONE_CRACKLE_GAIN * fireWeight * (.65 + .35 * Math.sqrt(heat)) * (1 - .6 * moisture ** 1.2) : 0,
-    cricketGain: summary.sourceCount ? .04 * cricketWeight : 0,
-    cutoff: 600 + 6500 * (1 - moisture) ** 1.5 * (.5 + .5 * Math.sqrt(heat)),
+    cricketGain: summary.sourceCount ? PHONE_CRICKET_LEVEL * cricketWeight : 0,
+    cutoff: 600 + 3200 * (1 - moisture) ** 1.5 * (.5 + .5 * Math.sqrt(heat)),
     heat, moisture, activeFireCount: summary.sourceCount - summary.outCount, touchDucking: 1, fireWeight, cricketWeight,
     stage: progression?.stage ?? null, steps: progression?.steps ?? null, progression: summary };
 }
@@ -344,6 +346,9 @@ const TONE_GRAINS_PER_VOICE = 20;
 const PATCH_BACKGROUND_GRAIN_LIMIT = 96;
 const PATCH_BACKGROUND_RATE = 200;
 const TONE_DIRECT_POWER = .0016;
+export const MAIN_ENABLE_FADE_SECONDS = .85;
+export const MAIN_DISABLE_FADE_SECONDS = .65;
+export const ARRIVAL_HAZE_GAIN = 10 ** (-6 / 20);
 
 export class WildfireSound {
   constructor({ mode = 'phone', onStatus = () => {}, onBell = () => {}, maxVoices = 32, level = .55, sampleUrls = {}, contextFactory, fetchImpl, document: documentObject, areaClock = () => Date.now() / 1000 } = {}) {
@@ -370,6 +375,7 @@ export class WildfireSound {
     this.mainBlob = null; this.mainBlobSources = []; this.pendingBlobs = []; this.lastBlobAt = -Infinity; this.blobObserved = 0; this.blobDropped = 0;
     this.dragAsh = null; this.bellFeedbackPatch = null; this.bellFeedbackSerial = 0;
     this.bellFeedbackSession = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+    this.phoneDrone = null; this.wildlife = null; this.wildlifeSources = null; this.wildlifeAudience = {};
     this.phoneRain = null; this.phoneRainSource = null; this.residueSources = new Map(); this.residueRequests = new Map();
     this.mainEventBurstAt = -Infinity; this.mainEventBurstCount = 0;
     this.rainAreaMode = false; this.rainAreaField = null; this.rainAreaContacts = []; this.rainAreaClock = areaClock;
@@ -379,6 +385,7 @@ export class WildfireSound {
     this.sourceRequests = new Map(); this.sourceErrors = new Map();
     this.variations = new Map(); this.cricketLayers = null; this.manualSources = new Set(); this.bufferCache = new Map();
     this.touchedKey = null; this.lastVisitedKey = null; this.timer = null; this.suspendTimer = null; this.fetchController = null; this.generation = 0; this.epoch = null;
+    this.mainOutputGate = null; this.mainOutputRamp = null; this.mainStopClock = null; this.mainFadeOutPending = false;
     this.pendingToneKey = null;
     this.lastSaturation = null; this.tickSequence = 0; this.nextGrain = 0; this.grains = new Set(); this.aggregateHeat = 0;
     this.toneGrains = new Set(); this.toneGrainBuffers = new Map(); this.nextToneGrain = 0; this.toneGrainCursor = 0;
@@ -402,6 +409,7 @@ export class WildfireSound {
       sceneScore: this._sceneScore(),
       outputGains: { main: this.mode === 'operator' ? this._outputGain() : 0, phone: this.mode === 'phone' ? this._outputGain() : 0, field: this._fieldSceneGain() },
       loudness: { ...outputDynamics(this.mode), peakCeiling: OUTPUT_LIMIT_CEILING, gainReductionDb: this.compressor?.reduction ?? 0 },
+      mainActivation: this.mode === 'operator' ? { gain: this._mainOutputValue(), target: this.mainOutputRamp?.to ?? 0, fadingOut: this.mainFadeOutPending } : null,
       preparedRecordings: Object.fromEntries([...this.layers].map(([id, layer]) => [id, [ ...(layer.buffer ? [{ url: layer.currentUrl, ...recordingPreparation(layer.buffer) }] : []), ...[...layer.variationSlots.values()].filter(slot => slot.buffer).map(slot => ({ url: slot.currentUrl, ...recordingPreparation(slot.buffer) })) ]])),
       mainDrone: this.mode === 'operator' ? { gain: this._mainDroneGain(), coolingProgress: this._droneProgress(), separationSemitones: this._droneTransposition(), frequencies: this._droneFrequencies(), harmonicLevels: [...MAIN_DRONE_AMPLITUDES], banks: [this._droneFrequencies().slice(0, 3), this._droneFrequencies().slice(3)], oscillatorCount: this.mainDrone?.oscillators.length ?? 0 } : null,
       loadedSamples: [...this.loadedSamples], failedSamples: [...this.failedSamples], samplePending: [...this.pendingSamples],
@@ -418,6 +426,7 @@ export class WildfireSound {
       progression: this._progression(),
       phoneBed: this.mode === 'phone' ? this._phoneBed() : null,
       phoneWeather: this.phoneWeather?.getMetrics() ?? null,
+      phoneDrone: this.phoneDrone?.getMetrics() ?? null, wildlife: this.wildlife?.getMetrics() ?? null,
       phoneRain: this.phoneRain?.getMetrics() ?? null,
       mainBells: this.mode === 'operator' ? this.localBells?.getMetrics() ?? null : null,
       mainQuench: this.mainQuench?.getMetrics() ?? null,
@@ -427,6 +436,7 @@ export class WildfireSound {
       lastBellEvent: this.lastBellEvent ? { ...this.lastBellEvent } : null,
       rainAreas: { enabled: this.rainAreaMode, ...this.rainAreaTracker.getMetrics(), pending: this.pendingRainAreas.length, triggered: this.rainAreaEvents },
       softTones: this.patchSoftTones?.getMetrics() ?? null,
+      phoneCricketPhrases: this.phoneCricketPhrases?.getMetrics() ?? null,
       cricketGain: this._cricketGain(), cricketRetreat: this._cricketRetreat(), cricketLayers: this.cricketLayers?.map(entry => ({ ...entry })) ?? [], landscapeBlend: landscapeBlend(this._progression()),
       participantCount: this.patchVoiceMode ? this.audienceParticipationCount : this.participants.size + Number(Boolean(this.localParticipant)),
       parkedParticipants: Math.max(0, this._desiredParticipants().length - (this.patchVoiceMode ? soft?.activeCount ?? 0 : this.voices.size)),
@@ -466,6 +476,8 @@ export class WildfireSound {
   /** Call directly in a click/pointer handler. resume precedes every await. */
   enable() {
     if (this.destroyed) return Promise.resolve(false);
+    const wasRunning = this.context?.state === 'running';
+    this._cancelMainOutputStop();
     this.enabled = true; this.muted = false;
     clearTimeout(this.suspendTimer); this.suspendTimer = null;
     let resumed;
@@ -483,6 +495,7 @@ export class WildfireSound {
           this._report();
         };
       } else resumed = this.context.resume();
+      this._rampMainOutput(1, MAIN_ENABLE_FADE_SECONDS, !wasRunning);
       this._status('starting', 'Starting sound…');
       const context = this.context;
       // Synthesized texture is immediately available; samples are optional.
@@ -523,7 +536,7 @@ export class WildfireSound {
       target(voice.directMixer.gain, value, now, .06); target(voice.grainMixer.gain, value, now, .06);
     }
     for (const grain of this.toneGrains) if (grain.standalone) target(grain.mixer.gain, this.mixer.outDrone, now, .06);
-    this._syncPatchSoftTones(); this._syncMainQuench(); this._syncLocalBells();
+    this._syncPatchSoftTones(); this._syncMainQuench(); this._syncLocalBells(); this._syncSceneWildlife();
   }
   /** Scene pause freezes its fade; it does not mute a user's enabled sound. */
   setSceneState(value) {
@@ -612,7 +625,9 @@ export class WildfireSound {
   }
   _applySceneGain() {
     if (!this.context || !this.master) return;
-    const now = this.context.currentTime, value = this._outputGain();
+    // The separate activation gate owns Main's user fade. Keep the scene
+    // master intact until that gate is silent, even as state packets arrive.
+    const now = this.context.currentTime, value = this.mode === 'operator' && this.mainFadeOutPending ? this.level * this._sceneGain() : this._outputGain();
     const schedule = JSON.stringify([this.scene, this.sceneReceivedAt, this.level, this.enabled, this.muted, this.hidden]);
     this._applySceneField(schedule);
     if (this.sceneGainSchedule === schedule) return;
@@ -639,7 +654,7 @@ export class WildfireSound {
         const freshNow = this.context.currentTime;
         const curveAt = Math.max(now + delay / 1000, freshNow + .02);
         this._holdSceneMaster(freshNow);
-        this.master.gain.setValueAtTime(this._outputGain(), freshNow);
+        this.master.gain.setValueAtTime(value, freshNow);
         if (endAt - curveAt > 1 / this.context.sampleRate) {
           this.master.gain.setValueCurveAtTime(envelope, curveAt, endAt - curveAt);
         } else {
@@ -659,7 +674,7 @@ export class WildfireSound {
   }
   setMuted(value) {
     this.muted = Boolean(value);
-    if (this.muted) { this.pendingToneKey = null; this.touchedKey = null; this._clearParticipantActivity(); }
+    if (this.muted) { this.pendingToneKey = null; this.touchedKey = null; if (this.mode === 'operator') this.participantActivity.clear(); else this._clearParticipantActivity(); }
     if (!this.enabled || !this.context) { this._report(); return; }
     if (this.muted || this.hidden) this._pause(); else this._resume();
     this._report();
@@ -668,15 +683,16 @@ export class WildfireSound {
     const hidden = Boolean(value);
     if (this.hidden === hidden) return;
     this.hidden = hidden;
-    if (hidden) { this.pendingToneKey = null; this.touchedKey = null; this._clearParticipantActivity(); }
+    if (hidden) { this.pendingToneKey = null; this.touchedKey = null; if (this.mode === 'operator') this.participantActivity.clear(); else this._clearParticipantActivity(); }
     if (this.enabled && this.context) { if (hidden || this.muted) this._pause(); else this._resume(); }
     this._report();
   }
   _pause() {
+    if (this.mode === 'operator') { this._pauseMainOutput(); return; }
     this.pendingRainAreas = [];
     this.pendingBlobs = []; this.mainBlob?.setActive(false);
     this.dragAsh?.configure({ active: false });
-    this._stopScheduler(); clearTimeout(this.suspendTimer);
+    this._stopScheduler(); this.wildlife?.stop(); this.phoneDrone?.stop(); clearTimeout(this.suspendTimer);
     this.phoneRain?.setActive(false); this.phoneWeather?.setActive(false); this.localBells?.setActive(false); this.mainQuench?.setActive(false); this.patchSoftTones?.configure({ enabled: false });
     this.sceneGainSchedule = null;
     this._clearToneReverb(true);
@@ -691,17 +707,101 @@ export class WildfireSound {
   }
   _resume() {
     if (!this.context || this.destroyed) return;
+    const wasRunning = this.context.state === 'running';
+    this._cancelMainOutputStop();
     clearTimeout(this.suspendTimer); this.suspendTimer = null;
     // Like enable(), call resume synchronously if this is a mute-button gesture.
     const context = this.context;
     try {
       const resumed = context.resume();
+      this._rampMainOutput(1, MAIN_ENABLE_FADE_SECONDS, !wasRunning);
       Promise.resolve(resumed).then(() => {
         if (context !== this.context || this.destroyed || !this.enabled || this.muted || this.hidden) return;
         this._applySceneGain();
         this._startSources(); this._ensureTouchedVoice(); this._startScheduler(); this._report();
       }).catch(() => this._report());
     } catch { this._report(); }
+  }
+
+  _mainOutputValue(at = this.context?.currentTime ?? 0) {
+    const ramp = this.mainOutputRamp;
+    if (!ramp) return this.mainOutputGate?.gain.value ?? 0;
+    const progress = ramp.seconds > 0 ? clamp((at - ramp.at) / ramp.seconds) : 1;
+    const position = progress * 48, left = Math.floor(position), right = Math.min(48, left + 1);
+    const low = .5 - .5 * Math.cos(Math.PI * left / 48), high = .5 - .5 * Math.cos(Math.PI * right / 48);
+    return ramp.from + (ramp.to - ramp.from) * (low + (high - low) * (position - left));
+  }
+  _rampMainOutput(to, seconds, fromSilence = false) {
+    if (this.mode !== 'operator' || !this.mainOutputGate || !this.context) return;
+    const now = this.context.currentTime, from = fromSilence ? 0 : this._mainOutputValue(now), parameter = this.mainOutputGate.gain;
+    parameter.cancelScheduledValues(now); parameter.setValueAtTime(from, now);
+    // Native linear segments follow a rounded envelope, with no automation
+    // overlap and an analytically known current value during rapid reversals.
+    if (seconds > 0 && Math.abs(to - from) > .000001) {
+      for (let index = 1; index <= 48; index++) {
+        const progress = index / 48;
+        parameter.linearRampToValueAtTime(from + (to - from) * (.5 - .5 * Math.cos(Math.PI * progress)), now + seconds * progress);
+      }
+    } else { parameter.setValueAtTime(to, now); seconds = 0; }
+    this.mainOutputRamp = { from, to, at: now, seconds };
+  }
+  _cancelMainOutputStop() {
+    const clock = this.mainStopClock;
+    this.mainStopClock = null; this.mainFadeOutPending = false;
+    if (clock) { clock.onended = null; stop(clock); disconnect(clock); }
+  }
+  _holdingMainFade() { return this.mode === 'operator' && this.mainFadeOutPending && this.scene?.id !== 'ended' && !this.scene?.paused; }
+  _pauseMainOutput() {
+    this._cancelMainOutputStop(); this._stopScheduler();
+    this.pendingRainAreas = []; this.pendingBlobs = [];
+    if (!this.context || !this.mainOutputGate) return;
+    const context = this.context, now = context.currentTime;
+    if (this.destroyed || context.state !== 'running' || this._mainOutputValue(now) <= .000001) {
+      this._rampMainOutput(0, 0); this._finishMainOutputPause(); return;
+    }
+    this.mainFadeOutPending = true;
+    this._rampMainOutput(0, MAIN_DISABLE_FADE_SECONDS);
+    // Use the audio clock, not a wall-clock timeout. If audio is interrupted,
+    // cleanup cannot suspend it halfway through a fade that has not rendered.
+    const clock = context.createBufferSource();
+    clock.buffer = context.createBuffer(1, 1, context.sampleRate); clock.loop = true;
+    this.mainStopClock = clock;
+    clock.onended = () => {
+      if (this.mainStopClock !== clock || context !== this.context || this.destroyed) return;
+      this.mainStopClock = null; disconnect(clock);
+      if (!this.enabled || this.muted || this.hidden) this._finishMainOutputPause();
+    };
+    clock.start(now); clock.stop(now + MAIN_DISABLE_FADE_SECONDS + .02);
+  }
+  _finishMainOutputPause() {
+    this.mainFadeOutPending = false;
+    this._clearParticipantActivity(); this.wildlife?.stop(); this.phoneDrone?.stop();
+    this.mainBlob?.setActive(false); this.dragAsh?.configure({ active: false });
+    this.localBells?.setActive(false); this.mainQuench?.setActive(false); this.patchSoftTones?.configure({ enabled: false });
+    this._stopSources(); this.sceneGainSchedule = null;
+    this._clearToneReverb(true);
+    const context = this.context;
+    if (!context) return;
+    this._holdSceneMaster(context.currentTime); this.master.gain.setValueAtTime(0, context.currentTime);
+    if (!this.enabled) {
+      this.bufferCache.clear(); this.loadedSamples.clear();
+      for (const layer of this.layers.values()) { layer.buffer = null; for (const slot of layer.variationSlots.values()) slot.buffer = null; }
+    }
+    if (!this.destroyed && (!this.enabled || this.muted || this.hidden)) {
+      if (context.state !== 'running') { this._report(); return; }
+      // Some one-shot controllers retire their native tails over 40 ms. Let
+      // those ended callbacks run behind the exact-zero gate before freezing
+      // the audio clock, so muted graphs do not retain unfinished tails.
+      const clock = context.createBufferSource();
+      clock.buffer = context.createBuffer(1, 1, context.sampleRate); clock.loop = true;
+      this.mainStopClock = clock;
+      clock.onended = () => {
+        if (this.mainStopClock !== clock || context !== this.context || this.destroyed) return;
+        this.mainStopClock = null; disconnect(clock);
+        if (!this.enabled || this.muted || this.hidden) Promise.resolve(context.suspend()).then(() => this._report()).catch(() => this._report());
+      };
+      clock.start(context.currentTime); clock.stop(context.currentTime + .06);
+    }
   }
 
   setMacro(name, value) {
@@ -887,6 +987,7 @@ export class WildfireSound {
     return true;
   }
   _syncDragAsh() {
+    if (this._holdingMainFade()) return;
     if (!this.dragAsh) return;
     const active = this.context?.state === 'running' && this.enabled && !this.muted && !this.hidden &&
       (!this.scene || ['participation', 'forest-takeover'].includes(this.scene.id) && !this.scene.paused) && this._sceneGain() > 0;
@@ -944,6 +1045,7 @@ export class WildfireSound {
     return !this.scene || !this.scene.paused && ['participation', 'forest-takeover', 'final-rain', 'afterglow'].includes(this.scene.id) && this._fieldSceneGain() > 0;
   }
   _syncMainBlob() {
+    if (this._holdingMainFade()) return;
     if (!this.mainBlob) return;
     const active = this.context?.state === 'running' && this.enabled && !this.muted && !this.hidden && this._blobSceneEligible() && this._sceneGain() > 0;
     this.mainBlob.configure({ active, weight: this.mixer.blob * (this._sceneScore()?.mix.mainOutDrone ?? 1),
@@ -956,7 +1058,7 @@ export class WildfireSound {
     this.blobObserved += edges.length;
     // Observing authoritative edges even while silent prevents old out terrain,
     // reloads, repeated taps, or unmuting from creating delayed new strikes.
-    if (!this.mainBlob?.active || !this.mainBlob.quenchBank.length) { this.blobDropped += edges.length; return; }
+    if (!this.enabled || this.muted || this.hidden || this.context?.state !== 'running' || !this.mainBlob?.active || !this.mainBlob.quenchBank.length) { this.blobDropped += edges.length; return; }
     const expiresAt = this.rainAreaClock() + 4;
     edges.sort((a, b) => patchHash(`${a.key}:blob`) - patchHash(`${b.key}:blob`));
     this.pendingBlobs.push(...edges.map(patch => ({ key: patch.key, expiresAt })));
@@ -964,7 +1066,7 @@ export class WildfireSound {
     this._drainPatchBlobs();
   }
   _drainPatchBlobs() {
-    if (!this.mainBlob?.active || !this.context) return;
+    if (!this.enabled || this.muted || this.hidden || this.context?.state !== 'running' || !this.mainBlob?.active) return;
     const wallNow = this.rainAreaClock(), now = this.context.currentTime;
     const fresh = this.pendingBlobs.filter(event => event.expiresAt > wallNow && this.patchVoices.get(`patch:${event.key}`)?.extinguished);
     this.blobDropped += this.pendingBlobs.length - fresh.length; this.pendingBlobs = fresh;
@@ -976,6 +1078,7 @@ export class WildfireSound {
     if (!this.mainBlob.trigger(patch)) this.blobDropped++;
   }
   _syncMainQuench() {
+    if (this._holdingMainFade()) return;
     this._syncDragAsh();
     this._syncMainBlob();
     if (!this.mainQuench) return;
@@ -998,15 +1101,17 @@ export class WildfireSound {
     return this._playExtinctionEvent(patch);
   }
   _playExtinctionEvent(patch, area = null) {
+    if (!this.enabled || this.muted || this.hidden || this.destroyed || this.context?.state !== 'running') return false;
     this._syncMainQuench(); this._syncLocalBells();
     if (!this.localBells?.active) return false;
     const now = this.context.currentTime;
     if (now - this.mainEventBurstAt >= .08) { this.mainEventBurstAt = now; this.mainEventBurstCount = 0; }
     if (this.mainEventBurstCount++ >= 8) return false;
-    this.bellFeedbackPatch = { key: patch.key, position: area?.brushPosition ?? patch.position };
+    const bellPatch = area?.brushPosition ? { ...patch, position: [...area.brushPosition] } : patch;
+    this.bellFeedbackPatch = { key: patch.key, position: bellPatch.position };
     let rang;
-    try { rang = this.localBells.ring(patch); } finally { this.bellFeedbackPatch = null; }
-    this.mainQuench?.trigger(patch); this._syncLocalBells();
+    try { rang = this.localBells.ring(bellPatch); } finally { this.bellFeedbackPatch = null; }
+    this.mainQuench?.trigger(bellPatch); this._syncLocalBells();
     return rang;
   }
   // Main owns extinction bells; this legacy switch no longer creates phone audio.
@@ -1038,13 +1143,17 @@ export class WildfireSound {
     return true;
   }
   _syncLocalBells() {
+    if (this._holdingMainFade()) return;
     if (!this.localBells || !this.context) return;
-    const score = this._sceneScore();
     const eligible = !this.scene || !this.scene.paused && ['participation', 'forest-takeover', 'final-rain'].includes(this.scene.id);
     const active = this.enabled && !this.muted && !this.hidden && eligible && this._sceneGain() > 0;
     this.localBells.setActive(active);
-    const count = Math.max(1, this.localBells.bells.size);
-    target(this.mainBellBus.gain, active ? this.mixer.bells * (score?.mix.mainOutDrone ?? 1) / Math.sqrt(count) : 0, this.context.currentTime, active ? .08 : .015);
+    // Preserve each strike and its room tail. Dense peaks reach the shared
+    // signal compressor/limiter; audience or bell counts never duck a strike.
+    // A bell confirms an actual completed area even under the Scene 4 forest.
+    // Sharing the fading drone weight hid it by up to 10.46 dB. The field and
+    // complete Main master still own the composed ending exactly once.
+    target(this.mainBellBus.gain, active ? this.mixer.bells : 0, this.context.currentTime, active ? .08 : .015);
   }
   setPhoneRainSource(url) {
     if (this.mode !== 'phone' || this.destroyed || typeof url !== 'string' || !url.trim() || url.length > 2048) return Promise.resolve(false);
@@ -1111,6 +1220,7 @@ export class WildfireSound {
     return Promise.all(pending).then(results => results.every(Boolean));
   }
   _syncPatchSoftTones() {
+    if (this._holdingMainFade()) return;
     if (!this.patchSoftTones || !this.patchVoiceMode) return;
     const score = this._sceneScore();
     this.patchSoftTones.configure({ enabled: this.enabled && !this.muted && !this.hidden && this._sceneGain() > 0,
@@ -1203,7 +1313,7 @@ export class WildfireSound {
       // Actual cooling is continuous even though confirmed out flags arrive
       // together at the end. Do not step the phone bed at that boundary.
       bed.gain *= currentFire > 0 ? Math.sqrt(1 - progress) / currentFire : 0;
-      bed.cricketWeight = this._phoneCrickets().weight; bed.cricketGain = .04 * bed.cricketWeight;
+      bed.cricketWeight = this._phoneCrickets().weight; bed.cricketGain = PHONE_CRICKET_LEVEL * bed.cricketWeight;
     }
     return bed;
   }
@@ -1229,10 +1339,20 @@ export class WildfireSound {
     this._applyParameters();
   }
   disable() {
+    if (this.mode === 'operator' && !this.destroyed) {
+      this.enabled = false; this.generation++; this.participantActivity.clear();
+      this.pendingToneKey = null; this.touchedKey = null;
+      this.fetchController?.abort(); this.fetchController = null; this.pendingSamples.clear();
+      for (const request of this.residueRequests.values()) request.controller.abort();
+      this.residueRequests.clear();
+      for (const request of this.sourceRequests.values()) request.controller.abort();
+      this.sourceRequests.clear();
+      this._pauseMainOutput(); this._report(); return;
+    }
     this.participantActivity.clear();
     this.enabled = false; this.generation++;
     this.pendingBlobs = []; this.mainBlob?.setActive(false); this.mainBlob?.stop();
-    this.dragAsh?.stop();
+    this.dragAsh?.stop(); this.wildlife?.stop(); this.phoneDrone?.stop();
     this.phoneRain?.setActive(false); this.phoneWeather?.setActive(false); this.phoneRain?.stop(); this.phoneWeather?.stop(); this.localBells?.setActive(false); this.localBells?.stop(); this.mainQuench?.setActive(false); this.mainQuench?.stop(); this.patchSoftTones?.stop();
     this.pendingToneKey = null; this.touchedKey = null;
     this.fetchController?.abort(); this.fetchController = null; this.pendingSamples.clear();
@@ -1248,8 +1368,9 @@ export class WildfireSound {
   }
   destroy() {
     if (this.destroyed) return;
-    this.disable(); this.destroyed = true;
+    this.destroyed = true; this._cancelMainOutputStop(); this.disable();
     this.mainBlob?.destroy();
+    this.wildlife?.destroy(); this.phoneDrone?.destroy();
     this.dragAsh?.destroy();
     this.phoneRain?.destroy(); this.phoneWeather?.destroy(); this.localBells?.destroy(); this.mainQuench?.destroy(); this.patchSoftTones?.stop();
     clearTimeout(this.suspendTimer); this.suspendTimer = null;
@@ -1262,6 +1383,8 @@ export class WildfireSound {
   }
 
   _buildGraph() {
+    this._cancelMainOutputStop(); this.mainOutputRamp = null;
+    this.wildlife?.destroy(); this.phoneDrone?.destroy(); this.wildlife = null; this.phoneDrone = null;
     this.sceneFieldSchedule = null; this.sceneFieldEnvelope = null; this.sceneGainSchedule = null; this.sceneMasterEnvelope = null;
     this.sceneCricketSchedule = null; this.sceneCricketEnvelope = null;
     this.mainBlob?.destroy(); this.mainBlob = null; this.pendingBlobs = [];
@@ -1282,8 +1405,8 @@ export class WildfireSound {
     const dynamics = outputDynamics(this.mode);
     this.outputMakeup = c.createGain(); this.outputMakeup.gain.value = dynamics.makeupGain;
     this.compressor = c.createDynamicsCompressor();
-    // Main's quieter drive and gentler attack preserve dense-mix transients.
-    // Both roles keep a high-threshold safety stage above the ordinary field.
+    // Main uses moderate, soft-knee signal compression, with no automatic
+    // makeup. Phones retain their high-threshold safety stage.
     for (const name of ['threshold', 'knee', 'ratio', 'attack', 'release']) this.compressor[name].value = dynamics[name];
     // Native compression can overshoot on a sudden crowd. A smooth sample
     // ceiling catches that first peak; the quiet field stays strictly linear.
@@ -1291,7 +1414,10 @@ export class WildfireSound {
     this.outputSafety = c.createWaveShaper(); this.outputSafety.curve = outputProtectionCurve(this.mode); this.outputSafety.oversample = 'none';
     this.highpass = c.createBiquadFilter(); this.highpass.type = 'highpass'; this.highpass.frequency.value = 28;
     this.mix.connect(this.highpass); this.highpass.connect(this.master); this.master.connect(this.outputMakeup);
-    this.outputMakeup.connect(this.compressor); this.compressor.connect(this.outputHeadroom); this.outputHeadroom.connect(this.outputSafety); this.outputSafety.connect(c.destination);
+    this.outputMakeup.connect(this.compressor); this.compressor.connect(this.outputHeadroom); this.outputHeadroom.connect(this.outputSafety);
+    this.mainOutputGate = this.mode === 'operator' ? c.createGain() : null;
+    if (this.mainOutputGate) { this.mainOutputGate.gain.value = 0; this.outputSafety.connect(this.mainOutputGate); this.mainOutputGate.connect(c.destination); }
+    else this.outputSafety.connect(c.destination);
     if (this.mode === 'operator') {
       this.toneBus = c.createGain(); this.toneBus.gain.value = .8; this.toneBus.connect(this.fieldBus);
       // Only the tone layer enters this space. Fire and other field recordings
@@ -1316,7 +1442,7 @@ export class WildfireSound {
     }
     this.noiseBuffer = this._makeNoiseBuffer(4);
     this.impulseBuffer = this._makeNoiseBuffer(.22);
-    const definitions = this.mode === 'phone' ? [{ id: 'crackle', highpass: 100, lowpass: 5500 }] : [
+    const definitions = this.mode === 'phone' ? [{ id: 'crackle', highpass: 80, lowpass: 3800 }] : [
       { id: 'forest', highpass: 85, lowpass: 10000 }, { id: 'roar', highpass: 35, lowpass: 7000 }, { id: 'charcoal', highpass: 170, lowpass: 3500 }, { id: 'rain', highpass: 160, lowpass: 8500 },
       { id: 'haze', highpass: 220, lowpass: 9000 }, { id: 'ash', highpass: 400, lowpass: 10500 }, { id: 'moisture', highpass: 110, lowpass: 7000 },
     ];
@@ -1328,7 +1454,7 @@ export class WildfireSound {
       const gain = c.createGain(); gain.gain.value = 0;
       const sampleGate = c.createGain(); sampleGate.gain.value = 1; sampleGate.connect(highpass);
       const presence = this.mode === 'phone' && definition.id === 'crackle' ? c.createBiquadFilter() : null;
-      if (presence) { presence.type = 'peaking'; presence.frequency.value = 750; presence.Q.value = .65; presence.gain.value = 2.8; }
+      if (presence) { presence.type = 'peaking'; presence.frequency.value = 420; presence.Q.value = .55; presence.gain.value = 4.2; }
       const distantBody = this.mode === 'operator' && definition.id === 'forest' ? c.createBiquadFilter() : null;
       const distantAir = distantBody ? c.createBiquadFilter() : null;
       if (distantBody) { distantBody.type = 'lowshelf'; distantBody.frequency.value = 240; distantBody.gain.value = 5; distantAir.type = 'highshelf'; distantAir.frequency.value = 1800; distantAir.gain.value = -9; }
@@ -1369,7 +1495,11 @@ export class WildfireSound {
     } else {
       this.phoneRain = new PhoneTapRainAudio({ context: c, destination: this.fieldBus, fetchImpl: this.fetchImpl, prepareLoop: buffer => circularLoopBuffer(c, buffer) });
       if (this.phoneRainSource) this.phoneRain.setSource(this.phoneRainSource);
+      this.phoneDrone = new PhoneDroneAudio({ context: c, destination: this.fieldBus });
     }
+    this.wildlife = new SceneWildlifeAudio({ context: c, mode: this.mode,
+      destination: this.mode === 'operator' ? this.outputMakeup : this.mix, fetchImpl: this.fetchImpl });
+    this.wildlife.setSources(this.wildlifeSources); this.wildlife.setAudience(this.wildlifeAudience);
   }
   _makeNoiseBuffer(seconds) {
     const c = this.context, buffer = c.createBuffer(1, Math.ceil(c.sampleRate * seconds), c.sampleRate), data = buffer.getChannelData(0);
@@ -1543,7 +1673,7 @@ export class WildfireSound {
       } else for (let channel = 0; channel < bounded.numberOfChannels; channel++) bounded.getChannelData(channel).set(buffer.getChannelData(channel).subarray(0, frames));
       buffer = bounded;
     }
-    buffer = prepareRecording(buffer, { naturalRain: id === 'rain', mode: this.mode });
+    buffer = prepareRecording(buffer, { naturalRain: id === 'rain', phoneCrickets: this.mode === 'phone' && id === 'crickets', mode: this.mode });
     return this.mode === 'phone' || id === 'crickets' || id === 'rain'
       ? copyRecordingPreparation(buffer, circularLoopBuffer(this.context, buffer, { cricket: id === 'crickets' })) : buffer;
   }
@@ -1648,8 +1778,10 @@ export class WildfireSound {
 
   _applyParameters() {
     if (!this.context || !this.master) return;
+    if (this._holdingMainFade()) return;
     const c = this.context, now = c.currentTime, m = this._effectiveMacros(), p = macroParameters(m), score = this._sceneScore();
     const cricketGain = this._cricketGain();
+    this._syncSceneWildlife();
     for (const layer of this.layers.values()) this._applyVariationWeights(layer);
     this._applyCricketPerspective();
     if (this._cricketsWanted() && this.enabled) this._loadSamples();
@@ -1666,7 +1798,7 @@ export class WildfireSound {
       const bed = this._phoneBed();
       target(layer.gain.gain, bed.gain * (score?.mix.phoneField ?? 1), now, score ? .12 : .35);
       target(layer.filter.frequency, bed.cutoff, now, .5);
-      this._syncPhoneWeather();
+      this._syncPhoneWeather(); this._applyPhoneDrone();
       return;
     }
     this._syncLocalBells(); this._syncMainQuench();
@@ -1701,7 +1833,8 @@ export class WildfireSound {
     // Keep the generated storm's low thunder in the broad/far perspectives.
     target(rain.highpass.frequency, generatedRain ? 55 : 120 + 900 * wet ** 2, now, .65);
     const haze = this.layers.get('haze'), ash = this.layers.get('ash'), moisture = this.layers.get('moisture');
-    target(haze.gain.gain, this._hasRecording(haze) ? (.006 + .04 * smoothstep(0, 1, m.haze)) * (score ? score.mix.mainHaze : activity) : 0, now, score ? .08 : .5);
+    const arrivalTrim = this.scene?.id === 'arrival' ? ARRIVAL_HAZE_GAIN : 1;
+    target(haze.gain.gain, this._hasRecording(haze) ? (.006 + .04 * smoothstep(0, 1, m.haze)) * (score ? score.mix.mainHaze : activity) * arrivalTrim : 0, now, score ? .08 : .5);
     target(haze.filter.frequency, 9000 - 2800 * wet, now, .65);
     target(ash.gain.gain, this._hasRecording(ash) ? .035 * m.ash ** 1.2 * activity * forestWeight * mainOtherWeight : 0, now, .45);
     target(ash.filter.frequency, 10500 - 3000 * wet, now, .65);
@@ -1711,6 +1844,26 @@ export class WildfireSound {
     target(this.turbulenceFilter.frequency, 450 + 2800 * m.forest ** 2 * (1 - .55 * wet), now);
     target(this.turbulenceGain.gain, generatedForest ? 0 : p.turbulenceLevel * forestActivity * forestWeight, now);
     if (this.lastSaturation !== p.saturation) { charcoal.shaper.curve = curveFor(p.saturation); this.lastSaturation = p.saturation; }
+  }
+  setWildlifeSources(value) {
+    const sources = wildlifeSourcesForRole(value, this.mode);
+    if (sources === undefined) return false;
+    this.wildlifeSources = sources;
+    return this.wildlife?.setSources(sources) ?? true;
+  }
+  setWildlifeAudience(value) {
+    this.wildlifeAudience = value ?? {};
+    this.wildlife?.setAudience(this.wildlifeAudience);
+  }
+  _syncSceneWildlife() {
+    if (this._holdingMainFade()) return;
+    this.wildlife?.update({ active: this.enabled && !this.muted && !this.hidden && this.context?.state === 'running',
+      scene: this.scene, elapsedMs: this._sceneElapsed(), level: .8 * this.level * this.mixer.orangutan,
+      tailLevel: this.mixer.orangutanTail });
+  }
+  _applyPhoneDrone() {
+    this.phoneDrone?.update({ active: this.enabled && !this.muted && !this.hidden,
+      weight: phoneDroneWeight(this.scene, this._sceneScore()), frequencies: this._droneFrequencies(), amplitudes: MAIN_DRONE_AMPLITUDES });
   }
   _mainDroneGain() {
     return MAIN_DRONE_LEVEL * (this._sceneScore()?.mix.mainDrone ?? 0);
@@ -1759,7 +1912,7 @@ export class WildfireSound {
     // The score's phone master already contains the distance and final tail.
     // Perspective below changes bandwidth/width without multiplying it again.
     const finale = ['final-rain', 'afterglow'].includes(this.scene?.id);
-    return (this.mode === 'phone' ? .04 * this._phoneCrickets().weight : .045 * (finale ? 1 : blend.cricketWeight)) * sceneWeight;
+    return (this.mode === 'phone' ? PHONE_CRICKET_LEVEL * this._phoneCrickets().weight : .045 * (finale ? 1 : blend.cricketWeight)) * sceneWeight;
   }
   _cricketsWanted() {
     return this._cricketGain() > 0 || ['final-rain', 'afterglow'].includes(this.scene?.id) && (this._sceneScore()?.finalCricketProgress ?? 0) > 0;
@@ -1775,7 +1928,7 @@ export class WildfireSound {
     const envelope = this.sceneCricketEnvelope;
     if (envelope && typeof parameter.cancelAndHoldAtTime !== 'function') {
       const score = computeSceneScore(envelope.scene, envelope.elapsed + (now - envelope.at) * 1000);
-      const value = this.mode === 'phone' ? .04 * score.mix.phoneCrickets : .045 * score.mix.mainCrickets;
+      const value = this.mode === 'phone' ? PHONE_CRICKET_LEVEL * score.mix.phoneCrickets : .045 * score.mix.mainCrickets;
       parameter.cancelScheduledValues(envelope.at);
       parameter.setValueAtTime(value, now); automation.delete(parameter);
     } else holdParameter(parameter, now);
@@ -1799,7 +1952,7 @@ export class WildfireSound {
     if (!this.scene.paused && remaining > 0) {
       const values = Float32Array.from({ length: 513 }, (_, index) => {
         const score = computeSceneScore(this.scene, elapsed + remaining * index / 512);
-        return this.mode === 'phone' ? .04 * score.mix.phoneCrickets : .045 * score.mix.mainCrickets;
+        return this.mode === 'phone' ? PHONE_CRICKET_LEVEL * score.mix.phoneCrickets : .045 * score.mix.mainCrickets;
       });
       const freshNow = this.context.currentTime, at = freshNow + .02, end = now + remaining / 1000;
       parameter.setValueAtTime(value, freshNow);
@@ -1814,6 +1967,11 @@ export class WildfireSound {
     const layer = this.layers.get('crickets'); if (!layer || !this.context) return;
     const now = this.context.currentTime, retreat = this._cricketRetreat();
     this._applySceneCrickets(layer.gain.gain, now);
+    if (this.mode === 'phone') {
+      if (this.phoneCricketPhrases?.parameter !== layer.sampleGate.gain)
+        this.phoneCricketPhrases = new PhoneCricketPhrases({ context: this.context, parameter: layer.sampleGate.gain, seed: this.randomState });
+      this.phoneCricketPhrases.update(this._cricketGain() > 0);
+    }
     target(layer.highpass.frequency, retreat.highpass, now, .25);
     target(layer.filter.frequency, retreat.lowpass, now, .4);
     const entries = this.variations.get('crickets') ?? [];
@@ -2034,7 +2192,6 @@ export class WildfireSound {
   _scheduleToneGrains(now) {
     const voices = [...this.voices.values()];
     if (voices.length || this.backgroundPatches.length) target(this.toneReverbReturn.gain, TONE_REVERB_RETURN, now, .45);
-    const normalization = 1 / Math.sqrt(Math.max(1, voices.length + this.tails.size));
     const activeLimit = this.patchVoiceMode ? TONE_GRAIN_LIMIT - PATCH_BACKGROUND_GRAIN_LIMIT : TONE_GRAIN_LIMIT;
     let activeCount = [...this.toneGrains].filter(grain => !grain.standalone).length;
     const counts = new Map(); for (const grain of this.toneGrains) counts.set(grain.voice, (counts.get(grain.voice) ?? 0) + 1);
@@ -2049,7 +2206,7 @@ export class WildfireSound {
         const shape = { ...participantGrainParameters(background, this._random()), background };
         // Longer piano rings overlap at the existing dense strike rate. Lower
         // peaks retain headroom without shortening their audible decay.
-        const peak = (background ? .022 : .0065) * normalization;
+        const peak = background ? .022 : .0065;
         const source = this.context.createBufferSource(), envelope = this.context.createGain();
         const midi = voice.midiPair[voice.grainSequence++ % 2];
         source.buffer = this._toneGrainBuffer(voice, midi); source.playbackRate.value = 1;
@@ -2070,14 +2227,14 @@ export class WildfireSound {
     if (!patches.length || sceneWeight <= 0) { this.nextPatchBackgroundGrain = now; return; }
     this.nextPatchBackgroundGrain = Math.max(now + .008, this.nextPatchBackgroundGrain);
     let count = [...this.toneGrains].filter(grain => grain.standalone).length;
-    // The cloud's density and power saturate together. Logical patch count
-    // never attenuates it; every cell takes turns at its own pitch and place.
-    const density = Math.min(12, patches.length), normalization = 1 / Math.sqrt(density);
+    // Density remains bounded. Every cell takes turns at its own pitch/place;
+    // the Main signal compressor protects the sum without count-based ducking.
+    const density = Math.min(12, patches.length);
     while (this.nextPatchBackgroundGrain < now + .18 && count < PATCH_BACKGROUND_GRAIN_LIMIT && this.toneGrains.size < TONE_GRAIN_LIMIT) {
       const patch = patches[this.patchBackgroundCursor % patches.length];
       this.patchBackgroundCursor = (this.patchBackgroundCursor + 1) % patches.length;
       const shape = { ...participantGrainParameters(true, this._random()), background: true }, at = this.nextPatchBackgroundGrain;
-      this._makePatchBackgroundGrain(patch, at, shape, .022 * normalization, sceneWeight); count++;
+      this._makePatchBackgroundGrain(patch, at, shape, .022, sceneWeight); count++;
       this.nextPatchBackgroundGrain += Math.max(1 / PATCH_BACKGROUND_RATE, shape.interval / density);
     }
   }
@@ -2090,6 +2247,7 @@ export class WildfireSound {
     lowpass.type = 'lowpass'; lowpass.Q.value = .45; lowpass.frequency.value = Math.min(c.sampleRate * .45, 440 * 2 ** ((patch.midi - 69) / 12) * tone.lowpassRatio);
     gate.gain.value = .9 * sceneWeight; mixer.gain.value = this.mixer.outDrone;
     const pose = participantPosition(patch.position), panner = space.panner;
+    if (space.focus) space.focus.pan.value = pose.focusPan;
     if (space.mode === 'HRTF') {
       if (panner.positionX) [panner.positionX.value, panner.positionY.value, panner.positionZ.value] = pose.world;
       else panner.setPosition?.(...pose.world);
@@ -2142,12 +2300,18 @@ export class WildfireSound {
       } catch { /* Older implementations still have a stereo fallback. */ }
     }
     if (!panner && typeof c.createStereoPanner === 'function') { panner = c.createStereoPanner(); mode = 'stereo'; }
-    if (panner) { input.connect(panner); panner.connect(distance); } else { input.connect(distance); mode = 'distance'; }
+    // HRTF retains its spectral/depth cues; a restrained native stereo focus
+    // makes those locations read on room speakers as well as headphones.
+    // At the centre pan=0 is transparent, preserving the bell calibration.
+    const focus = mode === 'HRTF' && typeof c.createStereoPanner === 'function' ? c.createStereoPanner() : null;
+    if (focus) focus.pan.value = 0;
+    if (panner) { input.connect(panner); panner.connect(focus ?? distance); if (focus) focus.connect(distance); } else { input.connect(distance); mode = 'distance'; }
     distance.connect(destination);
-    return { input, panner, distance, mode, nodes: [input, panner, distance].filter(Boolean) };
+    return { input, panner, focus, distance, mode, nodes: [input, panner, focus, distance].filter(Boolean) };
   }
   _positionQuenchPath(path, position) {
     const pose = participantPosition(position), panner = path.panner;
+    if (path.focus) path.focus.pan.value = pose.focusPan;
     if (path.mode === 'HRTF') {
       if (panner.positionX) [panner.positionX.value, panner.positionY.value, panner.positionZ.value] = pose.world;
       else panner.setPosition?.(...pose.world);
@@ -2162,6 +2326,7 @@ export class WildfireSound {
     voice.position = [pose.x, pose.y];
     for (const path of [voice.directSpace, voice.grainSpace]) {
       const panner = path.panner;
+      if (path.focus) { if (initial) path.focus.pan.value = pose.focusPan; else target(path.focus.pan, pose.focusPan, now, .065); }
       if (path.mode === 'HRTF') {
         if (panner.positionX) for (const [parameter, value] of [[panner.positionX, pose.world[0]], [panner.positionY, pose.world[1]], [panner.positionZ, pose.world[2]]]) {
           if (initial) parameter.value = value; else target(parameter, value, now, .065);
@@ -2235,16 +2400,17 @@ export class WildfireSound {
   }
   _updateVoices() {
     if (!this.context) return;
+    if (this._holdingMainFade()) return;
     if (this.patchVoiceMode) { this._syncPatchSoftTones(); return; }
     this._drainVoiceTails(); this._syncParticipantVoices();
     if (this.mode !== 'operator') return;
-    const now = this.context.currentTime, normalization = 1 / Math.sqrt(Math.max(1, this.voices.size + this.tails.size));
+    const now = this.context.currentTime;
     for (const grain of this.toneGrains) if (grain.standalone) target(grain.gate.gain, .9 * this._participantSceneWeight(grain.voice), now, .12);
     for (const voice of this.voices.values()) {
       const participant = voice.participant, shape = participantToneParameters(participant);
       voice.extinguished = participant.extinguished;
       const sceneWeight = this._participantSceneWeight(participant);
-      voice.targetGain = TONE_DIRECT_POWER * normalization * (shape.background ? .9 : 1) * sceneWeight;
+      voice.targetGain = TONE_DIRECT_POWER * (shape.background ? .9 : 1) * sceneWeight;
       voice.partialGains = shape.partialGains;
       target(voice.gain.gain, voice.targetGain, now, .6);
       target(voice.grainGate.gain, (shape.background ? .9 : 1) * sceneWeight, now, .12);

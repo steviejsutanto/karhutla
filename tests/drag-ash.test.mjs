@@ -178,13 +178,16 @@ test('many moving participants share a fair bounded global pool and conservative
     context.advance(.06);
     ash.update({ contacts: contacts.map(contact => ({ ...contact, position: [.1 + tick % 10 * .04, .1] })) }); ash.tick();
     const metrics = ash.getMetrics();
-    assert.ok(metrics.currentGrains <= DRAG_ASH_LIMITS.grains); assert.equal(metrics.crowdGain, .1);
-    assert.ok(Math.abs(metrics.gain - .14) < 1e-12);
+    assert.ok(metrics.currentGrains <= DRAG_ASH_LIMITS.grains); assert.equal(metrics.crowdGain, 1 / Math.sqrt(Math.max(1, metrics.movingActors)));
+    assert.ok(Math.abs(metrics.gain - DRAG_ASH_LIMITS.outputGain * 2 * metrics.crowdGain) < 1e-12);
+    const sameMotionGain = metrics.gain;
+    ash.configure({ participantCount: tick % 2 ? 28 : 1000 });
+    assert.equal(ash.getMetrics().gain, sameMotionGain, 'Unrelated participant counts cannot duck the moving grain pool.');
     const live = context.nodes.filter(node => node.kind === 'source' && !node.disconnected);
     peakSources = Math.max(peakSources, live.length); assert.ok(live.length <= DRAG_ASH_LIMITS.grains);
     for (const grain of ash.grains) heard.add(grain.actorId);
     const worstCase = metrics.grains.reduce((sum, grain) => sum + grain.peak, 0) * metrics.gain * DRAG_ASH_LIMITS.recordingPeak;
-    assert.ok(worstCase <= .36 + 1e-9);
+    assert.ok(worstCase <= .45 + 1e-9);
   }
   assert.ok(peakSources > 0); assert.ok(heard.size > 20); assert.ok(ash.getMetrics().skipped > 0);
   assert.ok(DRAG_ASH_LIMITS.grains * DRAG_ASH_LIMITS.peak * DRAG_ASH_LIMITS.outputGain * 2 * DRAG_ASH_LIMITS.recordingPeak < 4,

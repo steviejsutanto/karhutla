@@ -1,0 +1,594 @@
+{
+  "id": "cricket-far-mobile-rhythm-v30",
+  "generated": false,
+  "fieldRecording": true,
+  "assetKind": "rhythm-edited-mobile-derivative-of-published-cc0-field-recording",
+  "file": "audio-assets/v3/cricket-far-mobile-rhythm-v30.mp3",
+  "bytes": 241100,
+  "sha256": "38c282d2420d86cef8dd42afbba7d15ff548bd062a79f678cfb221f6b1148d3d",
+  "durationSeconds": 20,
+  "sampleRate": 32000,
+  "channels": 1,
+  "bitrateKbps": 96,
+  "sourceFile": "audio-assets/v3/cricket-far-mobile.mp3",
+  "sourceSha256": "ee1c4ba88b3fab9e67de89fc7f6354861d8eab969a0f5eb76a66a3764f7a071d",
+  "originalRecordingFile": "audio-assets/v3/cricket-far.mp3",
+  "originalRecordingSha256": "221f31277a861d386eda6fc5b127bb3f0b2ff0ab93861d0b2a0ce06e000a8c25",
+  "sourceProvenanceFile": "audio-assets/v3/cricket-far-mobile-source.json",
+  "sourceUrl": "https://freesound.org/people/Speziax/sounds/645329/",
+  "license": "CC0 1.0 Universal",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "author": "Speziax",
+  "sourceTitle": "Crickets - Warm Summer Night - Ambient.wav",
+  "freesoundId": 645329,
+  "processing": "Detect natural 5ms RMS envelope peaks with >=90ms separation; retain centered waveform excerpts at65% of each detected note envelope, 3ms cosine click guards; place onsets25% farther apart; add original recording undercurrent at\u221227.96dB. Crop at20seconds with10msedgeguards. No pitch/time stretch or synthesized chirps. Constant gain then96kbps mono32kHzMP3. Runtime playback staysat0.76, restoring previous pitch. No long phrase mutes.",
+  "spacingRatio": 1.25,
+  "noteDurationRatio": 0.65,
+  "events": [
+    {
+      "sourceCenterSeconds": 0.2375,
+      "targetCenterSeconds": 0.296875,
+      "sourceEnvelopeSeconds": 0.019547448712949313,
+      "targetEnvelopeSeconds": 0.01271875
+    },
+    {
+      "sourceCenterSeconds": 0.3425,
+      "targetCenterSeconds": 0.42812500000000003,
+      "sourceEnvelopeSeconds": 0.02259613754442853,
+      "targetEnvelopeSeconds": 0.0146875
+    },
+    {
+      "sourceCenterSeconds": 0.4625,
+      "targetCenterSeconds": 0.578125,
+      "sourceEnvelopeSeconds": 0.13324263536862413,
+      "targetEnvelopeSeconds": 0.08659375
+    },
+    {
+      "sourceCenterSeconds": 0.6775,
+      "targetCenterSeconds": 0.846875,
+      "sourceEnvelopeSeconds": 0.11839595802225986,
+      "targetEnvelopeSeconds": 0.07696875
+    },
+    {
+      "sourceCenterSeconds": 0.8825,
+      "targetCenterSeconds": 1.103125,
+      "sourceEnvelopeSeconds": 0.050829748829061716,
+      "targetEnvelopeSeconds": 0.03303125
+    },
+    {
+      "sourceCenterSeconds": 0.9725,
+      "targetCenterSeconds": 1.215625,
+      "sourceEnvelopeSeconds": 0.095554759473208,
+      "targetEnvelopeSeconds": 0.062125
+    },
+    {
+      "sourceCenterSeconds": 1.1025,
+      "targetCenterSeconds": 1.378125,
+      "sourceEnvelopeSeconds": 0.019704479477510545,
+      "targetEnvelopeSeconds": 0.0128125
+    },
+    {
+      "sourceCenterSeconds": 1.4575,
+      "targetCenterSeconds": 1.821875,
+      "sourceEnvelopeSeconds": 0.16,
+      "targetEnvelopeSeconds": 0.104
+    },
+    {
+      "sourceCenterSeconds": 1.6875,
+      "targetCenterSeconds": 2.109375,
+      "sourceEnvelopeSeconds": 0.022638942978976218,
+      "targetEnvelopeSeconds": 0.01471875
+    },
+    {
+      "sourceCenterSeconds": 1.7825,
+      "targetCenterSeconds": 2.228125,
+      "sourceEnvelopeSeconds": 0.016,
+      "targetEnvelopeSeconds": 0.01040625
+    },
+    {
+      "sourceCenterSeconds": 1.8725,
+      "targetCenterSeconds": 2.340625,
+      "sourceEnvelopeSeconds": 0.16,
+      "targetEnvelopeSeconds": 0.104
+    },
+    {
+      "sourceCenterSeconds": 2.1975,
+      "targetCenterSeconds": 2.7468749999999997,
+      "sourceEnvelopeSeconds": 0.1073600824884403,
+      "targetEnvelopeSeconds": 0.06978125
+    },
+    {
+      "sourceCenterSeconds": 2.2875,
+      "targetCenterSeconds": 2.859375,
+      "sourceEnvelopeSeconds": 0.03361001775766312,
+      "targetEnvelopeSeconds": 0.02184375
+    },
+    {
+      "sourceCenterSeconds": 2.3975,
+      "targetCenterSeconds": 2.996875,
+      "sourceEnvelopeSeconds": 0.12947107338852817,
+      "targetEnvelopeSeconds": 0.08415625
+    },
+    {
+      "sourceCenterSeconds": 2.5225,
+      "targetCenterSeconds": 3.153125,
+      "sourceEnvelopeSeconds": 0.019238846432544962,
+      "targetEnvelopeSeconds": 0.0125
+    },
+    {
+      "sourceCenterSeconds": 2.7375,
+      "targetCenterSeconds": 3.421875,
+      "sourceEnvelopeSeconds": 0.14567831212390614,
+      "targetEnvelopeSeconds": 0.0946875
+    },
+    {
+      "sourceCenterSeconds": 2.9925,
+      "targetCenterSeconds": 3.740625,
+      "sourceEnvelopeSeconds": 0.08778699861355278,
+      "targetEnvelopeSeconds": 0.0570625
+    },
+    {
+      "sourceCenterSeconds": 3.1175,
+      "targetCenterSeconds": 3.896875,
+      "sourceEnvelopeSeconds": 0.07627530237149699,
+      "targetEnvelopeSeconds": 0.04959375
+    },
+    {
+      "sourceCenterSeconds": 3.2525,
+      "targetCenterSeconds": 4.065625,
+      "sourceEnvelopeSeconds": 0.08996203569604347,
+      "targetEnvelopeSeconds": 0.05846875
+    },
+    {
+      "sourceCenterSeconds": 3.4775,
+      "targetCenterSeconds": 4.346875,
+      "sourceEnvelopeSeconds": 0.14561681333732224,
+      "targetEnvelopeSeconds": 0.09465625
+    },
+    {
+      "sourceCenterSeconds": 3.7175,
+      "targetCenterSeconds": 4.646875,
+      "sourceEnvelopeSeconds": 0.1458197381803137,
+      "targetEnvelopeSeconds": 0.09478125
+    },
+    {
+      "sourceCenterSeconds": 3.9775,
+      "targetCenterSeconds": 4.971875,
+      "sourceEnvelopeSeconds": 0.16,
+      "targetEnvelopeSeconds": 0.104
+    },
+    {
+      "sourceCenterSeconds": 4.1175,
+      "targetCenterSeconds": 5.146875,
+      "sourceEnvelopeSeconds": 0.017596396196495334,
+      "targetEnvelopeSeconds": 0.0114375
+    },
+    {
+      "sourceCenterSeconds": 4.2225,
+      "targetCenterSeconds": 5.278125,
+      "sourceEnvelopeSeconds": 0.10924698153904729,
+      "targetEnvelopeSeconds": 0.071
+    },
+    {
+      "sourceCenterSeconds": 4.3775,
+      "targetCenterSeconds": 5.471875000000001,
+      "sourceEnvelopeSeconds": 0.01682310596681077,
+      "targetEnvelopeSeconds": 0.0109375
+    },
+    {
+      "sourceCenterSeconds": 4.5125,
+      "targetCenterSeconds": 5.640625,
+      "sourceEnvelopeSeconds": 0.1220521586125011,
+      "targetEnvelopeSeconds": 0.07934375
+    },
+    {
+      "sourceCenterSeconds": 4.7975,
+      "targetCenterSeconds": 5.996875,
+      "sourceEnvelopeSeconds": 0.15047092692575062,
+      "targetEnvelopeSeconds": 0.0978125
+    },
+    {
+      "sourceCenterSeconds": 4.9925,
+      "targetCenterSeconds": 6.240625,
+      "sourceEnvelopeSeconds": 0.13938336651745203,
+      "targetEnvelopeSeconds": 0.09059375
+    },
+    {
+      "sourceCenterSeconds": 5.1825,
+      "targetCenterSeconds": 6.478125,
+      "sourceEnvelopeSeconds": 0.08807342020781221,
+      "targetEnvelopeSeconds": 0.05725
+    },
+    {
+      "sourceCenterSeconds": 5.3025,
+      "targetCenterSeconds": 6.628125000000001,
+      "sourceEnvelopeSeconds": 0.03980482069158825,
+      "targetEnvelopeSeconds": 0.025875
+    },
+    {
+      "sourceCenterSeconds": 5.5025,
+      "targetCenterSeconds": 6.878125000000001,
+      "sourceEnvelopeSeconds": 0.13710618557805332,
+      "targetEnvelopeSeconds": 0.089125
+    },
+    {
+      "sourceCenterSeconds": 5.6725,
+      "targetCenterSeconds": 7.090625,
+      "sourceEnvelopeSeconds": 0.04152851724548782,
+      "targetEnvelopeSeconds": 0.027
+    },
+    {
+      "sourceCenterSeconds": 5.8025,
+      "targetCenterSeconds": 7.253125000000001,
+      "sourceEnvelopeSeconds": 0.11267772015230434,
+      "targetEnvelopeSeconds": 0.07325
+    },
+    {
+      "sourceCenterSeconds": 6.0975,
+      "targetCenterSeconds": 7.621875,
+      "sourceEnvelopeSeconds": 0.0980070180318569,
+      "targetEnvelopeSeconds": 0.06371875
+    },
+    {
+      "sourceCenterSeconds": 6.2925,
+      "targetCenterSeconds": 7.8656250000000005,
+      "sourceEnvelopeSeconds": 0.022239758975908897,
+      "targetEnvelopeSeconds": 0.01446875
+    },
+    {
+      "sourceCenterSeconds": 6.3875,
+      "targetCenterSeconds": 7.984375,
+      "sourceEnvelopeSeconds": 0.032819556523119214,
+      "targetEnvelopeSeconds": 0.02134375
+    },
+    {
+      "sourceCenterSeconds": 6.5325,
+      "targetCenterSeconds": 8.165625,
+      "sourceEnvelopeSeconds": 0.12995434554422103,
+      "targetEnvelopeSeconds": 0.08446875
+    },
+    {
+      "sourceCenterSeconds": 6.7975,
+      "targetCenterSeconds": 8.496875000000001,
+      "sourceEnvelopeSeconds": 0.14211482070309445,
+      "targetEnvelopeSeconds": 0.092375
+    },
+    {
+      "sourceCenterSeconds": 7.0425,
+      "targetCenterSeconds": 8.803125000000001,
+      "sourceEnvelopeSeconds": 0.0874570427909498,
+      "targetEnvelopeSeconds": 0.05684375
+    },
+    {
+      "sourceCenterSeconds": 7.1375,
+      "targetCenterSeconds": 8.921875,
+      "sourceEnvelopeSeconds": 0.06756998771192685,
+      "targetEnvelopeSeconds": 0.04390625
+    },
+    {
+      "sourceCenterSeconds": 7.4325,
+      "targetCenterSeconds": 9.290625,
+      "sourceEnvelopeSeconds": 0.016,
+      "targetEnvelopeSeconds": 0.01040625
+    },
+    {
+      "sourceCenterSeconds": 7.5675,
+      "targetCenterSeconds": 9.459375,
+      "sourceEnvelopeSeconds": 0.12954527777091698,
+      "targetEnvelopeSeconds": 0.08421875
+    },
+    {
+      "sourceCenterSeconds": 7.6875,
+      "targetCenterSeconds": 9.609375,
+      "sourceEnvelopeSeconds": 0.04673371038352343,
+      "targetEnvelopeSeconds": 0.030375
+    },
+    {
+      "sourceCenterSeconds": 7.8475,
+      "targetCenterSeconds": 9.809375,
+      "sourceEnvelopeSeconds": 0.086398159122283,
+      "targetEnvelopeSeconds": 0.05615625
+    },
+    {
+      "sourceCenterSeconds": 8.0225,
+      "targetCenterSeconds": 10.028125000000001,
+      "sourceEnvelopeSeconds": 0.043236254865964836,
+      "targetEnvelopeSeconds": 0.02809375
+    },
+    {
+      "sourceCenterSeconds": 8.1125,
+      "targetCenterSeconds": 10.140625,
+      "sourceEnvelopeSeconds": 0.14078586684167704,
+      "targetEnvelopeSeconds": 0.0915
+    },
+    {
+      "sourceCenterSeconds": 8.2425,
+      "targetCenterSeconds": 10.303125,
+      "sourceEnvelopeSeconds": 0.03604006290616553,
+      "targetEnvelopeSeconds": 0.0234375
+    },
+    {
+      "sourceCenterSeconds": 8.3375,
+      "targetCenterSeconds": 10.421875,
+      "sourceEnvelopeSeconds": 0.0997762158035448,
+      "targetEnvelopeSeconds": 0.06484375
+    },
+    {
+      "sourceCenterSeconds": 8.4525,
+      "targetCenterSeconds": 10.565625,
+      "sourceEnvelopeSeconds": 0.016,
+      "targetEnvelopeSeconds": 0.01040625
+    },
+    {
+      "sourceCenterSeconds": 8.5625,
+      "targetCenterSeconds": 10.703125,
+      "sourceEnvelopeSeconds": 0.11232510451805183,
+      "targetEnvelopeSeconds": 0.073
+    },
+    {
+      "sourceCenterSeconds": 8.6625,
+      "targetCenterSeconds": 10.828125,
+      "sourceEnvelopeSeconds": 0.07220834101706941,
+      "targetEnvelopeSeconds": 0.0469375
+    },
+    {
+      "sourceCenterSeconds": 8.8475,
+      "targetCenterSeconds": 11.059375,
+      "sourceEnvelopeSeconds": 0.07372047364968239,
+      "targetEnvelopeSeconds": 0.04790625
+    },
+    {
+      "sourceCenterSeconds": 8.9525,
+      "targetCenterSeconds": 11.190625,
+      "sourceEnvelopeSeconds": 0.016,
+      "targetEnvelopeSeconds": 0.01040625
+    },
+    {
+      "sourceCenterSeconds": 9.0675,
+      "targetCenterSeconds": 11.334375000000001,
+      "sourceEnvelopeSeconds": 0.1427846767897836,
+      "targetEnvelopeSeconds": 0.0928125
+    },
+    {
+      "sourceCenterSeconds": 9.3725,
+      "targetCenterSeconds": 11.715625000000001,
+      "sourceEnvelopeSeconds": 0.07954048235273603,
+      "targetEnvelopeSeconds": 0.0516875
+    },
+    {
+      "sourceCenterSeconds": 9.5675,
+      "targetCenterSeconds": 11.959375000000001,
+      "sourceEnvelopeSeconds": 0.08093614825642362,
+      "targetEnvelopeSeconds": 0.05259375
+    },
+    {
+      "sourceCenterSeconds": 9.6575,
+      "targetCenterSeconds": 12.071875,
+      "sourceEnvelopeSeconds": 0.16,
+      "targetEnvelopeSeconds": 0.104
+    },
+    {
+      "sourceCenterSeconds": 9.9375,
+      "targetCenterSeconds": 12.421875,
+      "sourceEnvelopeSeconds": 0.16,
+      "targetEnvelopeSeconds": 0.104
+    },
+    {
+      "sourceCenterSeconds": 10.0875,
+      "targetCenterSeconds": 12.609375,
+      "sourceEnvelopeSeconds": 0.016,
+      "targetEnvelopeSeconds": 0.01040625
+    },
+    {
+      "sourceCenterSeconds": 10.2075,
+      "targetCenterSeconds": 12.759374999999999,
+      "sourceEnvelopeSeconds": 0.042294620615482476,
+      "targetEnvelopeSeconds": 0.0275
+    },
+    {
+      "sourceCenterSeconds": 10.2975,
+      "targetCenterSeconds": 12.871875,
+      "sourceEnvelopeSeconds": 0.021635662301857792,
+      "targetEnvelopeSeconds": 0.0140625
+    },
+    {
+      "sourceCenterSeconds": 10.4225,
+      "targetCenterSeconds": 13.028125,
+      "sourceEnvelopeSeconds": 0.13821053787452683,
+      "targetEnvelopeSeconds": 0.08984375
+    },
+    {
+      "sourceCenterSeconds": 10.6925,
+      "targetCenterSeconds": 13.365625000000001,
+      "sourceEnvelopeSeconds": 0.09003790548370944,
+      "targetEnvelopeSeconds": 0.05853125
+    },
+    {
+      "sourceCenterSeconds": 10.8525,
+      "targetCenterSeconds": 13.565624999999999,
+      "sourceEnvelopeSeconds": 0.036706260079861296,
+      "targetEnvelopeSeconds": 0.02384375
+    },
+    {
+      "sourceCenterSeconds": 11.0125,
+      "targetCenterSeconds": 13.765625,
+      "sourceEnvelopeSeconds": 0.022983340358186978,
+      "targetEnvelopeSeconds": 0.0149375
+    },
+    {
+      "sourceCenterSeconds": 11.1975,
+      "targetCenterSeconds": 13.996875,
+      "sourceEnvelopeSeconds": 0.1421502118002445,
+      "targetEnvelopeSeconds": 0.09240625
+    },
+    {
+      "sourceCenterSeconds": 11.3325,
+      "targetCenterSeconds": 14.165624999999999,
+      "sourceEnvelopeSeconds": 0.019730168911605686,
+      "targetEnvelopeSeconds": 0.0128125
+    },
+    {
+      "sourceCenterSeconds": 11.5075,
+      "targetCenterSeconds": 14.384375,
+      "sourceEnvelopeSeconds": 0.11489480423766281,
+      "targetEnvelopeSeconds": 0.0746875
+    },
+    {
+      "sourceCenterSeconds": 11.6075,
+      "targetCenterSeconds": 14.509375,
+      "sourceEnvelopeSeconds": 0.016,
+      "targetEnvelopeSeconds": 0.01040625
+    },
+    {
+      "sourceCenterSeconds": 11.7525,
+      "targetCenterSeconds": 14.690624999999999,
+      "sourceEnvelopeSeconds": 0.09831244536351051,
+      "targetEnvelopeSeconds": 0.06390625
+    },
+    {
+      "sourceCenterSeconds": 11.8475,
+      "targetCenterSeconds": 14.809375,
+      "sourceEnvelopeSeconds": 0.0336757276975959,
+      "targetEnvelopeSeconds": 0.021875
+    },
+    {
+      "sourceCenterSeconds": 12.0375,
+      "targetCenterSeconds": 15.046875,
+      "sourceEnvelopeSeconds": 0.10783735516542492,
+      "targetEnvelopeSeconds": 0.07009375
+    },
+    {
+      "sourceCenterSeconds": 12.2875,
+      "targetCenterSeconds": 15.359375,
+      "sourceEnvelopeSeconds": 0.14348413160349083,
+      "targetEnvelopeSeconds": 0.09325
+    },
+    {
+      "sourceCenterSeconds": 12.3975,
+      "targetCenterSeconds": 15.496875000000001,
+      "sourceEnvelopeSeconds": 0.016,
+      "targetEnvelopeSeconds": 0.01040625
+    },
+    {
+      "sourceCenterSeconds": 12.5475,
+      "targetCenterSeconds": 15.684375,
+      "sourceEnvelopeSeconds": 0.08561974978607167,
+      "targetEnvelopeSeconds": 0.05565625
+    },
+    {
+      "sourceCenterSeconds": 12.6775,
+      "targetCenterSeconds": 15.846875,
+      "sourceEnvelopeSeconds": 0.07858287771644427,
+      "targetEnvelopeSeconds": 0.05109375
+    },
+    {
+      "sourceCenterSeconds": 12.8425,
+      "targetCenterSeconds": 16.053124999999998,
+      "sourceEnvelopeSeconds": 0.08495755296971538,
+      "targetEnvelopeSeconds": 0.05521875
+    },
+    {
+      "sourceCenterSeconds": 13.0825,
+      "targetCenterSeconds": 16.353125,
+      "sourceEnvelopeSeconds": 0.07430193531171199,
+      "targetEnvelopeSeconds": 0.04828125
+    },
+    {
+      "sourceCenterSeconds": 13.1875,
+      "targetCenterSeconds": 16.484375,
+      "sourceEnvelopeSeconds": 0.02164165913621673,
+      "targetEnvelopeSeconds": 0.0140625
+    },
+    {
+      "sourceCenterSeconds": 13.3975,
+      "targetCenterSeconds": 16.746875000000003,
+      "sourceEnvelopeSeconds": 0.10636334444707017,
+      "targetEnvelopeSeconds": 0.069125
+    },
+    {
+      "sourceCenterSeconds": 13.5025,
+      "targetCenterSeconds": 16.878125,
+      "sourceEnvelopeSeconds": 0.04511217871201552,
+      "targetEnvelopeSeconds": 0.0293125
+    },
+    {
+      "sourceCenterSeconds": 13.6725,
+      "targetCenterSeconds": 17.090625,
+      "sourceEnvelopeSeconds": 0.11750186815976577,
+      "targetEnvelopeSeconds": 0.076375
+    },
+    {
+      "sourceCenterSeconds": 13.9125,
+      "targetCenterSeconds": 17.390625,
+      "sourceEnvelopeSeconds": 0.10146226531306639,
+      "targetEnvelopeSeconds": 0.0659375
+    },
+    {
+      "sourceCenterSeconds": 14.1125,
+      "targetCenterSeconds": 17.640625,
+      "sourceEnvelopeSeconds": 0.054806517653184984,
+      "targetEnvelopeSeconds": 0.035625
+    },
+    {
+      "sourceCenterSeconds": 14.2025,
+      "targetCenterSeconds": 17.753125,
+      "sourceEnvelopeSeconds": 0.06829350062594358,
+      "targetEnvelopeSeconds": 0.04440625
+    },
+    {
+      "sourceCenterSeconds": 14.4225,
+      "targetCenterSeconds": 18.028125,
+      "sourceEnvelopeSeconds": 0.10663046796223853,
+      "targetEnvelopeSeconds": 0.0693125
+    },
+    {
+      "sourceCenterSeconds": 14.7175,
+      "targetCenterSeconds": 18.396874999999998,
+      "sourceEnvelopeSeconds": 0.13482551258281775,
+      "targetEnvelopeSeconds": 0.087625
+    },
+    {
+      "sourceCenterSeconds": 14.9025,
+      "targetCenterSeconds": 18.628125,
+      "sourceEnvelopeSeconds": 0.14279896414942642,
+      "targetEnvelopeSeconds": 0.0928125
+    },
+    {
+      "sourceCenterSeconds": 15.1425,
+      "targetCenterSeconds": 18.928125,
+      "sourceEnvelopeSeconds": 0.03751573797443598,
+      "targetEnvelopeSeconds": 0.024375
+    },
+    {
+      "sourceCenterSeconds": 15.3025,
+      "targetCenterSeconds": 19.128125,
+      "sourceEnvelopeSeconds": 0.11558656274679152,
+      "targetEnvelopeSeconds": 0.075125
+    },
+    {
+      "sourceCenterSeconds": 15.5475,
+      "targetCenterSeconds": 19.434375,
+      "sourceEnvelopeSeconds": 0.16,
+      "targetEnvelopeSeconds": 0.104
+    },
+    {
+      "sourceCenterSeconds": 15.8475,
+      "targetCenterSeconds": 19.809375,
+      "sourceEnvelopeSeconds": 0.11056486948902602,
+      "targetEnvelopeSeconds": 0.071875
+    }
+  ],
+  "validation": {
+    "samplesPerChannel": 640000,
+    "nonFiniteSamples": 0,
+    "peakAmplitude": 0.5188412070274353,
+    "rms": 0.05229290571402433,
+    "events": 92,
+    "medianSourceIntervalSeconds": 0.15999999999999837,
+    "medianTargetIntervalSeconds": 0.1999999999999975,
+    "medianSourceNoteSeconds": 0.0876220207022513,
+    "medianTargetNoteSeconds": 0.056953125,
+    "pitchChange": "none; original waveform excerpts, no resampling/time stretch"
+  },
+  "completedAt": "2026-11-05T15:24:15.132216+00:00"
+}

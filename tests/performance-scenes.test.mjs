@@ -111,21 +111,21 @@ test('finale cools every source before main blackout, a phone-only hold, and the
 test('scene rain completes its rise then recedes through the rain/cricket overlap after an early all-out', () => {
   const scene = new PerformanceScenes({ now: 0, wallNow: 100_000 });
   scene.update({ scene: 'final-rain' }, { now: 0, wallNow: 100_000 });
-  const samples = Array.from({ length: 61 }, (_, i) => scene.state(i * 1000, 100_000 + i * 1000).rainIntensity);
+  const samples = Array.from({ length: 61 }, (_, i) => scene.state(i * FINAL_RAIN_RAMP_MS / 60, 100_000 + i * FINAL_RAIN_RAMP_MS / 60).rainIntensity);
   assert.equal(samples[0], 0); assert.equal(samples[30], .5); assert.equal(samples.at(-1), 1);
   assert.ok(samples.every((value, index) => !index || value > samples[index - 1]));
   assert.ok(samples[1] < .00005 && 1 - samples.at(-2) < .00005, 'Both ends of the ramp ease in very gently.');
   scene.advance({ now: FINAL_RAIN_RAMP_MS / 2, wallNow: 130_000, sourceCount: 2, outCount: 2 });
-  const middle = scene.state(30000, 130_000);
+  const middle = scene.state(FINAL_RAIN_RAMP_MS / 2, 130_000);
   assert.equal(middle.id, 'final-rain');
   assert.equal(middle.rainIntensity, .5, 'All-out cannot interrupt the rising handoff.');
   assert.equal(middle.rainIntensity, middle.finalRainProgress, 'Water, visual intensity and the sound score use one progress value.');
-  assert.throws(() => scene.update({ scene: 'afterglow' }, { now: 30000, wallNow: 130_000, sourceCount: 2, outCount: 2 }), /fully risen/);
+  assert.throws(() => scene.update({ scene: 'afterglow' }, { now: FINAL_RAIN_RAMP_MS / 2, wallNow: 130_000, sourceCount: 2, outCount: 2 }), /fully risen/);
   scene.advance({ now: FINAL_RAIN_RAMP_MS, wallNow: 160_000, sourceCount: 2, outCount: 2 });
-  assert.equal(scene.state(60000, 160_000).id, 'afterglow');
-  assert.equal(scene.state(60000, 160_000).rainIntensity, 1);
-  assert.ok(Math.abs(scene.state(60000 + FINAL_RAIN_RELEASE_MS / 2, 161_000).rainIntensity - Math.SQRT1_2) < 1e-12);
-  assert.equal(scene.state(60000 + FINAL_RAIN_RELEASE_MS, 162_000).rainIntensity, 0);
+  assert.equal(scene.state(FINAL_RAIN_RAMP_MS, 160_000).id, 'afterglow');
+  assert.equal(scene.state(FINAL_RAIN_RAMP_MS, 160_000).rainIntensity, 1);
+  assert.ok(Math.abs(scene.state(FINAL_RAIN_RAMP_MS + FINAL_RAIN_RELEASE_MS / 2, 161_000).rainIntensity - Math.SQRT1_2) < 1e-12);
+  assert.equal(scene.state(FINAL_RAIN_RAMP_MS + FINAL_RAIN_RELEASE_MS, 162_000).rainIntensity, 0);
 });
 
 test('rain follows editable cricket overlap timing independently of the projection fade', () => {
@@ -133,18 +133,19 @@ test('rain follows editable cricket overlap timing independently of the projecti
     const projectionFadeSeconds = 30;
     const scene = new PerformanceScenes({ now: 0, wallNow: 0, settings: { rainCricketOverlapSeconds, projectionFadeSeconds } });
     scene.update({ scene: 'final-rain' }, { now: 0, wallNow: 0 });
-    scene.advance({ now: 60000, wallNow: 60000, sourceCount: 2, outCount: 2 });
-    assert.equal(scene.state(60000, 60000).rainIntensity, 1);
-    const early = scene.state(62000, 62000);
+    scene.advance({ now: FINAL_RAIN_RAMP_MS, wallNow: FINAL_RAIN_RAMP_MS, sourceCount: 2, outCount: 2 });
+    assert.equal(scene.state(FINAL_RAIN_RAMP_MS, FINAL_RAIN_RAMP_MS).rainIntensity, 1);
+    const early = scene.state(FINAL_RAIN_RAMP_MS + 2000, FINAL_RAIN_RAMP_MS + 2000);
     assert.ok(early.rainIntensity > .9, 'Heavy rain cannot disappear two seconds into the handoff.');
     assert.equal(early.rainIntensity, early.mainFieldGain);
-    const middleTime = 60000 + rainCricketOverlapSeconds * 500, middle = scene.state(middleTime, middleTime);
+    const middleTime = FINAL_RAIN_RAMP_MS + rainCricketOverlapSeconds * 500, middle = scene.state(middleTime, middleTime);
     assert.ok(Math.abs(middle.rainIntensity - Math.SQRT1_2) < 1e-12);
     assert.ok(Math.abs(middle.mix.mainCrickets - Math.SQRT1_2) < 1e-12);
-    const endTime = 60000 + rainCricketOverlapSeconds * 1000;
+    const endTime = FINAL_RAIN_RAMP_MS + rainCricketOverlapSeconds * 1000;
     assert.equal(scene.state(endTime, endTime).rainIntensity, 0);
-    assert.equal(scene.state(90000, 90000).fade, 0);
-    const holdTime = Math.max(endTime, 90000), hold = scene.state(holdTime, holdTime);
+    const blackoutTime = FINAL_RAIN_RAMP_MS + projectionFadeSeconds * 1000;
+    assert.equal(scene.state(blackoutTime, blackoutTime).fade, 0);
+    const holdTime = Math.max(endTime, blackoutTime), hold = scene.state(holdTime, holdTime);
     assert.equal(hold.phase, 'pa-crickets'); assert.equal(hold.phaseElapsedMs, 0);
     assert.equal(hold.mix.mainCrickets, 1); assert.equal(hold.mix.phoneCrickets, 0);
   }
@@ -156,21 +157,21 @@ test('fast participation physics cannot finish finale cooling before the rain ri
     await room.setParameters({ deepCoolingSeconds: 2, extinctionHoldSeconds: 0 });
     await room.setScene({ scene: 'final-rain' });
   }
-  frequent.advance(59999);
+  frequent.advance(FINAL_RAIN_RAMP_MS - 1);
   assert.equal(frequent.room.globalSound().fireProgress.outCount, 0);
   assert.equal(frequent.room.sceneState().id, 'final-rain');
   frequent.advance(1);
   assert.equal(frequent.room.sceneState().id, 'afterglow');
   assert.equal(frequent.room.globalSound().fireProgress.outCount, 2);
   assert.equal(frequent.room.sceneState().elapsedMs, 0);
-  sparse.advance(64000); frequent.advance(4000);
+  sparse.advance(FINAL_RAIN_RAMP_MS + 4000); frequent.advance(4000);
   assert.deepEqual(sparse.room.sceneState(), frequent.room.sceneState());
   assert.ok(Math.abs(sparse.room.simulation.totalWater - frequent.room.simulation.totalWater) < 1e-8);
 });
 
 test('pausing early rain freezes its envelope and water, then resumes from the same scene time', async () => {
   const { room, advance } = await fixture();
-  await room.setScene({ scene: 'final-rain' }); advance(15000);
+  await room.setScene({ scene: 'final-rain' }); advance(FINAL_RAIN_RAMP_MS / 4);
   const intensity = room.sceneState().rainIntensity, water = room.simulation.totalWater;
   assert.ok(intensity > 0 && intensity < .2);
   await room.setScene({ action: 'pause' });
@@ -178,9 +179,9 @@ test('pausing early rain freezes its envelope and water, then resumes from the s
   advance(90_000);
   assert.equal(room.sceneState().rainIntensity, intensity);
   assert.equal(room.simulation.totalWater, water); assert.deepEqual(room.simulation.serialize(), ground);
-  await room.setScene({ action: 'resume' }); advance(15000);
+  await room.setScene({ action: 'resume' }); advance(FINAL_RAIN_RAMP_MS / 4);
   assert.equal(room.sceneState().rainIntensity, .5);
-  assert.ok(Math.abs(room.simulation.totalWater - records.length * finalRainIntegral(30000) / 1000) < 1e-8);
+  assert.ok(Math.abs(room.simulation.totalWater - records.length * finalRainIntegral(FINAL_RAIN_RAMP_MS / 2) / 1000) < 1e-8);
   await room.reset(); advance(10_000);
   assert.equal(room.sceneState().rainIntensity, 0); assert.equal(room.simulation.totalWater, 0);
 });
@@ -299,7 +300,7 @@ test('sound and scene patches reject unknown, unbounded, or malformed controls a
 });
 
 test('main mixer patches deep merge independent bounded levels while preserving sound automation', () => {
-  const unity = { haze: 1, forest: 1, ash: 1, rain: 1, moisture: 1, crickets: 1, chimes: 1, outDrone: 1, lowDrone: 1, bells: 1.6, quench: 1, blob: 1, dragAsh: 1 };
+  const unity = { haze: 1, forest: 1, ash: 1, rain: 1, moisture: 1, crickets: 1, orangutan: 1, orangutanTail: 1, chimes: 1, outDrone: 1, lowDrone: 1, bells: 1.6, quench: 1, blob: 1, dragAsh: 1 };
   assert.deepEqual(DEFAULT_SOUND_SETTINGS.mixer, unity);
   const input = { haze: 0, lowDrone: 2 };
   const first = soundSettingsPatch(DEFAULT_SOUND_SETTINGS, { mixer: input });
@@ -428,7 +429,7 @@ test('forest takeover restores real fire, ground and phone sound condition over 
 
 test('weaker takeover holds cool real ground and spend their reduced water budget at any packet cadence', async () => {
   const active = await fixture(), quiet = await fixture();
-  for (const { room } of [active, quiet]) await room.setScene({ scene: 'forest-takeover' });
+  for (const { room } of [active, quiet]) { await room.setStrength(.5); await room.setScene({ scene: 'forest-takeover' }); }
   const phone = active.room.connect({ clientId: 'cooling-rain', role: 'operator' });
   const position = [records[0].longitude, records[0].latitude];
   const water = active.room.simulation.totalWater, epoch = active.room.epoch;
@@ -620,7 +621,7 @@ test('automatic final rain preserves exact water and afterglow time on fractiona
 
 test('pause freezes the dark PA hold and handoff, then the authoritative timer continues from the same weights', async () => {
   const { room, advance } = await fixture();
-  await room.setScene({ scene: 'final-rain' }); advance(92000);
+  await room.setScene({ scene: 'final-rain' }); advance(FINAL_RAIN_RAMP_MS + 32000);
   assert.equal(room.sceneState().phase, 'pa-crickets'); assert.equal(room.sceneState().mix.mainCrickets, 1);
   for (const phaseDuration of [10000, 6000]) {
     const before = room.sceneState();
@@ -650,7 +651,7 @@ test('automatic participation-to-forest keeps visible held rain and the automati
 
 test('pause freezes the rain/cricket overlap at its current equal-power weights', async () => {
   const { room, advance } = await fixture();
-  await room.setScene({ scene: 'final-rain' }); advance(75000);
+  await room.setScene({ scene: 'final-rain' }); advance(FINAL_RAIN_RAMP_MS + FINAL_RAIN_RELEASE_MS / 2);
   const before = room.sceneState();
   assert.equal(before.phase, 'rain-cricket-overlap'); assert.equal(before.elapsedMs, 15000);
   assert.ok(Math.abs(before.mainFieldGain - Math.SQRT1_2) < 1e-12);

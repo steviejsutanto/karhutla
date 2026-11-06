@@ -1,0 +1,60 @@
+{
+  "format": "wildfire-settings",
+  "schemaVersion": 1,
+  "strength": 0.54,
+  "parameters": {
+    "fireReturnSeconds": 5,
+    "rainResponseSeconds": 1,
+    "deepCoolingSeconds": 3,
+    "extinctionHoldSeconds": 0
+  },
+  "sceneSettings": {
+    "wifiName": "",
+    "wifiPassword": "",
+    "programNotes": "Drawing on recent Indonesian wildfires, this participatory audiovisual work brings collective action into tension with the persistence of heat. The effort to extinguish the fires is also a confrontation with the human choices that have fed them. The audience becomes a temporary ensemble, its gestures gathering into a shared field of sound and rain. This shared effort unfolds alongside the hope for relief from forces beyond our control.",
+    "arrivalSeconds": 120,
+    "instructionsSeconds": 120,
+    "participationSeconds": 600,
+    "forestTakeoverSeconds": 60,
+    "soundTransitionSeconds": 12,
+    "forestRiseSeconds": 30,
+    "finalRainRiseSeconds": 60,
+    "residueMorphSeconds": 1,
+    "residueFadeSeconds": 4,
+    "projectionFadeSeconds": 30,
+    "rainCricketOverlapSeconds": 30,
+    "paCricketOnlySeconds": 8,
+    "cricketHandoffSeconds": 12,
+    "phoneOnlySeconds": 8,
+    "phoneFadeSeconds": 28
+  },
+  "soundSettings": {
+    "automation": true,
+    "macros": {
+      "haze": 0.5,
+      "forest": 0,
+      "ash": 0,
+      "rain": 0,
+      "moisture": 0
+    },
+    "mixer": {
+      "haze": 1,
+      "forest": 1,
+      "ash": 1,
+      "rain": 1,
+      "moisture": 1,
+      "crickets": 0.8,
+      "orangutan": 1,
+      "orangutanTail": 1.95,
+      "chimes": 0.75,
+      "outDrone": 0.67,
+      "lowDrone": 1,
+      "bells": 1.9,
+      "quench": 0.35,
+      "blob": 2,
+      "dragAsh": 1.75
+    },
+    "level": 1,
+    "localPitchIndex": null
+  }
+}

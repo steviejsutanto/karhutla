@@ -1,0 +1,19 @@
+{
+  "purpose": "Original synthetic restrained distant orangutan vocalization for the final rainforest listening phase",
+  "preferredModel": "medium",
+  "durationSeconds": 16,
+  "steps": 8,
+  "cfgScale": 1.0,
+  "sampler": "pingpong",
+  "notes": "Creative interpretation, not an authentic field recording or a claim about animal emotion. Intentionally quiet and restrained, with no alarm, display or excited calling.",
+  "assets": [
+    {
+      "id": "orangutan-distant-v25",
+      "kind": "wildlife-orangutan",
+      "title": "Distant orangutan",
+      "seed": 202611052501,
+      "role": "Restrained distant low breathy orangutan vocal phrase; quiet heartfelt listening-space interpretation",
+      "prompt": "TrackType: SFX, A solitary orangutan far away in a quiet Borneo rainforest makes a restrained low gentle breathy rounded hoo, a slow short descending hollow throaty vocal phrase with soft chest resonance and a long natural quiet pause. Quiet intimate sadness and vulnerability, slow weary sigh-like low mammal hooting, heard from far across the trees. One soft distant animal voice, sparse and subdued. No excited display, roar, alarm, aggressive barking, screaming or loud long call. No birds, insects, weather, human voice, music or instruments. Natural spacious quiet surrounds the solitary soft low orangutan voice. Length: 16 seconds."
+    }
+  ]
+}

@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { PatchSoftToneAudio, PATCH_PENTATONIC_MIDI, PATCH_PENTATONIC_RATIOS, PATCH_TUNING_CENTS, PATCH_SOFT_TONE_LEVEL, PATCH_TONE_EXIT_SECONDS, PATCH_TEXTURE_SOURCE_LIMIT, PATCH_TEXTURE_ADMISSION_SECONDS,
   patchMidi, patchFrequencyForMidi, patchLowRegisterBodyLevel, patchTuningCents, patchResidueId, patchResidueTreatment, patchResiduePitch, patchResidueTransposeProbability, patchResidueEnvelope, patchSoftToneParameters, patchTextureLevel, patchTextureRecordingParameters } from '../app/patch-soft-tones.js';
+import { patchHeldToneMotionDepth, PATCH_HELD_MOTION_DEPTH, PATCH_HELD_MOTION_START_SECONDS, PATCH_HELD_MOTION_RISE_SECONDS } from '../app/patch-soft-tones.js';
 import { RainSimulation } from '../app/simulation.js';
 import { SharedRoom } from '../app/shared-room.mjs';
 import { createParticipantSoundField, patchSoundVoices } from '../app/sound-participants.js';
@@ -80,6 +81,65 @@ const curveAt = (record, at) => {
   const left = Math.floor(index);
   return record.curve[left] + (record.curve[Math.min(left + 1, record.curve.length - 1)] - record.curve[left]) * (index - left);
 };
+
+test('long-held motion leaves short notes unchanged, eases into clearly audible motion and never retunes pitch', () => {
+  assert.equal(PATCH_HELD_MOTION_START_SECONDS, 4); assert.equal(PATCH_HELD_MOTION_RISE_SECONDS, 4);
+  for (const age of [-1, 0, 3, 3.9, 4]) assert.equal(patchHeldToneMotionDepth(age), 0);
+  assert.equal(patchHeldToneMotionDepth(6), PATCH_HELD_MOTION_DEPTH / 2);
+  assert.equal(patchHeldToneMotionDepth(8), .14); assert.equal(patchHeldToneMotionDepth(600), .14);
+  const { audio, context } = harness({ areaMode: true });
+  audio.setPatches([patch('long-a'), patch('long-b')]);
+  const first = audio.voices.get('long-a'), second = audio.voices.get('long-b');
+  const identity = first.motionOscillator, automation = first.motionDepth.gain.events.slice();
+  assert.equal(first.motionGain.gain.value, 1);
+  assert.equal(first.motionOscillator.frequency.value, first.motionFrequencyHz);
+  assert.ok(first.motionFrequencyHz >= .12 && first.motionFrequencyHz < .18);
+  assert.notEqual(first.motionFrequencyHz, second.motionFrequencyHz);
+  assert.notEqual(first.motionOscillator.startedAt, second.motionOscillator.startedAt);
+  context.advance(25);
+  for (let i = 0; i < 20; i++) audio.setPatches([patch('long-a'), patch('long-b')]);
+  assert.equal(audio.voices.get('long-a'), first); assert.equal(first.motionOscillator, identity);
+  assert.deepEqual(first.motionDepth.gain.events, automation, 'Repeated packets do not restart movement or add automation.');
+  assert.equal(audio.getMetrics().voices[0].motionDepth, .14);
+  assert.ok(first.oscillators.every(node => node.frequency.events.length === 0));
+  audio.stop(); assert.ok(first.motionOscillator.disconnected && first.motionDepth.disconnected && first.motionGain.disconnected);
+});
+
+test('motion fades out at release or completion without extending the finite pitched exit', () => {
+  for (const completion of [false, true]) {
+    const { audio, context } = harness({ areaMode: completion });
+    const key = `motion-exit-${completion}`; audio.setPatches([patch(key)]); context.advance(25); audio.tick();
+    const voice = audio.voices.get(key), at = context.currentTime;
+    if (completion) {
+      audio.setPatches([patch(key, { extinguished: true, heat: 0 })]);
+      assert.equal(audio.triggerAreaExtinction({ id: 'complete-motion', key, memberKeys: [key] }), true);
+    } else audio.setPatches([]);
+    assert.equal(voice.motionStop.at, at); assert.equal(voice.motionStop.depth, .14);
+    assert.ok(voice.motionDepth.gain.events.some(event => event[0] === 'set' && event[1] === .14 && event[2] === at), 'Release anchors the held depth before its fade, even with native cancel-and-hold.');
+    assert.ok(voice.motionDepth.gain.events.some(event => event[0] === 'linear' && event[1] === 0 && event[2] === at + .2));
+    assert.equal(voice.motionOscillator.stoppedAt, voice.oscillators[0].stoppedAt);
+    assert.ok(voice.motionOscillator.stoppedAt <= at + PATCH_TONE_EXIT_SECONDS + .02);
+    context.advance(2.3); audio.tick();
+    assert.ok(voice.disposed); assert.ok(voice.motionOscillator.disconnected && voice.motionDepth.disconnected && voice.motionGain.disconnected);
+    audio.stop();
+  }
+});
+
+test('long-held modulation follows the existing native voice budget through replacement and reset', () => {
+  const { audio, context } = harness({ areaMode: true });
+  audio.setPatches(Array.from({ length: 128 }, (_, i) => patch(`motion-crowd-${i}`)));
+  assert.equal(audio.voices.size, 32);
+  const voices = [...audio.voices.values()];
+  assert.equal(new Set(voices.map(voice => voice.motionOscillator)).size, 32);
+  context.advance(30); audio.tick();
+  assert.equal(audio.voices.size, 32);
+  audio.setPatches(Array.from({ length: 128 }, (_, i) => patch(`motion-next-${i}`)));
+  assert.ok(audio.voices.size + audio.tails.size + audio.handoffTails.size <= 96);
+  const all = [...voices, ...audio.voices.values(), ...audio.tails, ...audio.handoffTails];
+  audio.reset();
+  assert.ok(all.every(voice => voice.motionOscillator.disconnected && voice.motionGain.disconnected && voice.motionDepth.disconnected));
+  assert.equal(audio.voices.size + audio.tails.size + audio.handoffTails.size + audio.morphVoices.size, 0);
+});
 
 // Independently render a settled sine pair through the actual low-pass
 // equation. This catches the old coefficient match that hid a 20 dB RMS drop.
@@ -235,7 +295,7 @@ test('simultaneous released cooling has bounded admission and shared headroom', 
   audio.configure({ participantCount: 256 }); audio.setPatches(hot); context.advance(.3);
   const cool = hot.map(value => ({ ...value, heat: .9998, moisture: .2 })); audio.setPatches(cool);
   assert.equal(audio.voices.size, 32); assert.equal(audio.tails.size, 0);
-  assert.equal(audio.getMetrics().normalizationCount, 256); assert.equal(audio.getMetrics().crowdTargetGain, 1 / 16);
+  assert.equal(audio.getMetrics().normalizationCount, 256); assert.equal(audio.getMetrics().crowdTargetGain, 1);
   for (let tick = 0; tick < 40; tick++) { context.advance(.1); audio.setPatches(cool); assert.ok(audio.voices.size + audio.tails.size + audio.handoffTails.size <= 128); }
   assert.equal(audio.voices.size + audio.tails.size + audio.handoffTails.size, 0);
 });
@@ -527,32 +587,27 @@ test('patch room choices are fixed, more present and normalized with their direc
   audio.stop(); assert.ok(wetRecord.wet.disconnected && wetRecord.dry.disconnected);
 });
 
-test('holding identities normalize the tone crowd while the admitted texture pool has its own smooth headroom', () => {
+test('a 28-person rehearsal and larger audiences retain the same patch tone gain and finite material envelope', () => {
   const { audio, context } = harness();
   audio.configure({ participantCount: 1 });
   audio.setPatches(new Map([['first', patch('one')], ['duplicate', patch('one')]]).values());
   assert.equal(audio.voices.size, 1); assert.equal(audio.voices.get('one').midi, patchMidi('one'));
   context.advance(20); audio.tick();
-  const start = audio.getMetrics().crowdGain;
-  audio.configure({ participantCount: 64 }); audio.tick();
-  let metrics = audio.getMetrics();
-  assert.equal(metrics.participantCount, 64); assert.equal(metrics.normalizationCount, 64); assert.equal(metrics.crowdTargetGain, .125);
-  assert.equal(metrics.crowdGain, start, 'The first gain sample is continuous at a count change.');
-  assert.equal(audio.voices.get('one').targetGain, .012, 'A sustained patch envelope never receives a count step.');
-  assert.equal(metrics.textureNormalizationCount, 1); assert.equal(metrics.textureCrowdTargetGain, 1);
-  assert.equal(metrics.textureCrowdGain, 1, 'Silent pending textures are never attenuated for a larger tone audience.');
-  context.advance(.35); metrics = audio.getMetrics();
-  assert.ok(Math.abs(metrics.crowdGain - (.125 + (start - .125) * Math.exp(-1))) < 1e-12, 'The native target progresses without a scheduler tick.');
-  context.advance(3); audio.tick();
+  const voice = audio.voices.get('one'), toneGain = voice.targetGain;
+  for (const count of [28, 64, 256, 1]) {
+    audio.configure({ participantCount: count }); audio.tick(); context.advance(.4);
+    const metrics = audio.getMetrics();
+    assert.equal(metrics.participantCount, count); assert.equal(metrics.normalizationCount, count);
+    assert.equal(metrics.crowdTargetGain, 1); assert.equal(metrics.crowdGain, 1);
+    assert.equal(audio.voices.get('one'), voice); assert.equal(voice.targetGain, toneGain);
+    assert.equal(metrics.textureCrowdGain, 1);
+  }
   audio.setPatches([patch('one', { extinguished: true, holding: false })]);
   const record = [...audio.textureSources][0], curve = record.curve;
-  audio.configure({ participantCount: 1 });
-  const before = audio.getMetrics().crowdGain; audio.tick();
-  assert.ok(Math.abs(audio.getMetrics().crowdGain - before) < 1e-12); assert.equal(audio.getMetrics().normalizationCount, 1, 'A tone and its own recording form one audible patch.');
-  assert.equal(record.curve, curve, 'An existing finite recording follows the shared count gain.');
-  assert.equal(audio.toneCrowd.gain.events.at(-1)[3], 2.4, 'A departing crowd recovers gradually.');
-  context.advance(2.4); const recovered = audio.getMetrics().crowdGain;
-  assert.ok(recovered > before && recovered < 1);
+  audio.configure({ participantCount: 256 }); context.advance(.4); audio.tick();
+  assert.equal(audio.getMetrics().crowdGain, 1);
+  assert.equal(record.curve, curve, 'A growing audience cannot reshape an existing finite recording.');
+  assert.equal(audio.getMetrics().textureNormalizationCount, 1);
   audio.configure({ participantCount: Infinity }); assert.equal(audio.participantCount, 0);
 });
 

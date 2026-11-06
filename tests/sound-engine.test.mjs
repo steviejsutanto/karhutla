@@ -2,12 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { WildfireSound, SOUND_MACRO_DEFAULTS, SOUND_MIXER_DEFAULTS, automaticSoundMacros, landscapeBlend, macroParameters, variationWeights, dryFireTextureParameters, phoneBedParameters, fireProgression, participantMidi, participantMidiPair, participantFrequency, participantGrainParameters, participantGrainEnvelopeAt, patchMidiPair, patchHash, audibleMoisture, cricketRetreatParameters, participantToneParameters, participantPosition, PARTICIPANT_MIDI, PARTICIPANT_MIDI_PAIRS, PARTICIPANT_PITCH_LABELS, PARTICIPANT_PARTIALS, PARTICIPANT_GRAIN_AMPLITUDES, PARTICIPANT_ASH_RMS_RATIO, PHONE_CRACKLE_GAIN, TONE_REVERB_RETURN, MAIN_DRONE_MIDI, MAIN_DRONE_AMPLITUDES, MAIN_DRONE_LEVEL, sampleMakeupGain, circularLoopBuffer, PATCH_PENTATONIC_MIDI, patchMidi, patchResidueId, patchSoftToneParameters, patchResidueEnvelope } from '../app/sound-engine.js';
 import { computeSceneScore } from '../app/scene-score.js';
+import { countryPoint } from '../app/country-view.mjs';
 import { patchTextureRecordingParameters, patchFrequencyForMidi, PATCH_SOFT_TONE_LEVEL, PATCH_TEXTURE_SOURCE_LIMIT, PATCH_TEXTURE_ADMISSION_SECONDS } from '../app/patch-soft-tones.js';
 import { phoneCricketParameters } from '../app/sound-engine.js';
 import { createParticipantSoundField, patchSoundVoices } from '../app/sound-participants.js';
-import { PHONE_CRICKET_RATE } from '../app/sound-engine.js';
+import { PHONE_CRICKET_RATE, PHONE_CRICKET_LEVEL } from '../app/sound-engine.js';
 import { MAIN_DRONE_OVERTONES } from '../app/sound-engine.js';
 import { requestPlaybackAudioSession } from '../app/sound-engine.js';
+import { MAIN_ENABLE_FADE_SECONDS, MAIN_DISABLE_FADE_SECONDS, ARRIVAL_HAZE_GAIN } from '../app/sound-engine.js';
 import { OUTPUT_MAKEUP_DB, OUTPUT_MAKEUP_GAIN, MAIN_OUTPUT_MAKEUP_DB, MAIN_OUTPUT_MAKEUP_GAIN, OUTPUT_LIMIT_CEILING, OUTPUT_LIMIT_INPUT_RANGE, outputDynamics, smoothPeakLimit, outputProtectionCurve, prepareRecording, recordingPreparation } from '../app/audio-loudness.js';
 
 class FakeParam {
@@ -102,7 +104,7 @@ test('Main keeps transient headroom at saved full-scale settings while phone dyn
     assert.equal(engine.mixer.ash, 2); assert.equal(engine.mixer.rain, 1.4);
     assert.equal(engine.outputMakeup.gain.value, mode === 'operator' ? MAIN_OUTPUT_MAKEUP_GAIN : OUTPUT_MAKEUP_GAIN);
     assert.deepEqual(['threshold', 'knee', 'ratio', 'attack', 'release'].map(name => engine.compressor[name].value),
-      mode === 'operator' ? [-.5, 1, 12, .003, .08] : [-1, 1, 20, .001, .08]);
+      mode === 'operator' ? [-6, 6, 2, .02, .2] : [-1, 1, 20, .001, .08]);
     assert.equal(engine.getMetrics().loudness.makeupDb, settings.makeupDb);
     assert.equal(engine.getMetrics().loudness.peakKnee, settings.peakKnee);
     assert.deepEqual(engine.master.connections, [engine.outputMakeup]);
@@ -110,7 +112,8 @@ test('Main keeps transient headroom at saved full-scale settings while phone dyn
     assert.deepEqual(engine.compressor.connections, [engine.outputHeadroom]);
     assert.equal(engine.outputHeadroom.gain.value, 1 / OUTPUT_LIMIT_INPUT_RANGE);
     assert.deepEqual(engine.outputHeadroom.connections, [engine.outputSafety]);
-    assert.deepEqual(engine.outputSafety.connections, [context.destination]);
+    assert.deepEqual(engine.outputSafety.connections, [mode === 'operator' ? engine.mainOutputGate : context.destination]);
+    if (mode === 'operator') assert.deepEqual(engine.mainOutputGate.connections, [context.destination]);
     assert.equal(engine.outputSafety.curve, outputProtectionCurve(mode));
     assert.equal(engine.outputSafety.oversample, 'none');
     engine.setMuted(true); assert.equal(engine._outputGain(), 0);
@@ -246,11 +249,11 @@ test('closing insects crossfade with rain on Main over thirty seconds before the
     engine.setSceneState({ id: 'afterglow', elapsedMs: 42000, paused: true });
     assert.equal(engine._cricketGain(), mode === 'operator' ? .045 : 0);
     engine.setSceneState({ id: 'afterglow', elapsedMs: 48000, paused: true });
-    assert.ok(Math.abs(engine._cricketGain() - (mode === 'operator' ? .045 : .04) * Math.SQRT1_2) < 1e-12);
+    assert.ok(Math.abs(engine._cricketGain() - (mode === 'operator' ? .045 : PHONE_CRICKET_LEVEL) * Math.SQRT1_2) < 1e-12);
     engine.setSceneState({ id: 'afterglow', elapsedMs: 54000, paused: true });
-    assert.equal(engine._cricketGain(), mode === 'operator' ? 0 : .04);
+    assert.equal(engine._cricketGain(), mode === 'operator' ? 0 : PHONE_CRICKET_LEVEL);
     engine.setSceneState({ id: 'participation', elapsedMs: 12000 }); engine.setProgression({ sourceCount: 527, outCount: 300 });
-    if (mode === 'phone') assert.equal(engine._cricketGain(), .04 * phoneCricketParameters({ sourceCount: 527, outCount: 300 }).weight, 'Participation still follows actual map-wide extinction.');
+    if (mode === 'phone') assert.equal(engine._cricketGain(), PHONE_CRICKET_LEVEL * phoneCricketParameters({ sourceCount: 527, outCount: 300 }).weight, 'Participation still follows actual map-wide extinction.');
   }
 });
 
@@ -349,15 +352,15 @@ test('global progression crossfades fire/crickets at zero, halfway, and complete
   assert.ok(Math.abs(middle.fireWeight - Math.SQRT1_2) < 1e-12);
   assert.ok(Math.abs(middle.cricketWeight - phoneCricketParameters({ sourceCount: 100, outCount: 50 }).weight) < 1e-12);
   assert.ok(Math.abs(middle.gain - .04 * PHONE_CRACKLE_GAIN * Math.SQRT1_2) < 1e-12);
-  assert.ok(Math.abs(middle.cricketGain - .04 * phoneCricketParameters({ sourceCount: 100, outCount: 50 }).weight) < 1e-12);
+  assert.ok(Math.abs(middle.cricketGain - PHONE_CRICKET_LEVEL * phoneCricketParameters({ sourceCount: 100, outCount: 50 }).weight) < 1e-12);
   assert.equal(requests.filter(url => url.endsWith('crickets.mp3')).length, 1);
   engine.setProgression({ sourceCount: 100, outCount: 100 });
   // Global counts win even if a stale local patch still looks hot or very wet.
   engine.setPatches([{ ...patch('stale-hot', 1), moisture: 1 }]); engine.touch('stale-hot');
   assert.equal(engine.layers.get('crackle').gain.gain.value, 0);
-  assert.equal(engine.layers.get('crickets').gain.gain.value, .04);
+  assert.equal(engine.layers.get('crickets').gain.gain.value, PHONE_CRICKET_LEVEL);
   assert.equal(engine.voices.size, 0, 'A stale local hot value cannot restart a phone tone after global extinction.');
-  engine.release(); assert.equal(engine._cricketGain(), .04);
+  engine.release(); assert.equal(engine._cricketGain(), PHONE_CRICKET_LEVEL);
   assert.deepEqual(engine.getMetrics().progression, { sourceCount: 100, outCount: 100, fraction: 1 });
 });
 
@@ -489,12 +492,12 @@ test('phone crackle circularly conditions a whole native recording and keeps moi
   const layer = engine.layers.get('crackle'), first = [...layer.sources][0];
   assert.equal(first.buffer.duration, 14.45); assert.equal(first.source.playbackRate.value, 1); assert.equal(first.source.offset, 0);
   assert.equal(first.source.loopEnd, 14.45); assert.equal(first.source.stoppedAt, undefined);
-  assert.equal(layer.presence.type, 'peaking'); assert.equal(layer.presence.gain.value, 2.8);
-  assert.equal(layer.presence.frequency.value, 750);
-  assert.ok(layer.filter.frequency.value >= 6500);
+  assert.equal(layer.presence.type, 'peaking'); assert.equal(layer.presence.gain.value, 4.2);
+  assert.equal(layer.presence.frequency.value, 420);
+  assert.ok(layer.filter.frequency.value >= 3500 && layer.filter.frequency.value <= 3800);
   context.advance(100); engine._tick(); assert.deepEqual([...layer.sources], [first]);
   engine.setPatches([{ ...patch('hot', 1), moisture: 1 }]);
-  assert.equal(layer.filter.frequency.value, 600); assert.equal(layer.presence.gain.value, 2.8);
+  assert.equal(layer.filter.frequency.value, 600); assert.equal(layer.presence.gain.value, 4.2);
   assert.equal(layer.gain.connections.includes(engine.delaySend), false, 'The presence lift never routes fire into room echoes.');
 });
 
@@ -594,7 +597,7 @@ test('alternative switching fades old windows and stays bounded under rapid sele
   for (let index = 1; index <= 30; index++) { assert.equal(await engine.setForestSource(`/alternative-${index}.mp3`), true); assert.ok(layer.sources.size <= 6); }
   assert.equal(events.filter(event => event === 'resume').length, resumeCount);
   context.advance(2); engine._tick(); assert.ok(layer.sources.size <= 2);
-  engine.disable(); assert.equal(layer.sources.size, 0); assert.equal(engine.sourceRequests.size, 0);
+  engine.disable(); context.advance(MAIN_DISABLE_FADE_SECONDS + .03); assert.equal(layer.sources.size, 0); assert.equal(engine.sourceRequests.size, 0);
 });
 
 test('changing a muted source never resumes playback and disabling rejects in-flight decode', async t => {
@@ -803,7 +806,7 @@ test('phone crackle has seven dB of body gain and the retained main reverb retur
   const dry = [{ key: 'gain-check', heat: 1, moisture: 0 }], bed = phoneBedParameters(dry);
   assert.ok(Math.abs(bed.gain / .04 - PHONE_CRACKLE_GAIN) < 1e-12); assert.equal(bed.cricketGain, 0);
   const out = [{ ...dry[0], heat: 0, extinguished: true }];
-  assert.equal(phoneBedParameters(out).gain, 0); assert.equal(phoneBedParameters(out).cricketGain, .04);
+  assert.equal(phoneBedParameters(out).gain, 0); assert.equal(phoneBedParameters(out).cricketGain, PHONE_CRICKET_LEVEL);
   const { engine, context } = harness(t, { mode: 'operator' }); engine.setPatches(out); await engine.enable();
   assert.equal(engine.toneReverbReturn.gain.value, TONE_REVERB_RETURN);
   engine.reset('gain-reset'); assert.equal(engine.toneReverbReturn.gain.value, 0);
@@ -868,7 +871,7 @@ test('phone mode never creates oscillators, tone grains, or tone space through a
   assert.equal(engine.toneBus, undefined); assert.equal(engine.toneReverb, undefined); assert.equal(engine.delay, undefined);
   assert.equal(context.nodes.filter(node => ['convolver', 'delay', 'panner', 'HRTF'].includes(node.nodeType)).length, 0);
   engine.setMacroCondition({ sourceCount: 2, outCount: 2, stage: 8, steps: 8, heat: 0, moisture: 1 }); engine.touch('a');
-  assert.equal(engine.layers.get('crackle').gain.gain.value, 0); assert.equal(engine.layers.get('crickets').gain.gain.value, .04);
+  assert.equal(engine.layers.get('crackle').gain.gain.value, 0); assert.equal(engine.layers.get('crickets').gain.gain.value, PHONE_CRICKET_LEVEL);
 });
 
 test('nine global phone stages use shared heat and moisture and retain exact quiet and pure-cricket endpoints', async t => {
@@ -882,7 +885,7 @@ test('nine global phone stages use shared heat and moisture and retain exact qui
     assert.deepEqual(a.engine.getMetrics().phoneBed, b.engine.getMetrics().phoneBed);
     const bed = a.engine.getMetrics().phoneBed;
     assert.equal(bed.stage, stage); assert.equal(bed.heat, .6); assert.equal(bed.moisture, .35);
-    if (stage === 8) { assert.equal(bed.gain, 0); assert.equal(bed.cricketGain, .04); }
+    if (stage === 8) { assert.equal(bed.gain, 0); assert.equal(bed.cricketGain, PHONE_CRICKET_LEVEL); }
   }
   assert.equal(a.engine.setMacroCondition({ sourceCount: 0, outCount: 0, stage: 0, steps: 8, heat: 1, moisture: 0 }), true);
   assert.equal(a.engine.getMetrics().phoneBed.gain, 0); assert.equal(a.engine.getMetrics().phoneBed.cricketGain, 0);
@@ -914,14 +917,16 @@ test('spatial audio uses smoothed HRTF coordinates for direct sound and grains, 
   engine.setParticipants([participant('move', 1, { position: { x: 1, y: 1 }, heat: 0 })]);
   for (const path of [voice.directSpace, voice.grainSpace]) {
     assert.equal(path.panner.panningModel, 'HRTF'); assert.equal(path.panner.distanceModel, 'inverse');
-    assert.deepEqual(path.panner.positionX.events.at(-1), ['target', 3.5, 0, .065]);
-    assert.equal(path.panner.positionZ.value, -6.8);
+    assert.deepEqual(path.panner.positionX.events.at(-1), ['target', participantPosition([1, 1]).world[0], 0, .065]);
+    assert.equal(path.panner.positionZ.value, participantPosition([1, 1]).world[2]);
+    assert.deepEqual(path.focus.pan.events.at(-1), ['target', participantPosition([1, 1]).focusPan, 0, .065]);
+    assert.ok(path.nodes.includes(path.focus));
   }
   for (const grain of oldGrains) { assert.equal(grain.voice, voice); assert.ok(grain.envelope.connections.includes(voice.grainGate)); assert.ok(grain.highpass.frequency.events.length); }
   const fallback = harness(t, { mode: 'operator' }); fallback.engine.setParticipants([participant('stereo', 2)]); await fallback.engine.enable();
   fallback.engine.setParticipants([participant('stereo', 2, { position: [1, 1] })]);
   const stereo = fallback.engine.voices.get('stereo'); assert.equal(stereo.spatialMode, 'stereo');
-  assert.equal(stereo.directSpace.panner.pan.value, .9); assert.equal(stereo.directSpace.distance.gain.value, 1 / 1.8);
+  assert.equal(stereo.directSpace.panner.pan.value, 1); assert.equal(stereo.directSpace.distance.gain.value, 1 / 1.8);
   fallback.context.createStereoPanner = undefined; fallback.engine.setParticipants([participant('distance', 4)]); fallback.context.advance(2); fallback.engine._tick();
   assert.equal(fallback.engine.voices.get('distance').spatialMode, 'distance');
   assert.deepEqual(participantPosition([Infinity, -4]).world, [0, 0, -.8]);
@@ -1003,9 +1008,9 @@ test('256-person input and rapid changes remain bounded without stealing complet
     const people = Array.from({ length: 256 }, (_, index) => participant(`audience-${index}`, index + 1, { holding: (index + frame) % 3 !== 0, heat: frame % 11 / 10, position: [(index % 16) / 15, Math.floor(index / 16) / 15] }));
     engine.setParticipants(people); context.advance(.16); engine._tick();
     assert.ok(engine.voices.size + engine.tails.size <= 32); assert.ok(engine.toneGrains.size <= 256); assert.ok(engine.toneGrainBuffers.size <= 36);
-    assert.ok([...engine.voices.values()].reduce((sum, voice) => sum + voice.targetGain ** 2, 0) <= .0016 ** 2 + 1e-12);
+    assert.ok([...engine.voices.values()].every(voice => voice.targetGain <= .0016), 'Each admitted voice retains its fixed per-voice calibration.');
   }
-  assert.ok(engine.getMetrics().parkedParticipants > 0); engine.disable();
+  assert.ok(engine.getMetrics().parkedParticipants > 0); engine.disable(); context.advance(MAIN_DISABLE_FADE_SECONDS + .03);
   assert.equal(engine.voices.size, 0); assert.equal(engine.tails.size, 0); assert.equal(engine.toneGrains.size, 0); assert.equal(engine.toneGrainBuffers.size, 0);
 });
 
@@ -1029,7 +1034,7 @@ test('shared counts keep early phone insects distant and quiet while the main re
       const engine = new WildfireSound({ mode, document: null });
       engine.setPatches([patch('misleading-local-out', 0, true)]);
       assert.equal(engine.setMacroCondition(condition), true);
-      const gain = engine.getMetrics().cricketGain / (mode === 'phone' ? .04 : .045);
+      const gain = engine.getMetrics().cricketGain / (mode === 'phone' ? PHONE_CRICKET_LEVEL : .045);
       assert.ok(Math.abs(gain - (mode === 'phone' ? phoneCricketParameters(condition).weight : expected)) < 1e-15); engine.destroy();
     }
   }
@@ -1056,7 +1061,7 @@ test('300 of 527 extinguished fires keep phone insects far away, then approach n
   slots[0].buffer = null; engine._applyVariationWeights(layer);
   assert.equal(slots[2].weight, 0, 'A missing distant asset cannot substitute a loud close chorus.');
   for (const outCount of [450, 500, 527]) { engine.setProgression({ sourceCount: 527, outCount }); engine._tick(); }
-  assert.deepEqual(engine._variationWeights('crickets'), [0, 0, 1]); assert.equal(engine._cricketGain(), .04);
+  assert.deepEqual(engine._variationWeights('crickets'), [0, 0, 1]); assert.equal(engine._cricketGain(), PHONE_CRICKET_LEVEL);
   assert.equal(engine._phoneBed().gain, 0);
   context.advance(30); engine._tick(); assert.ok(layer.sources.size <= 6, 'Perspective loops stay native and bounded.');
 });
@@ -1175,13 +1180,13 @@ test('title is haze alone even on a cold all-out map and manual controls remain 
   engine.setProgression({ sourceCount: 100, outCount: 100, heat: 0, moisture: 1, surfaceWetness: 1 });
   engine.setParticipants([participant('held'), participant('out', 2, { extinguished: true, heat: 0 })]);
   engine.setSceneState({ id: 'arrival', paused: true, elapsedMs: 0 }); await engine.enable(); await flush();
-  assert.equal(engine.layers.get('haze').gain.gain.value, .046);
+  assert.equal(engine.layers.get('haze').gain.gain.value, .046 * ARRIVAL_HAZE_GAIN);
   assert.equal(engine.getMetrics().outputGains.main, .55);
   for (const id of ['forest', 'roar', 'charcoal', 'ash', 'rain', 'moisture', 'crickets']) assert.equal(engine.layers.get(id).gain.gain.value, 0, id);
   assert.equal(engine.ashGain.gain.value, 0); assert.equal(engine.turbulenceGain.gain.value, 0);
   assert.equal(engine.voices.size, 0); assert.equal(engine.mainDrone, null);
   engine.setMacros({ haze: .3, forest: 1, ash: 1, rain: 1, moisture: 1 });
-  assert.ok(engine.layers.get('haze').gain.gain.value > 0 && engine.layers.get('haze').gain.gain.value < .046);
+  assert.ok(engine.layers.get('haze').gain.gain.value > 0 && engine.layers.get('haze').gain.gain.value < .046 * ARRIVAL_HAZE_GAIN);
   for (const id of ['forest', 'ash', 'rain', 'moisture', 'crickets']) assert.equal(engine.layers.get(id).gain.gain.value, 0, `Manual ${id} cannot cross the scene gate.`);
 });
 
@@ -1227,7 +1232,7 @@ test('participation replaces main burning with the two shared harmonic banks tha
   assert.equal(engine.layers.get('rain').gain.gain.value, 0); assert.equal(engine.getMetrics().mainDrone.gain, 0);
   context.advance(60); engine._tick();
   assert.ok(engine.layers.get('rain').gain.gain.value > 0); assert.equal(engine.getMetrics().mainDrone.gain, 0);
-  engine.disable(); assert.equal(engine.mainDrone, null);
+  engine.disable(); context.advance(MAIN_DISABLE_FADE_SECONDS + .03); assert.equal(engine.mainDrone, null);
   assert.ok(drone.oscillators.every(node => node.disconnected));
 });
 
@@ -1241,10 +1246,10 @@ test('phone permission prewarms silently, then crackle and real out-count insect
   assert.equal(engine.getMetrics().outputGains.phone, 0); assert.equal(engine.layers.get('crackle').gain.gain.value, 0);
   engine.setSceneState({ id: 'participation', elapsedMs: 0 }); context.advance(6); engine._tick();
   assert.equal(engine.layers.get('crackle').gain.gain.value, engine._phoneBed().gain * .5);
-  assert.equal(engine._cricketGain(), .04 * phoneCricketParameters({ sourceCount: 100, outCount: 50 }).weight * .5);
+  assert.equal(engine._cricketGain(), PHONE_CRICKET_LEVEL * phoneCricketParameters({ sourceCount: 100, outCount: 50 }).weight * .5);
   context.advance(6); engine._tick();
   assert.equal(engine.layers.get('crackle').gain.gain.value, engine._phoneBed().gain);
-  assert.equal(engine._cricketGain(), .04 * phoneCricketParameters({ sourceCount: 100, outCount: 50 }).weight);
+  assert.equal(engine._cricketGain(), PHONE_CRICKET_LEVEL * phoneCricketParameters({ sourceCount: 100, outCount: 50 }).weight);
   assert.equal(context.nodes.some(node => node.nodeType === 'oscillator'), false);
   assert.equal(engine.getMetrics().outputGains.phone, .55);
 });
@@ -1289,7 +1294,7 @@ test('the native rain and insect overlap ends at thirty seconds while Main carri
   phone.context.advance(30); phone.engine._tick();
   const retreat = cricketRetreatParameters(30000);
   assert.equal(phone.engine.getMetrics().outputGains.phone, .55 * retreat.gain * retreat.tail);
-  assert.equal(phone.engine._cricketGain(), .04, 'Distance is in the master, not repeated on the cricket layer.');
+  assert.equal(phone.engine._cricketGain(), PHONE_CRICKET_LEVEL, 'Distance is in the master, not repeated on the cricket layer.');
   assert.equal(phone.engine.layers.get('crickets').filter.frequency.value, retreat.lowpass);
   assert.equal(main.engine.getMetrics().cricketRetreat.progress, 0, 'Only phones recede after the dark hold.');
   phone.context.advance(30); phone.engine._tick();
@@ -1411,7 +1416,7 @@ test('PA and phone insect gains share the exact audio-clock transfer, including 
     assert.doesNotThrow(() => engine.setSceneState({ id: 'afterglow', elapsedMs }));
     const curve = parameter.events.filter(event => event[0] === 'curve').at(-1);
     assert.ok(Math.abs(curve[2] + curve[3] - deadline) < 1 / context.sampleRate);
-    const level = mode === 'phone' ? .04 : .045;
+    const level = mode === 'phone' ? PHONE_CRICKET_LEVEL : .045;
     for (const index of [0, 32, 128, 256, 384, 512]) {
       const score = computeSceneScore({ id: 'afterglow' }, elapsedMs + 12000 * index / 512);
       const expected = level * (mode === 'phone' ? score.mix.phoneCrickets : score.mix.mainCrickets);
@@ -1425,7 +1430,7 @@ test('PA and phone insect gains share the exact audio-clock transfer, including 
     assert.doesNotThrow(() => engine.setSceneState({ id: 'afterglow', elapsedMs: 42123.45 }));
     assert.doesNotThrow(() => engine.setSceneState({ id: 'afterglow', elapsedMs: 53990 }));
     const last = parameter.events.at(-1); assert.equal(last[0], 'linear');
-    assert.ok(Math.abs(last[1] - (mode === 'phone' ? .04 : 0)) < 2e-9);
+    assert.ok(Math.abs(last[1] - (mode === 'phone' ? PHONE_CRICKET_LEVEL : 0)) < 2e-9);
     assert.doesNotThrow(() => engine.setSceneState({ id: 'participation', elapsedMs: 12000 }));
     assert.equal(parameter.events.at(-1)[0], 'target');
   }
@@ -1608,7 +1613,7 @@ test('mixer boosts remain inside scene masks and the complete role ending, while
   assert.deepEqual(phone.engine.layers.get('crickets').gain.connections, [phone.engine.mix]);
 });
 
-test('rain has independent circular passages and spatial depths without scheduler modulation or a low-threshold pump', async t => {
+test('rain has independent circular passages and spatial depths with fixed source gain and gentle Main output compression', async t => {
   const { engine, context } = harness(t, { mode: 'operator', fetchImpl: successfulFetch });
   context.decodeAudioData = async () => context.createBuffer(1, 120000, 8000);
   await engine.setLayerVariations('rain', endpoints('rain')); engine.setMacro('rain', .65); await engine.enable(); await flush();
@@ -1621,16 +1626,16 @@ test('rain has independent circular passages and spatial depths without schedule
   assert.equal(records.filter(record => record.perspective.highpass <= 80).length, 4, 'Both endpoint recordings retain bass in their broad and far perspectives.');
   for (let tick = 0; tick < 40; tick++) { context.advance(.3); engine._tick(); }
   assert.deepEqual([...layer.sources], records); assert.equal(layer.gain.gain.events.length, gainEvents);
-  assert.ok(engine.compressor.threshold.value >= -3); assert.ok(engine.compressor.knee.value <= 4);
+  assert.equal(engine.compressor.threshold.value, -6); assert.equal(engine.compressor.ratio.value, 2); assert.equal(engine.compressor.knee.value, 6);
   engine.setSceneState({ id: 'final-rain', rainIntensity: .2 }); assert.equal(engine.getMetrics().macros.rain, .2);
   engine.setSceneState({ id: 'final-rain', paused: true, rainIntensity: .2 }); context.advance(3); engine._tick(); assert.equal(engine.getMetrics().macros.rain, .2);
   engine.setSceneState({ id: 'afterglow', rainIntensity: 1, elapsedMs: 2000 }); assert.equal(layer.gain.gain.value, .125);
-  engine.disable();
+  engine.disable(); context.advance(MAIN_DISABLE_FADE_SECONDS + .03);
   assert.ok(records.every(record => record.nodes.every(node => node.disconnected)));
   assert.ok(records.every(record => record.modulators.every(node => node.stoppedAt !== undefined)));
 });
 
-test('rain replacement preserves unchanged perspectives and dry voices share audience headroom with their spatial textures', async t => {
+test('rain replacement preserves unchanged perspectives and dry voices retain level as the audience grows', async t => {
   const { engine, context } = harness(t, { mode: 'operator', fetchImpl: successfulFetch });
   context.decodeAudioData = async () => context.createBuffer(1, 120000, 8000);
   const [a, b] = endpoints('rain');
@@ -1645,7 +1650,7 @@ test('rain replacement preserves unchanged perspectives and dry voices share aud
   engine.setAudienceParticipationCount(16);
   engine.setPatchVoices([sourceVoice('crowded', { holding: true, heat: .02, moisture: 1 })]);
   assert.equal(engine.getMetrics().participantCount, 16); assert.equal(engine.getMetrics().softTones.participantCount, 16);
-  assert.equal(engine.getMetrics().softTones.crowdTargetGain, .25);
+  assert.equal(engine.getMetrics().softTones.crowdTargetGain, 1);
   assert.equal(engine.patchSoftTones.textureDestination, engine.textureDryBus);
   assert.equal(engine.textureDryBus.gain.value, .8); assert.deepEqual(engine.textureDryBus.connections, [engine.fieldBus]);
   assert.equal(engine.patchSoftTones.textureReverbDestination, engine.toneReverbFilter, 'Selected material sends retain the shared spatial room.');
@@ -2247,7 +2252,7 @@ test('a quick local tap preserves the full dry bell and room decay after pointer
   context.advance(voice.stopSeconds * .61); engine._tick();
   assert.equal(bells.bells.size, 0); assert.equal(bells.reverb, room, 'The room finishes after the dry voice.');
   context.advance(1.4); engine._tick(); assert.equal(bells.getMetrics().bellReverb.graphCount, 0);
-  engine.setLocalInteraction(out); engine.setLocalInteraction(released); engine.setMuted(true); context.advance(.1);
+  engine.setLocalInteraction(out); engine.setLocalInteraction(released); engine.setMuted(true); context.advance(MAIN_DISABLE_FADE_SECONDS + .03); context.advance(.08);
   assert.equal(bells.active, false); assert.equal(bells.bells.size + bells.retiringBells.size, 0);
   assert.equal(bells.getMetrics().bellReverb.graphCount, 0, 'Mute still flushes the complete tail.');
   engine.setMuted(false); await flush(); engine.setLocalInteraction(out); engine.setLocalInteraction(released);
@@ -2369,8 +2374,11 @@ test('one complete twenty-cell rain footprint couples one bell, quench and mater
   const residue = [...soft.residues.values()][0], bell = [...bells.bells][0], quench = [...engine.mainQuench.quenches][0];
   assert.deepEqual(residue.memberKeys, field.patches.map(value => value.key).sort());
   assert.equal(residue.key, representative.key); assert.equal(bell.key, representative.key); assert.equal(quench.key, representative.key);
-  assert.deepEqual(residue.patch.position, representative.position); assert.deepEqual(quench.position, representative.position);
-  assert.equal(bell.space.panner.pan.value, participantPosition(representative.position).pan);
+  const completionPosition = countryPoint([110.1375, -1.875]);
+  assert.deepEqual(residue.patch.position, representative.position);
+  assert.deepEqual(quench.position, completionPosition);
+  assert.equal(bell.space.panner.pan.value, participantPosition(completionPosition).pan);
+  assert.deepEqual(engine.lastBellEvent.position, completionPosition, 'Bell spatial sound and relayed visual use the same completed brush centre.');
   assert.ok([...soft.morphVoices.values()].every(voice => voice.residue === residue), 'All already sounding notes join one shared material transition.');
   for (let repeat = 0; repeat < 20; repeat++) {
     context.advance(.025); wallTime = context.currentTime;
@@ -2502,7 +2510,7 @@ test('Main consumes muted and paused events and cancels shots on ending and rese
   const reload = harness(t, { mode: 'operator', fetchImpl: successfulFetch }); reload.engine.setPatchVoices([out]); await readyMainQuench(reload.engine);
   assert.equal(reload.engine.mainQuench.getMetrics().triggered, 0); assert.equal(reload.engine.getMetrics().mainBells.bellsTriggered, 0);
 });
-test('Main bursts keep quench audience headroom while eight sustained bells use separate normalization and mixing', async t => {
+test('Main bursts retain fixed bell levels and quench overlap blending without audience-count attenuation', async t => {
   const { engine, context } = harness(t, { mode: 'operator', fetchImpl: successfulFetch });
   const hot = Array.from({ length: 500 }, (_, i) => sourceVoice(`extinction-${i}`, { holding: i < 32 }));
   engine.setPatchVoices(hot); engine.setAudienceParticipationCount(100); await readyMainQuench(engine);
@@ -2510,16 +2518,16 @@ test('Main bursts keep quench audience headroom while eight sustained bells use 
   const main = engine.mainQuench; assert.equal(main.getMetrics().triggered, 8); assert.ok(main.quenches.size + main.retiringQuenches.size <= 9);
   const bells = engine.localBells; assert.equal(bells.bellsTriggered, 8);
   assert.ok(bells.bells.size <= 8); assert.ok(bells.retiringBells.size <= 8); assert.ok(bells.bells.size + bells.retiringBells.size <= 16);
-  assert.deepEqual(bells.getMetrics().bellDecayRangeSeconds, [5, 14]); assert.equal(bells.getMetrics().bellReverb.graphCount, 1);
-  assert.equal(engine.mainBellBus.gain.value, SOUND_MIXER_DEFAULTS.bells / Math.sqrt(bells.bells.size), 'Bell dry sound and room count only the currently ringing bells.');
-  assert.ok(main.getMetrics().crowdGain <= .1); assert.ok(main.outputTarget <= .1);
+  assert.deepEqual(bells.getMetrics().bellDecayRangeSeconds, [8, 12]); assert.equal(bells.getMetrics().bellReverb.graphCount, 1);
+  assert.equal(engine.mainBellBus.gain.value, SOUND_MIXER_DEFAULTS.bells, 'Bell dry sound and room retain the full trim during overlap.');
+  assert.equal(main.getMetrics().crowdGain, 1 / Math.sqrt(main.quenches.size + main.retiringQuenches.size));
   const bellGain = engine.mainBellBus.gain.value, quenchGain = main.outputTarget;
   engine.setMixer({ outDrone: .3 }); assert.equal(main.weight, 1); assert.equal(main.outputTarget, quenchGain);
   assert.equal(engine.mainBellBus.gain.value, bellGain, 'The after-extinction texture trim cannot change bells or quench.');
-  engine.setMixer({ bells: 1.9, quench: .3 }); assert.ok(Math.abs(main.weight - .3) < 1e-12); assert.ok(main.outputTarget <= .03);
-  assert.equal(engine.mainBellBus.gain.value, 1.9 / Math.sqrt(bells.bells.size));
-  context.advance(.1); engine.setAudienceParticipationCount(1000); assert.ok(main.outputTarget <= .3 / Math.sqrt(1000));
-  assert.equal(engine.mainBellBus.gain.value, 1.9 / Math.sqrt(bells.bells.size), 'A larger holding audience cannot bury the same eight bell voices.');
+  engine.setMixer({ bells: 1.9, quench: .3 }); assert.ok(Math.abs(main.weight - .3) < 1e-12); assert.equal(main.outputTarget, .3 * main.crowdGain);
+  assert.equal(engine.mainBellBus.gain.value, 1.9);
+  context.advance(.1); engine.setAudienceParticipationCount(1000); assert.equal(main.outputTarget, .3 * main.crowdGain);
+  assert.equal(engine.mainBellBus.gain.value, 1.9, 'A larger holding audience cannot bury the same eight bell voices.');
   const before = main.getMetrics().triggered; engine._tick(); assert.equal(main.getMetrics().triggered, before, 'Dropped burst events never become a delayed queue.');
   assert.equal(bells.bellsTriggered, 8, 'A large extinction packet cannot become a delayed bell barrage.');
 });
@@ -2530,7 +2538,9 @@ test('Main room history is discarded at suspension, pause, ending and reset, and
   const hot = sourceVoice('room', { holding: true, heat: .01, moisture: 1 }), out = { ...hot, holding: false, extinguished: true };
   engine.setPatchVoices([hot]); engine.setSceneState({ id: 'participation', elapsedMs: 12000 }); await readyMainQuench(engine);
   engine.setPatchVoices([out]); context.advance(.1); const mutedRoom = engine.toneReverb, shot = [...engine.mainQuench.quenches][0];
-  engine.setMuted(true); assert.equal(mutedRoom.disconnected, true); assert.equal(engine.mainQuench.output.gain.value, 0);
+  engine.setMuted(true); assert.equal(mutedRoom.disconnected, false, 'The room remains connected through the Main output fade.');
+  context.advance(MAIN_DISABLE_FADE_SECONDS + .03);
+  assert.equal(mutedRoom.disconnected, true); assert.equal(engine.mainQuench.output.gain.value, 0);
   engine.setMuted(false); await flush();
   assert.equal(shot.source.disconnected, true); assert.notEqual(engine.toneReverb, mutedRoom);
   assert.equal(engine.toneReverbReturn.gain.value, TONE_REVERB_RETURN, 'Resetting a room does not permanently remove the patch wet return.');
@@ -2542,4 +2552,77 @@ test('Main room history is discarded at suspension, pause, ending and reset, and
   engine.setSceneState({ id: 'participation', elapsedMs: 12000 }); engine.setPatchVoices([hot]);
   assert.equal(engine.toneReverbReturn.gain.value, TONE_REVERB_RETURN); assert.equal(engine.mainQuench.getMetrics().triggered, 1);
   assert.equal(engine.retiredToneSpaces.size, 0);
+});
+
+test('Main bell trim remains audible through forest takeover instead of following the fading drone', async t => {
+  const { engine } = harness(t, { mode: 'operator' }); await engine.enable();
+  engine.setMixer({ bells: 1.6 });
+  for (const [id, elapsedMs] of [['participation', 0], ['participation', 12000], ['forest-takeover', 0], ['forest-takeover', 15000], ['forest-takeover', 30000], ['final-rain', 0]]) {
+    engine.setSceneState({ id, elapsedMs });
+    assert.equal(engine.mainBellBus.gain.value, 1.6, `${id} at ${elapsedMs} retains the bell's independent trim.`);
+  }
+  engine.setSceneState({ id: 'forest-takeover', elapsedMs: 30000, paused: true }); assert.equal(engine.mainBellBus.gain.value, 0);
+  engine.setSceneState({ id: 'ended', elapsedMs: 0 }); assert.equal(engine.mainBellBus.gain.value, 0);
+});
+
+
+test('Main enable and rapid mute reversals follow one rounded final output gate without interrupting the scene master', async t => {
+  const { engine, context, events } = harness(t, { mode: 'operator' });
+  engine.setSceneState({ id: 'arrival', paused: true, elapsedMs: 0 });
+  const enabling = engine.enable(); assert.equal(events.includes('resume'), true, 'User activation resumes synchronously.');
+  await enabling;
+  assert.equal(engine.getMetrics().mainActivation.gain, 0);
+  context.advance(MAIN_ENABLE_FADE_SECONDS / 2);
+  assert.ok(Math.abs(engine.getMetrics().mainActivation.gain - .5) < 1e-12);
+  const fieldSource = engine.ashSource;
+  engine.setMuted(true); const cleanup = engine.mainStopClock;
+  assert.ok(cleanup); assert.equal(fieldSource.disconnected, false);
+  assert.equal(engine.master.gain.value, .55, 'The user fade leaves the composed scene envelope open.');
+  context.advance(MAIN_DISABLE_FADE_SECONDS / 2);
+  assert.equal(context.state, 'running'); assert.ok(engine.getMetrics().mainActivation.gain > 0);
+  const before = engine.getMetrics().mainActivation.gain;
+  await engine.enable();
+  assert.equal(engine.mainStopClock, null); assert.equal(cleanup.onended, null);
+  assert.equal(engine.getMetrics().mainActivation.gain, before, 'A rapid reversal starts at the actual current gain.');
+  assert.equal(engine.ashSource, fieldSource, 'The continuing field is not stacked or restarted.');
+  context.advance(1); engine._tick();
+  assert.equal(engine.getMetrics().mainActivation.gain, 1); assert.equal(context.state, 'running');
+  engine.disable();
+  assert.equal(engine.enabled, false); assert.equal(engine.timer, null);
+  context.advance(.3); assert.equal(context.state, 'running'); assert.equal(fieldSource.disconnected, false);
+  context.advance(.38); assert.equal(engine.getMetrics().mainActivation.gain, 0); assert.equal(fieldSource.disconnected, true);
+  assert.equal(context.state, 'running', 'Native one-shot cleanup finishes behind the silent gate.');
+  context.advance(.08); await flush(); assert.equal(context.state, 'suspended'); assert.equal(engine.mainStopClock, null);
+  assert.equal(engine.getMetrics().activeSources, 0);
+  const resumed = engine.enable(); assert.equal(context.state, 'running'); await resumed;
+  assert.equal(engine.getMetrics().mainActivation.gain, 0, 'A suspended context re-enters from silence.');
+});
+
+test('Main fade cleanup survives incoming held patches, preserves ending silence, and cannot suspend after destruction', async t => {
+  const { engine, context } = harness(t, { mode: 'operator' });
+  engine.setSceneState({ id: 'participation', elapsedMs: 12000 });
+  engine.setPatchVoices([sourceVoice('steady', { holding: true, heat: .1, moisture: .9 })]); await engine.enable();
+  context.advance(1); engine._tick();
+  const voice = engine.patchSoftTones.voices.get('steady');
+  engine.setMuted(true); context.advance(.2);
+  engine.setPatchVoices([sourceVoice('steady', { holding: true, heat: .05, moisture: 1 })]);
+  assert.equal(engine.patchSoftTones.voices.get('steady'), voice); assert.notEqual(voice.disposed, true);
+  engine.setSceneState({ id: 'ended', elapsedMs: 0 });
+  assert.equal(engine.master.gain.value, 0); assert.equal(engine.fieldBus.gain.value, 0);
+  const clock = engine.mainStopClock;
+  engine.destroy(); assert.equal(clock.onended, null); assert.equal(context.state, 'closed');
+  assert.equal(engine.mainStopClock, null); assert.equal(engine.getMetrics().activeSources, 0);
+  context.advance(5); assert.equal(context.state, 'closed'); assert.equal(await engine.enable(), false);
+});
+
+test('Main extinction edges observed during a device interruption never become strikes on resume', async t => {
+  const { engine, context } = harness(t, { mode: 'operator', fetchImpl: successfulFetch });
+  const hot = sourceVoice('interrupted-source'), out = { ...hot, extinguished: true, heat: 0 };
+  engine.setSceneState({ id: 'participation', elapsedMs: 12000 }); engine.setPatchVoices([hot]); await readyMainQuench(engine);
+  context.advance(1); context.state = 'interrupted'; context.onstatechange();
+  engine.setPatchVoices([out]);
+  assert.equal(engine.localBells.bellsTriggered, 0); assert.equal(engine.mainQuench.getMetrics().triggered, 0);
+  await engine.enable(); engine._tick();
+  assert.equal(engine.localBells.bellsTriggered, 0); assert.equal(engine.mainQuench.getMetrics().triggered, 0);
+  assert.equal(engine.getMetrics().mainActivation.gain, 0);
 });

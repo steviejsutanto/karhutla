@@ -112,9 +112,9 @@ test('phone rain accepts only a verified rain identity and never exposes Main qu
   assert.deepEqual(palette.phone, { rain: '/audio-assets/v3/rain-mobile.mp3?v=bbbbbbbbbbbb' });
 });
 
-test('the catalog accepts the expanded local palette and enforces its forty-asset limit', () => {
-  assert.equal(soundLibrary({ assets: Array.from({ length: 40 }, (_, index) => asset(`fire-${index}`)) }).assets.length, 40);
-  assert.throws(() => soundLibrary({ assets: Array.from({ length: 41 }, (_, index) => asset(`fire-${index}`)) }));
+test('the catalog accepts the expanded local palette and enforces its sixty-four-asset limit', () => {
+  assert.equal(soundLibrary({ assets: Array.from({ length: 64 }, (_, index) => asset(`fire-${index}`)) }).assets.length, 64);
+  assert.throws(() => soundLibrary({ assets: Array.from({ length: 65 }, (_, index) => asset(`fire-${index}`)) }));
 });
 
 test('cricket perspective layers resolve only unique verified insect entries and preserve the old aftermath pair', () => {

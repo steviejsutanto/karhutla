@@ -4,6 +4,7 @@ import { drawBrushRain } from '../visual-assets/map-weather.js';
 import { SharedConnection, operatorRequest } from './shared-client.js';
 import { mountSoundControls } from './sound-controls.js';
 import { createParticipantSoundField, patchSoundVoices, activeSoundParticipantCount, nationalPhoneInteraction, participantSoundPosition } from './sound-participants.js';
+import { DEFAULT_RAIN_STRENGTH } from './scene-score.js';
 
 const $ = selector => document.querySelector(selector);
 const canvas = $('#map');
@@ -16,7 +17,7 @@ rainCanvas.setAttribute('aria-hidden', 'true');
 rainCanvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none';
 canvas.after(rainCanvas);
 const rainContext = rainCanvas.getContext('2d');
-const state = { snapshot: null, land: null, neighbors: null, selected: null, zoom: 1, panX: 0, panY: 0, width: 0, height: 0, points: [], mapPatches: [], fetching: false, mode: 'rain', strength: .5, hoverGeo: null, pointers: new Map(), ready: false };
+const state = { snapshot: null, land: null, neighbors: null, selected: null, zoom: 1, panX: 0, panY: 0, width: 0, height: 0, points: [], mapPatches: [], fetching: false, mode: 'rain', strength: DEFAULT_RAIN_STRENGTH, hoverGeo: null, pointers: new Map(), ready: false };
 const simulation = new RainSimulation();
 const sound = mountSoundControls(document.getElementById('operator-sound'), { mode: 'operator' });
 const soundSourceKeys = new Set();

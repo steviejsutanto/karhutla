@@ -1,6 +1,7 @@
 // Shared by the authority, the projection, phones, and the sound engine.
 // All times are show-clock times: callers interpolate only while unpaused.
-export const FINAL_RAIN_RAMP_MS = 60_000;
+export const FINAL_RAIN_RAMP_MS = 52_000;
+export const DEFAULT_RAIN_STRENGTH = .54;
 export const FOREST_RAIN_STRENGTH_MULTIPLIER = .6;
 // Keep real rain delivery and its visual strength on the same scene rule.
 export function audienceRainStrength(scene, strength = 0) {

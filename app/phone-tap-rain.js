@@ -1,5 +1,6 @@
 // Quiet native rain follows the finger, independently of the selected ground.
-const ATTACK_SECONDS = .85, RELEASE_SECONDS = 2.5, RAIN_LEVEL = .024;
+export const PHONE_RAIN_TRIM = 10 ** (-4.5 / 20);
+const ATTACK_SECONDS = .85, RELEASE_SECONDS = 2.5, RAIN_LEVEL = .024 * PHONE_RAIN_TRIM;
 const START_LEAD_SECONDS = .025, ENVELOPE_STEPS = 64;
 const ENVELOPE_SHAPE = Array.from({ length: ENVELOPE_STEPS + 1 }, (_, index) => {
   const progress = index / ENVELOPE_STEPS;

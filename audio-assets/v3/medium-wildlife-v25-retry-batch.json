@@ -1,0 +1,114 @@
+{
+  "model": "Stable Audio 3 Medium",
+  "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+  "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+  "license": "Stable Audio Community License",
+  "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+  "backend": "Official MLX local inference on Apple Silicon",
+  "runtimeRevision": "5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84",
+  "optimizedWeightsRepository": "https://huggingface.co/stabilityai/stable-audio-3-optimized",
+  "optimizedWeightsRevision": "30cb2644da54bfa63275d1bc7f1fa67fc718680f",
+  "verifiedWeights": {
+    "t5gemma_f16.npz": {
+      "bytes": 567443068,
+      "sha256": "8deb20489f36d9aec539f26c9c67321f99bc5fe300d470435ed6e76be4f16bbd"
+    },
+    "dit_medium_f16.npz": {
+      "bytes": 2907300946,
+      "sha256": "f9e5647ea3225818657d47d47ae4b34afa29c0568206ca89566c1a758944a38e"
+    },
+    "same_l_decoder_f32.npz": {
+      "bytes": 1704311976,
+      "sha256": "84924be2122d3a20fce443f40b782d9cd88e8e73707476326003ac47659a2287"
+    }
+  },
+  "device": {
+    "device_name": "Apple M1 Pro",
+    "max_recommended_working_set_size": 11453251584,
+    "memory_size": 17179869184,
+    "architecture": "applegpu_g13s",
+    "max_buffer_length": 8589934592,
+    "resource_limit": 499000
+  },
+  "startedAt": "2026-11-05T13:29:45.085779+00:00",
+  "status": "complete",
+  "assets": {
+    "rainforest-bird-low-a-v25-take2": {
+      "id": "rainforest-bird-low-a-v25-take2",
+      "kind": "wildlife-bird",
+      "title": "Soft rainforest bird phrase",
+      "seed": 202611052504,
+      "role": "Separate original soft deep forest-bird coo, restrained lower register",
+      "prompt": "TrackType: SFX, A single tropical forest dove quietly calls from far away, one very soft low hollow coo-woo. Deep rounded mellow bird cooing at a low register around 500 Hz, like a large wood pigeon, warm woody breathy resonance with a short gentle descending finish. A tiny quiet isolated phrase with silence before and after. No high notes, whistles, chirps, squeaks, harsh squawks or repeated song. No wind, rain, insects, frogs, speech, music or instruments. Length: 5 seconds.",
+      "durationSeconds": 5,
+      "steps": 8,
+      "cfgScale": 1.0,
+      "sampler": "pingpong",
+      "pack": "scripts/stablegen-v25-birds-retry-prompts.json",
+      "model": "Stable Audio 3 Medium",
+      "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+      "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+      "license": "Stable Audio Community License",
+      "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+      "backend": "Official MLX local inference on Apple Silicon",
+      "runtimeRevision": "5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84",
+      "optimizedWeightsRevision": "30cb2644da54bfa63275d1bc7f1fa67fc718680f",
+      "generated": true,
+      "status": "generated",
+      "startedAt": "2026-11-05T13:29:48.712813+00:00",
+      "completedAt": "2026-11-05T13:29:51.605036+00:00",
+      "generationSeconds": 2.892,
+      "peakMetalAllocatedBytes": 6402043554,
+      "unclippedGeneratorPeak": 0.2448718547821045,
+      "unclippedGeneratorRms": 0.04355050477332707,
+      "unclippedGeneratorAboveFullScaleFraction": 0.0,
+      "unclippedGeneratorNearFullScaleFraction": 0.0,
+      "master": {
+        "file": "rainforest-bird-low-a-v25-take2-master.wav",
+        "bytes": 1764088,
+        "sha256": "f3fae820779cea593b61c28a1f18f0c5f22819502e1ac48cf2eea63c06a5bb1c"
+      },
+      "processing": "Official pipeline output preserved as stereo44100Hz32-bit float WAV without clipping or normalization. No reverb, compression, mixing or post-effects added. Browser copy normalized separately.",
+      "listeningReview": "Technical validity checked. Perceptual prompt adherence requires audition."
+    },
+    "rainforest-bird-low-a-v25-take3": {
+      "id": "rainforest-bird-low-a-v25-take3",
+      "kind": "wildlife-bird",
+      "title": "Soft rainforest bird phrase",
+      "seed": 202611052505,
+      "role": "Separate original distant low forest dove answer, short warm hollow phrase",
+      "prompt": "TrackType: SFX, A solitary distant rainforest dove utters one small warm low pitched breathy hoo-hooo phrase, a husky hollow coo in the lower middle register around 400 Hz. Soft rounded muted wooden bird voice, slower than a chirp, very brief and quiet, gently falling away into silence between trees. Not a whistle or sharp bright bird, no high pitched chirping, not rhythmic or busy. No rain, wind, background chorus, frogs, human voice, music or instruments. Length: 5 seconds.",
+      "durationSeconds": 5,
+      "steps": 8,
+      "cfgScale": 1.0,
+      "sampler": "pingpong",
+      "pack": "scripts/stablegen-v25-birds-retry-prompts.json",
+      "model": "Stable Audio 3 Medium",
+      "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+      "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+      "license": "Stable Audio Community License",
+      "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+      "backend": "Official MLX local inference on Apple Silicon",
+      "runtimeRevision": "5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84",
+      "optimizedWeightsRevision": "30cb2644da54bfa63275d1bc7f1fa67fc718680f",
+      "generated": true,
+      "status": "generated",
+      "startedAt": "2026-11-05T13:29:51.627336+00:00",
+      "completedAt": "2026-11-05T13:29:53.940192+00:00",
+      "generationSeconds": 2.313,
+      "peakMetalAllocatedBytes": 6407258242,
+      "unclippedGeneratorPeak": 0.05833958834409714,
+      "unclippedGeneratorRms": 0.010999706535209193,
+      "unclippedGeneratorAboveFullScaleFraction": 0.0,
+      "unclippedGeneratorNearFullScaleFraction": 0.0,
+      "master": {
+        "file": "rainforest-bird-low-a-v25-take3-master.wav",
+        "bytes": 1764088,
+        "sha256": "c7de92517c0250931de14dbf72726e98a6b04a081cd36331689a2f831b75ecb3"
+      },
+      "processing": "Official pipeline output preserved as stereo44100Hz32-bit float WAV without clipping or normalization. No reverb, compression, mixing or post-effects added. Browser copy normalized separately.",
+      "listeningReview": "Technical validity checked. Perceptual prompt adherence requires audition."
+    }
+  },
+  "completedAt": "2026-11-05T13:29:53.952610+00:00"
+}

@@ -152,8 +152,10 @@ test('simultaneous extinction bursts and rapid retaps keep bounded voices, spati
     assert.ok(main.quenches.size <= 8); assert.ok(main.quenches.size + main.retiringQuenches.size <= 9);
     assert.ok(context.nodes.filter(node => node.kind === 'source' && !node.disconnected).length <= 9);
   }
-  main.configure({ participantCount: 100 }); assert.equal(main.getMetrics().crowdGain, .1);
-  assert.equal(main.outputTarget, .1); assert.equal(main.getMetrics().gain, .16);
+  const before = main.outputTarget;
+  for (const count of [28, 100, 1000]) { main.configure({ participantCount: count }); assert.equal(main.outputTarget, before); }
+  assert.equal(main.getMetrics().crowdGain, 1 / Math.sqrt(main.quenches.size + main.retiringQuenches.size));
+  assert.equal(main.outputTarget, main.crowdGain); assert.equal(main.getMetrics().gain, .16);
   main.configure({ weight: 0 }); assert.equal(main.outputTarget, 0);
   main.reset(); context.advance(.05); assert.equal(main.quenches.size + main.retiringQuenches.size, 0);
   assert.ok(context.nodes.filter(node => node !== main.output).every(node => node.disconnected));

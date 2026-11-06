@@ -100,6 +100,27 @@ test('the current footprint excludes hot cells left behind by a drag', () => {
   const events = tracker.update(field([hot[0], ...out(hot.slice(1))]), moved, .2);
   assert.equal(events.length, 1);
   assert.deepEqual(events[0].memberKeys, ['440,-8', '443,-8']);
+  assert.deepEqual(events[0].brushPosition, countryPoint(moved[0].position), 'Completion follows the final brush, not the original grouping anchor.');
+});
+
+test('a released moved brush retains its final location for the late bell confirmation', () => {
+  const tracker = createRainAreaTracker(), hot = [patch(109.375), patch(110.125), patch(110.875)];
+  tracker.update(field(hot), [contact()], 0);
+  const moved = [contact([110.8, -1.875])];
+  tracker.update(field(hot), moved, .1);
+  tracker.update(field(hot), [], .15);
+  const events = tracker.update(field([hot[0], ...out(hot.slice(1))]), [], .2);
+  assert.equal(events.length, 1);
+  assert.deepEqual(events[0].brushPosition, countryPoint(moved[0].position));
+});
+
+test('overlapping brushes center their shared completion between current contacts regardless of order', () => {
+  const hot = cluster(), first = contact(), second = contact([110.5, -1.875], 'another');
+  const run = contacts => { const tracker = createRainAreaTracker(); tracker.update(field(hot), contacts, 0);
+    return tracker.update(field(out(hot)), contacts, .1)[0]; };
+  const event = run([first, second]);
+  assert.deepEqual(event.brushPosition, countryPoint([110.3125, -1.875]));
+  assert.deepEqual(run([second, first]).brushPosition, event.brushPosition);
 });
 
 test('many rapid contacts keep only bounded source-backed areas and no delayed event queue', () => {
@@ -190,7 +211,13 @@ test('shared authority delta frames preserve one completion through a fast drag,
     send(target, false); observe(); send(target, true, true); observe(); milliseconds += 100; room.advance(); observe();
   }
   assert.equal(events.length, 1, 'Already-out repeat taps do not create another event.');
+  // Rest between the two real cooling passages. The same finite phone tank
+  // must refill through an actual release rather than gain a reset exception.
+  send(target, false); observe();
+  milliseconds += 12000; room.advance(); observe();
+  assert.equal(room.phoneState(phone.connectionId).rainSupply.level, 1);
   await room.setScene({ scene: 'forest-takeover' }); observe();
+  send(target, true, true); observe();
   for (let tick = 1; tick <= 450; tick++) {
     milliseconds += 100;
     if (tick % 5 === 0) send(target);

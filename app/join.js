@@ -102,7 +102,7 @@ function initializePhone() {
   let lastPosition = [.5, .5];
   let connectionState = 'connecting';
   let inputError = '';
-  let rainStrength = .5;
+  let rainStrength = .45;
 
   const rainCanvas = document.querySelector('#phone-rain');
   const rainContext = rainCanvas.getContext('2d');

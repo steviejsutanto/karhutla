@@ -7,6 +7,9 @@ p { margin: 0; }
 #phone-material { display: block; width: 100%; height: 100%; touch-action: none; cursor: crosshair; }
 body[data-touching='true'] #phone-material { cursor: none; }
 #phone-material:focus-visible { outline: 1px solid #f2d4b2; outline-offset: -5px; }
+#phone-magnifier { position: fixed; left: 0; top: 0; z-index: 6; border: 1px solid #e9c39bcc; border-radius: 50%; background: #080b0a; box-shadow: 0 4px 16px #000c, 0 0 0 3px #080b0ac9; pointer-events: none; overflow: hidden; }
+#phone-magnifier-view { display: block; width: 100%; height: 100%; border-radius: 50%; }
+#phone-magnifier span { position: absolute; bottom: 9px; left: 50%; transform: translateX(-50%); color: #f6dfbf; background: #080b0abf; border-radius: 8px; padding: 1px 5px; font-size: 9px; line-height: 1.3; }
 .phone-status { position: absolute; top: max(19px, env(safe-area-inset-top)); left: max(22px, env(safe-area-inset-left)); display: flex; align-items: center; gap: 9px; pointer-events: none; }
 #connection-dot { width: 5px; height: 5px; border-radius: 50%; background: #a16c50; box-shadow: 0 0 10px #ff9a5530; }
 #connection-dot[data-status='ready'] { background: #f0c198; }
@@ -23,6 +26,23 @@ button:focus-visible { outline: 2px solid #f2d4b2; outline-offset: 4px; }
 button svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; display: block; }
 #phone-fullscreen { position: absolute; top: max(9px, env(safe-area-inset-top)); right: max(12px, env(safe-area-inset-right)); border-color: transparent; background: transparent; }
 .input-controls { position: absolute; right: max(18px, env(safe-area-inset-right)); bottom: max(14px, env(safe-area-inset-bottom)); }
+.rain-supply { position: absolute; z-index: 6; left: 50%; bottom: max(76px, calc(env(safe-area-inset-bottom) + 56px)); transform: translateX(-50%); width: clamp(160px, 36vw, 210px); padding: 10px 12px; border: 1px solid #bca68b80; border-radius: 8px; background: #100e0bf2; color: #f5dfc5; box-shadow: 0 2px 14px #0009; pointer-events: none; font-size: 11px; text-shadow: none; }
+.rain-supply-label { display: flex; justify-content: space-between; gap: 8px; }
+#rain-supply-bar { display: block; appearance: none; -webkit-appearance: none; width: 100%; height: 9px; margin: 7px 0; border: 0; background: #6e6355; border-radius: 4px; overflow: hidden; }
+#rain-supply-bar::-webkit-progress-bar { background: #6e6355; border-radius: 4px; }
+#rain-supply-bar::-webkit-progress-value { background: #f0dfb9; border-radius: 4px; transition: width 100ms linear; }
+#rain-supply-bar::-moz-progress-bar { background: #f0dfb9; border-radius: 4px; }
+#rain-supply-hint { font-size: 9px; color: #d8c2a8; white-space: nowrap; text-align: center; }
+body[data-water-empty='true'] #rain-supply-bar::-webkit-progress-value { background: #be8d6f; }
+body[data-water-empty='true'] #rain-supply-bar::-moz-progress-bar { background: #be8d6f; }
+body[data-water-empty='true'] .rain-supply { border-color: #d4a079; }
+body[data-scene='participation'] #hold-instruction, body[data-scene='forest-takeover'] #hold-instruction { bottom: max(166px, calc(env(safe-area-inset-bottom) + 146px)); }
+@media (orientation: landscape) and (max-height: 600px) {
+  .rain-supply { bottom: max(14px, env(safe-area-inset-bottom)); width: clamp(210px, 32vw, 280px); padding: 10px 14px; font-size: 13px; }
+  #rain-supply-bar { height: 10px; }
+  #rain-supply-hint { font-size: 10px; }
+  body[data-scene='participation'] #hold-instruction, body[data-scene='forest-takeover'] #hold-instruction { bottom: max(106px, calc(env(safe-area-inset-bottom) + 92px)); }
+}
 #rain-toggle { border-radius: 22px; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 13px; font-size: 9px; }
 #rain-toggle[aria-pressed='true'] { border-color: #f4d5b5a1; background: #e6c9aa1f; color: #fff0d4; }
 #rain-toggle .stop-icon { display: none; }
@@ -46,7 +66,7 @@ noscript { position: fixed; inset: 20px; z-index: 10; padding: 20px; background:
 #phone-title { font: normal clamp(40px, 11vw, 64px)/1.05 Georgia, serif; letter-spacing: -.04em; margin: 20px 0 26px; }
 #phone-program-notes { font: 14px/1.8 Georgia, serif; color: #c9b39e; white-space: pre-line; }
 #phone-notes h2 { font: normal 14px/1.4 ui-monospace, monospace; margin: 32px 0 16px; }
-#phone-notes ol { padding-left: 20px; font-size: 12px; line-height: 1.8; color: #b9a491; }
+#phone-notes ol { padding-left: 20px; font-size: 14px; line-height: 1.7; color: #cbb29b; }
 #phone-notes li { margin: 0 0 12px; padding-left: 5px; }
 .phone-scene-message { margin-top: 24px; padding: 18px 0; border-top: 1px solid #6f4d333d; font-size: 11px; line-height: 1.7; color: #e4c5a6; }
 #phone-notes-close { border-radius: 3px; padding: 10px 16px; margin-top: 12px; }

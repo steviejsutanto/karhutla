@@ -5,8 +5,8 @@ import { mkdtemp, mkdir, writeFile, readFile, rm, access } from 'node:fs/promise
 import path from 'node:path';
 import os from 'node:os';
 import { createHash } from 'node:crypto';
-import { includeProjectFile, validatePortableLock, writeZip, readZipFile, officialRuntimeHash, bundleRuntime, crc32, parseBuildOptions, createPackageManifest } from '../scripts/build-windows-package.mjs';
-import { safePackagePath, checkPackage } from '../scripts/check-package.mjs';
+import { includeProjectFile, stageProjectFiles, validatePortableLock, writeZip, readZipFile, officialRuntimeHash, bundleRuntime, crc32, parseBuildOptions, createPackageManifest } from '../scripts/build-windows-package.mjs';
+import { safePackagePath, checkPackage, validateRequiredFiles, validateCatalogIntegrity, packagePublicFiles, validateBrowserImports, validatePublicPreset } from '../scripts/check-package.mjs';
 import { launcherOptions, assertPortAvailable } from '../scripts/start-karhutla.mjs';
 
 test('release allowlist includes the app and finished media without state, masters or machine files', () => {
@@ -100,4 +100,103 @@ test('package paths and build options reject escapes and incomplete arguments', 
   for (const file of ['../secret', '/absolute', 'C:/secret', 'a\\b', 'a//b', './a']) assert.throws(() => safePackagePath(file), /Unsafe/);
   assert.deepEqual(parseBuildOptions(['--runtime-version', 'v24.22.2', '--out', 'dist', '--force']), { runtimeVersion: 'v24.22.2', out: 'dist', force: true });
   assert.throws(() => parseBuildOptions(['--out']), /incomplete/);
+});
+
+async function releaseFixture(t) {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'karhutla-release-content-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const digest = content => createHash('sha256').update(content).digest('hex');
+  const asset = { file: 'audio-assets/v3/current.mp3', bytes: 7, sha256: digest('current'), provenanceFile: 'audio-assets/v3/current-source.json',
+    generationBatchRecord: 'generation-batch.json', mobile: { file: 'audio-assets/v3/mobile.mp3', bytes: 6, sha256: digest('mobile') } };
+  const archived = { file: 'audio-assets/v3/inactive.mp3', bytes: 8, sha256: digest('inactive'), provenanceFile: 'audio-assets/v3/inactive-source.json' };
+  const files = {
+    'package.json': '{}', 'package-lock.json': '{}', 'Start-Karhutla.cmd': 'launcher', 'scripts/start-karhutla.mjs': '// launcher', 'data/fire-snapshot.json': '{}',
+    'app/server.mjs': "const staticFiles = new Map([['/page', ['app/page.html', 'text/html']], ['/entry.js', ['app/entry.js', 'text/javascript']], ['/shared.js', ['app/shared.js', 'text/javascript']], ['/texture.webp', ['visual-assets/texture.webp', 'image/webp']]]);",
+    'app/page.html': '<script type="module" src="/entry.js"></script>',
+    'app/entry.js': "import {\n value\n} from './shared.js';\nexport { value } from './shared.js';\nconst lazy = () => import('./shared.js');\nconst texture = new URL('./texture.webp', import.meta.url);\n",
+    'app/shared.js': 'export const value = 1;', 'visual-assets/texture.webp': 'texture',
+    'audio-assets/manifest.json': '{"assets":[]}', 'audio-assets/v3/manifest.json': JSON.stringify({ assets: [asset], archived: [archived] }),
+    'audio-assets/v3/current.mp3': 'current', 'audio-assets/v3/mobile.mp3': 'mobile', 'audio-assets/v3/inactive.mp3': 'inactive',
+    'audio-assets/v3/current-source.json': '{}', 'audio-assets/v3/inactive-source.json': '{}', 'audio-assets/v3/generation-batch.json': '{}',
+  };
+  for (const [file, content] of Object.entries(files)) {
+    await mkdir(path.dirname(path.join(root, file)), { recursive: true }); await writeFile(path.join(root, file), content);
+  }
+  return { root, files };
+}
+
+test('release validation follows HTML modules, static/re-export/dynamic imports and module asset URLs', async t => {
+  const { root, files } = await releaseFixture(t);
+  await validateRequiredFiles(root);
+  assert.equal(await validateBrowserImports(root), 5);
+  await writeFile(path.join(root, 'app/entry.js'), "import { missing } from './unserved.js';\n");
+  await assert.rejects(validateRequiredFiles(root), /Browser dependencies.*entry\.js.*unserved\.js/);
+  await writeFile(path.join(root, 'app/entry.js'), files['app/entry.js']);
+  await writeFile(path.join(root, 'app/page.html'), '<script type="module" src="/unserved.js"></script>');
+  await assert.rejects(validateRequiredFiles(root), /Browser dependencies.*page.*unserved\.js/);
+});
+
+test('release validation retains inactive recordings, provenance and generation batch records', async t => {
+  const { root } = await releaseFixture(t);
+  assert.ok((await packagePublicFiles(root)).some(entry => entry.url === '/audio-assets/v3/inactive.mp3'));
+  for (const file of ['audio-assets/v3/mobile.mp3', 'audio-assets/v3/inactive-source.json', 'audio-assets/v3/generation-batch.json']) {
+    const content = await readFile(path.join(root, file)); await rm(path.join(root, file));
+    await assert.rejects(validateRequiredFiles(root), /The package is incomplete/);
+    await writeFile(path.join(root, file), content);
+  }
+  assert.equal(await validateCatalogIntegrity(root), 3);
+  await writeFile(path.join(root, 'audio-assets/v3/inactive.mp3'), 'replaced');
+  await assert.rejects(validateCatalogIntegrity(root), /Audio catalog checksum.*inactive\.mp3/);
+});
+
+async function publicPreset() {
+  const [{ createSettingsPreset }, { DEFAULT_PARAMETERS }, { DEFAULT_SCENE_SETTINGS, DEFAULT_SOUND_SETTINGS }] = await Promise.all([
+    import('../app/settings-presets.mjs'), import('../app/simulation.js'), import('../app/performance-scenes.mjs'),
+  ]);
+  return createSettingsPreset({ strength: .37, parameters: DEFAULT_PARAMETERS,
+    sceneSettings: { ...DEFAULT_SCENE_SETTINGS, wifiName: '', wifiPassword: '' }, soundSettings: DEFAULT_SOUND_SETTINGS });
+}
+
+test('both release targets preserve only the two public preset files without private settings siblings or saves', async t => {
+  const { root } = await releaseFixture(t);
+  const serialized = `${JSON.stringify(await publicPreset(), null, 4)}\n`;
+  for (const directory of ['presets', 'tests', 'docs']) await mkdir(path.join(root, directory));
+  await writeFile(path.join(root, 'presets/current-performance.json'), serialized);
+  await writeFile(path.join(root, 'presets/README.md'), 'Import this public preset explicitly.\n');
+  await writeFile(path.join(root, 'presets/private-rehearsal.json'), '{"password":"private fixture"}');
+  await writeFile(path.join(root, 'data/performance-state.json'), '{"simulation":"private fixture"}');
+  await writeFile(path.join(root, 'Start-Karhutla.command'), '#!/bin/sh\n');
+  for (const platform of ['windows-x64', 'macos-arm64']) {
+    assert.equal(includeProjectFile('presets/current-performance.json', { platform }), true);
+    assert.equal(includeProjectFile('presets/README.md', { platform }), true);
+    for (const file of ['presets/private-rehearsal.json', 'presets/performance-state.json', 'presets/backup/current-performance.json', 'presets/.env']) assert.equal(includeProjectFile(file, { platform }), false);
+    const stage = await mkdtemp(path.join(os.tmpdir(), 'karhutla-public-preset-'));
+    t.after(() => rm(stage, { recursive: true, force: true }));
+    const files = await stageProjectFiles(root, stage, { platform });
+    assert.deepEqual(files.filter(file => file.startsWith('presets/')), ['presets/README.md', 'presets/current-performance.json']);
+    assert.equal(await readFile(path.join(stage, 'presets/current-performance.json'), 'utf8'), serialized);
+    assert.equal(await readFile(path.join(stage, 'presets/README.md'), 'utf8'), 'Import this public preset explicitly.\n');
+    await assert.rejects(access(path.join(stage, 'data/performance-state.json')));
+    await assert.rejects(access(path.join(stage, 'presets/private-rehearsal.json')));
+  }
+});
+
+test('public preset validation rejects corrupt schema, running-state data and either Wi-Fi credential field', async t => {
+  const { root } = await releaseFixture(t);
+  assert.deepEqual(await validatePublicPreset(root), [], 'Older minimal fixtures have no preset directory.');
+  await assert.rejects(validatePublicPreset(root, { declared: true }), /declared.*missing/);
+  await mkdir(path.join(root, 'presets'));
+  await writeFile(path.join(root, 'presets/README.md'), 'Explicit import only.');
+  const preset = await publicPreset();
+  const save = value => writeFile(path.join(root, 'presets/current-performance.json'), typeof value === 'string' ? value : JSON.stringify(value));
+  await save(preset); assert.equal((await validatePublicPreset(root)).length, 2);
+  for (const field of ['wifiName', 'wifiPassword']) {
+    await save({ ...preset, sceneSettings: { ...preset.sceneSettings, [field]: 'private fixture' } });
+    await assert.rejects(validatePublicPreset(root), /Wi-Fi name and password must be blank/);
+  }
+  for (const value of ['{ broken json', { ...preset, schemaVersion: 999 }, { ...preset, simulation: { cells: [] } }]) {
+    await save(value); await assert.rejects(validatePublicPreset(root), /preset is invalid/);
+  }
+  await save(preset); await rm(path.join(root, 'presets/README.md'));
+  await assert.rejects(validatePublicPreset(root), /preset is incomplete/);
 });

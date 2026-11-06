@@ -19,6 +19,8 @@ export class SharedConnection {
     this.scene = null;
     this.connected = false;
     this.holding = false;
+    this.inputHeld = false;
+    this.rainSupply = null;
     this.acknowledged = false;
     this.pendingPath = [];
     this.movementTimer = null;
@@ -37,7 +39,7 @@ export class SharedConnection {
     catch { this.clientId = newId; }
     this.connect();
     this.timer = setInterval(() => {
-      if (this.holding && performance.now() - this.lastSent >= 500) this.sendHold(true);
+      if ((this.holding || this.inputHeld) && performance.now() - this.lastSent >= 500) this.sendHold(true);
     }, 100);
   }
 
@@ -61,6 +63,7 @@ export class SharedConnection {
         this.assignment = message.assignment || null;
         this.connectionId = message.connectionId;
         this.participantNumber = message.participantNumber;
+        this.rainSupply = message.rainSupply ?? null;
         this.seq = 0;
         this.ready = false;
         this.clearHold();
@@ -83,6 +86,7 @@ export class SharedConnection {
         this.epoch = message.epoch;
         this.ready = !message.bootstrapAvailable;
         this.scene = message.scene || null;
+        if (message.rainSupply) this.rainSupply = message.rainSupply;
         if (this.scene && !this.scene.audienceEnabled) this.clearHold();
         this.checkOwnHold(message);
         this.onState?.(message, { reset });
@@ -96,6 +100,10 @@ export class SharedConnection {
       } else if (message.type === 'bell') {
         if (message.epoch === this.epoch && this.ready) this.onBell?.(message);
       } else if (message.type === 'ack' && message.epoch === this.epoch) {
+        if (message.rainSupply) this.rainSupply = message.rainSupply;
+        if (this.rainSupply?.needsRelease && !message.holding) {
+          this.holding = false; this.acknowledged = false; this.pendingPath = [];
+        }
         if (message.seq >= this.gestureSeq) this.acknowledged = this.holding && message.holding;
         this.onConnection?.('connected');
       } else if (message.type === 'error') {
@@ -120,6 +128,10 @@ export class SharedConnection {
 
   checkOwnHold(message) {
     const own = message.own || message.participants?.find(actor => actor.id === this.clientId);
+    if (this.inputHeld && this.rainSupply?.needsRelease && own && !own.holding) {
+      this.holding = false; this.acknowledged = false; this.pendingPath = [];
+      return;
+    }
     if (this.holding && this.acknowledged && own && !own.holding) {
       this.clearHold();
       this.onError?.('Your rain stopped. Press again to continue.');
@@ -130,6 +142,7 @@ export class SharedConnection {
     if (this.movementTimer !== null) clearTimeout(this.movementTimer);
     this.movementTimer = null;
     this.holding = false;
+    this.inputHeld = false;
     this.acknowledged = false;
     this.pendingPath = [];
     this.newGesture = false;
@@ -147,8 +160,9 @@ export class SharedConnection {
   }
 
   begin(position) {
-    if (!this.canPour || this.holding) return false;
+    if (!this.canPour || this.holding || this.inputHeld || this.rainSupply?.needsRelease || this.rainSupply?.level === 0) return false;
     this.holding = true; this.acknowledged = false;
+    this.inputHeld = true;
     this.newGesture = true;
     this.position = [...position]; this.pendingPath = [[...position]];
     this.sendHold(true);
@@ -189,7 +203,7 @@ export class SharedConnection {
   }
 
   stop() {
-    if (this.holding) this.sendHold(false);
+    if (this.holding || this.inputHeld) this.sendHold(false);
     this.clearHold();
     this.onConnection?.(this.connected ? 'connected' : 'disconnected');
   }

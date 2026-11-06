@@ -23,10 +23,13 @@ const MIXER_CHANNELS = [
   ['rain', 'Rain'],
   ['moisture', 'Moisture'],
   ['crickets', 'Crickets'],
+  ['orangutan', 'Orangutan voice'],
+  ['orangutanTail', 'Orangutan tail'],
 ];
 const MIXER_GROUPS = [
   ['Interaction', ['chimes', 'bells', 'quench', 'blob', 'outDrone', 'dragAsh']],
   ['Atmosphere', ['lowDrone', 'haze', 'forest', 'ash', 'rain', 'moisture', 'crickets']],
+  ['Wildlife', ['orangutan', 'orangutanTail']],
 ];
 let soundStatusSequence = 0;
 const SPEAKER_ICON = `<svg class="sound-speaker" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><g class="sound-speaker-body"><path d="m11 5-5 4H3v6h3l5 4V5Z"/><path class="sound-waves" d="M15 8a6 6 0 0 1 0 8M18 5a10 10 0 0 1 0 14"/><path class="sound-slash" d="m3 3 18 18"/><path class="sound-pause" d="M16 8v8M20 8v8"/></g><circle class="sound-spinner" cx="12" cy="12" r="8"/></svg>`;
@@ -227,6 +230,7 @@ export function mountSoundControls(host, { mode = 'phone', engine: suppliedEngin
     sourceChoice.addEventListener('change', () => selectSource(sourceChoice.value));
     loadSoundLibrary().then(async library => {
       const palette = ambianceSources(library);
+      engine.setWildlifeSources(palette.mainWildlife ?? null);
       await engine.setMainQuenchSources(palette.mainQuench);
       await engine.setMainBlobSources(palette.mainBlob);
       followsSlider = Boolean(palette.variations.forest);
@@ -263,6 +267,7 @@ export function mountSoundControls(host, { mode = 'phone', engine: suppliedEngin
   } else if (projection) {
     loadSoundLibrary().then(async library => {
       const palette = ambianceSources(library);
+      engine.setWildlifeSources(palette.mainWildlife ?? null);
       await engine.setMainQuenchSources(palette.mainQuench);
       await engine.setMainBlobSources(palette.mainBlob);
       await Promise.all(Object.entries(palette.variations).filter(([id]) => id !== 'crickets' || !palette.cricketLayers?.length).map(([id, entries]) => engine.setLayerVariations(id, entries)));
@@ -274,6 +279,7 @@ export function mountSoundControls(host, { mode = 'phone', engine: suppliedEngin
     // the shared extinction progression first needs them in the loop blend.
     loadSoundLibrary().then(library => {
       const palette = ambianceSources(library);
+      engine.setWildlifeSources(palette.phoneWildlife ?? null);
       if (palette.phoneCricketLayers.length) engine.setCricketLayers(palette.phoneCricketLayers);
       for (const [id, url] of Object.entries(palette.phone)) {
         if (id === 'rain') engine.setPhoneRainSource(url);

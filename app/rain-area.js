@@ -22,9 +22,9 @@ export function createRainAreaTracker({ recentSeconds = RAIN_AREA_RECENT_SECONDS
     bucket?.delete(area.id); if (!bucket?.size) buckets.delete(area.bucket);
   };
   const add = (position, members, now) => {
-    const area = { id: ++serial, anchor: [...position], bucket: bucketKey(position), members,
+    const area = { id: ++serial, anchor: [...position], brushAnchor: [...position], bucket: bucketKey(position), members,
       hotSeen: new Set(), completedMembers: null, lastSeen: now, expiresAt: now + recent, active: false,
-      nextMembers: new Set(), contactIds: new Set(), nextContactIds: new Set() };
+      nextMembers: new Set(), contactIds: new Set(), nextContactIds: new Set(), nextPositions: new Map() };
     areas.set(area.id, area);
     if (!buckets.has(area.bucket)) buckets.set(area.bucket, new Set());
     buckets.get(area.bucket).add(area.id);
@@ -58,7 +58,7 @@ export function createRainAreaTracker({ recentSeconds = RAIN_AREA_RECENT_SECONDS
       for (const key of claimed) if (!sources.has(key)) claimed.delete(key);
       for (const area of [...areas.values()]) {
         if (![...area.members].some(key => sources.has(key))) { remove(area); continue; }
-        area.active = false; area.nextMembers.clear(); area.nextContactIds.clear();
+        area.active = false; area.nextMembers.clear(); area.nextContactIds.clear(); area.nextPositions.clear();
         for (const key of area.hotSeen) if (!sources.has(key)) area.hotSeen.delete(key);
         if (area.completedMembers && intersects(area.completedMembers, returned)) {
           area.completedMembers = null; area.hotSeen.clear();
@@ -88,6 +88,7 @@ export function createRainAreaTracker({ recentSeconds = RAIN_AREA_RECENT_SECONDS
         }
         area.active = true; area.lastSeen = now; area.expiresAt = now + recent;
         area.nextContactIds.add(contactId);
+        area.nextPositions.set(contactId, contact.position);
         for (const key of members) {
           area.nextMembers.add(key);
           if (!area.completedMembers && sources.get(key).extinguished === false) area.hotSeen.add(key);
@@ -100,7 +101,14 @@ export function createRainAreaTracker({ recentSeconds = RAIN_AREA_RECENT_SECONDS
         // contact still expires before a late completion can create a sound.
         if (!area.active && now > area.expiresAt) { remove(area); continue; }
         area.contactIds = new Set(area.nextContactIds);
-        if (area.active) area.members = new Set(area.nextMembers);
+        if (area.active) {
+          area.members = new Set(area.nextMembers);
+          // The stable bucket anchor identifies this shared cooling lifecycle;
+          // its visible footprint follows the brushes that actually completed
+          // it. Retain the final position during a late release confirmation.
+          const positions = [...area.nextPositions.values()];
+          area.brushAnchor = [0, 1].map(axis => positions.reduce((sum, position) => sum + position[axis], 0) / positions.length);
+        }
         if (area.completedMembers || !area.hotSeen.size || !area.members.size) continue;
         const memberKeys = [...area.members].filter(key => sources.has(key)).sort();
         if (!memberKeys.length || !memberKeys.every(key => sources.get(key).extinguished === true)) continue;
@@ -113,7 +121,7 @@ export function createRainAreaTracker({ recentSeconds = RAIN_AREA_RECENT_SECONDS
         const key = memberKeys[0], representative = sources.get(key);
         events.push(Object.freeze({ id: `rain-area:${area.id}:${++eventSerial}`, key,
           memberKeys: Object.freeze(memberKeys), position: Object.freeze([...(representative.position || [.5, .5])]),
-          brushPosition: Object.freeze(countryPoint(area.anchor)),
+          brushPosition: Object.freeze(countryPoint(area.brushAnchor)),
           at: now, expiresAt: now + recent }));
       }
 

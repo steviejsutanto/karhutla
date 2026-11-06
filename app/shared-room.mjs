@@ -7,8 +7,10 @@ import { RegionCatalog, normalizedPositionValid } from './regions.mjs';
 import { phoneSpatialField, phoneBrushSummary } from './phone-spatial.mjs';
 import { NationalSpace, COUNTRY_ASSIGNMENT, countryPosition } from './national-space.mjs';
 import { PerformanceScenes, DEFAULT_SOUND_SETTINGS, restoreSceneSettings, soundSettingsPatch } from './performance-scenes.mjs';
-import { audienceRainStrength } from './scene-score.js';
+import { audienceRainStrength, scoreDurations, DEFAULT_RAIN_STRENGTH } from './scene-score.js';
+import { birdEvent, BIRD_MIN_GAP_MS } from './scene-wildlife.js';
 import { createSettingsPreset, validateSettingsPreset } from './settings-presets.mjs';
+import { createRainSupply, advanceRainSupply, rainSupplyCapacity, rainSupplyState } from './rain-supply.mjs';
 
 export const HOLD_LEASE_MS = 2000;
 export const MAX_PATH_POINTS = 64;
@@ -34,14 +36,14 @@ function appendPendingPath(previous, points) {
 }
 
 export class SharedRoom extends EventEmitter {
-  constructor({ records = [], snapshotVersion = null, strength = 0.5, persistencePath = null, clock = () => performance.now(), wallClock = () => Date.now() } = {}) {
+  constructor({ records = [], snapshotVersion = null, strength = DEFAULT_RAIN_STRENGTH, persistencePath = null, clock = () => performance.now(), wallClock = () => Date.now() } = {}) {
     super();
     this.simulation = new RainSimulation().seed(records);
     this.regions = new RegionCatalog(records);
     this.national = new NationalSpace(this.regions);
     this.records = records;
     this.snapshotVersion = snapshotVersion;
-    this.strength = finite(strength) && strength >= 0 && strength <= 1 ? strength : 0.5;
+    this.strength = finite(strength) && strength >= 0 && strength <= 1 ? strength : DEFAULT_RAIN_STRENGTH;
     this.persistencePath = persistencePath;
     this.clock = clock;
     this.wallClock = wallClock;
@@ -60,6 +62,8 @@ export class SharedRoom extends EventEmitter {
     this.nextParticipantNumber = 1;
     this.writeChain = Promise.resolve();
     this.phoneProgressCaches = new WeakMap();
+    this.wildlifeRoster = null;
+    this.rainSupplies = new Map();
   }
 
   async initialize() {
@@ -119,6 +123,13 @@ export class SharedRoom extends EventEmitter {
       this.emit('replaced', previousId);
     }
     const identity = identityKey(clientId);
+    let rainSupply = null;
+    if (role === 'participant') {
+      rainSupply = this.rainSupplies.get(identity) ?? createRainSupply(this.clock());
+      rainSupply.touching = false; rainSupply.needsRelease = false;
+      advanceRainSupply(rainSupply, this.clock(), this.rainCapacity());
+      this.rainSupplies.set(identity, rainSupply);
+    }
     if (role === 'participant' && !this.participantNumbers.has(identity)) {
       this.participantNumbers.set(identity, this.nextParticipantNumber++);
       this.participantRegions.set(identity, this.regions.assign(this.connections));
@@ -129,17 +140,20 @@ export class SharedRoom extends EventEmitter {
       holding: false, position: national ? countryPosition([.5, .5]) : regionId ? this.regions.map(regionId, [.5, .5]) : [117, -2], screenPosition: regionId ? [.5, .5] : null, pendingPath: [], leaseUntil: 0, requiresFreshPress: false,
       pressSerial: 0, lastPressPosition: null,
       lastSeq: -1, tokens: 20, tokenAt: this.clock(),
+      rainSupply,
     };
     this.connections.set(connectionId, participant);
     this.clientConnections.set(clientId, connectionId);
     this.actorRevision += 1;
-    return { type: 'welcome', connectionId, participantNumber: participant.number, assignment: national ? COUNTRY_ASSIGNMENT : this.regions.public(regionId), role, scope: participant.scope, epoch: this.epoch, bootstrapAvailable: this.bootstrapAvailable };
+    return { type: 'welcome', connectionId, participantNumber: participant.number, assignment: national ? COUNTRY_ASSIGNMENT : this.regions.public(regionId), role, scope: participant.scope, epoch: this.epoch, bootstrapAvailable: this.bootstrapAvailable,
+      ...(rainSupply ? { rainSupply: rainSupplyState(rainSupply, this.rainCapacity()) } : {}) };
   }
 
   disconnect(connectionId) {
     const participant = this.connections.get(connectionId);
     if (!participant) return;
     this.advance();
+    if (participant.rainSupply) { participant.rainSupply.touching = false; participant.rainSupply.needsRelease = false; }
     this.connections.delete(connectionId);
     this.actorRevision += 1;
     if (this.clientConnections.get(participant.id) === connectionId) this.clientConnections.delete(participant.id);
@@ -181,7 +195,21 @@ export class SharedRoom extends EventEmitter {
     // leases still flush their exact boundary before changing any held state.
     const continuingHold = message.holding && participant.holding && message.start !== true && !participant.requiresFreshPress && now < participant.leaseUntil;
     if (!continuingHold || now - this.lastAdvance >= HOLD_BATCH_MS) this.advance(now);
+    if (message.holding && participant.rainSupply?.needsRelease) {
+      // An exhausted finger may remain down. Its heartbeats keep that touch
+      // alive without rain or refill; only a real release permits recharging.
+      participant.lastSeq = message.seq; participant.leaseUntil = now + HOLD_LEASE_MS;
+      participant.rainSupply.touching = true;
+      return { type: 'ack', epoch: this.epoch, seq: message.seq, holding: false, participantNumber: participant.number,
+        rainSupply: rainSupplyState(participant.rainSupply, this.rainCapacity()) };
+    }
     if (message.holding && participant.requiresFreshPress && message.start !== true) throw roomError('The hold expired. Lift your finger and press again.');
+    if (message.holding && participant.rainSupply && participant.rainSupply.level <= 1e-9) {
+      participant.rainSupply.needsRelease = true; participant.rainSupply.touching = true;
+      participant.lastSeq = message.seq; participant.leaseUntil = now + HOLD_LEASE_MS;
+      return { type: 'ack', epoch: this.epoch, seq: message.seq, holding: false, participantNumber: participant.number,
+        rainSupply: rainSupplyState(participant.rainSupply, this.rainCapacity()) };
+    }
     const newPress = message.holding && (message.start === true || !participant.holding);
     if (newPress || participant.holding !== message.holding || participant.position.some((value, index) => rounded(value) !== rounded(target[index]))) this.actorRevision += 1;
     participant.lastSeq = message.seq;
@@ -189,17 +217,22 @@ export class SharedRoom extends EventEmitter {
     participant.position = [...target];
     if (audience && message.position) participant.screenPosition = [...message.position];
     if (message.holding) {
+      if (participant.rainSupply) participant.rainSupply.touching = true;
       participant.pendingPath = participant.holding ? appendPendingPath(participant.pendingPath, points) : [[...target]];
       participant.holding = true;
       participant.leaseUntil = now + HOLD_LEASE_MS;
       if (message.start === true) participant.requiresFreshPress = false;
     } else {
+      if (participant.rainSupply) { participant.rainSupply.touching = false; participant.rainSupply.needsRelease = false; }
       participant.holding = false;
       participant.pendingPath = [];
       participant.leaseUntil = 0;
     }
-    return { type: 'ack', epoch: this.epoch, seq: message.seq, holding: participant.holding, participantNumber: participant.number };
+    return { type: 'ack', epoch: this.epoch, seq: message.seq, holding: participant.holding, participantNumber: participant.number,
+      ...(participant.rainSupply ? { rainSupply: rainSupplyState(participant.rainSupply, this.rainCapacity()) } : {}) };
   }
+
+  rainCapacity() { return rainSupplyCapacity(this.simulation.parameters, this.strength); }
 
   _advanceScenesAt(now, wallNow) {
     const beforeId = this.scenes.id;
@@ -219,6 +252,8 @@ export class SharedRoom extends EventEmitter {
   advance(now = this.clock()) {
     if (!finite(now) || now <= this.lastAdvance) return;
     if (this.bootstrapAvailable || this.bootstrapping || this.scenes.paused) {
+      for (const participant of this.connections.values()) if (participant.rainSupply)
+        advanceRainSupply(participant.rainSupply, now, this.rainCapacity());
       this.lastAdvance = now;
       return;
     }
@@ -230,7 +265,9 @@ export class SharedRoom extends EventEmitter {
     while (cursor < now) {
       let end = Math.min(now, this.scenes.nextBoundaryAt(cursor) ?? now);
       for (const participant of this.connections.values()) {
-        if (participant.holding && participant.leaseUntil > cursor) end = Math.min(end, participant.leaseUntil);
+        if ((participant.holding || participant.rainSupply?.touching) && participant.leaseUntil > cursor) end = Math.min(end, participant.leaseUntil);
+        if (participant.holding && participant.rainSupply)
+          end = Math.min(end, cursor + participant.rainSupply.level * this.rainCapacity() * 1000);
       }
       const strokes = [];
       for (const participant of this.connections.values()) {
@@ -249,14 +286,22 @@ export class SharedRoom extends EventEmitter {
         this.simulation.stepFinalRain((end - cursor) / 1000,
           this.scenes.rainfallBetween(cursor, end) / (end - cursor), this.scenes.rainIntensityAt(end));
       } else this.simulation.step((end - cursor) / 1000, strokes);
+      for (const participant of this.connections.values()) if (participant.rainSupply) {
+        advanceRainSupply(participant.rainSupply, end, this.rainCapacity(), participant.holding);
+        if (participant.holding && participant.rainSupply.level === 0) {
+          participant.holding = false; participant.pendingPath = []; participant.requiresFreshPress = true;
+          this.actorRevision += 1;
+        }
+      }
       this._advanceScenesAt(end, this.wallClock() - (now - end));
       cursor = end;
       for (const participant of this.connections.values()) {
-        if (participant.holding && participant.leaseUntil <= end) {
+        if ((participant.holding || participant.rainSupply?.touching) && participant.leaseUntil <= end) {
           participant.holding = false;
           participant.pendingPath = [];
           participant.leaseUntil = 0;
           participant.requiresFreshPress = true;
+          if (participant.rainSupply) { participant.rainSupply.touching = false; participant.rainSupply.needsRelease = false; }
           this.actorRevision += 1;
         }
       }
@@ -326,14 +371,50 @@ export class SharedRoom extends EventEmitter {
     }
     let joinedCount = 0, activeCount = 0;
     for (const actor of this.connections.values()) if (actor.role === 'participant') { joinedCount += 1; if (actor.holding) activeCount += 1; }
+    const scene = this.sceneState();
+    let soundSlot, soundPhoneCount, birdEvents = [];
+    if (scene.id === 'afterglow') {
+      // Freeze the ensemble for this finale. Re-ranking a current bird event
+      // after a join or disconnect could make two phones play the same call.
+      // A disconnected slot stays quiet; a returning identity keeps its slot.
+      if (!this.wildlifeRoster || this.wildlifeRoster.startedAt !== scene.startedAt) {
+        const phones = [...this.connections.values()].filter(actor => actor.role === 'participant')
+          .sort((a, b) => a.number - b.number || a.id.localeCompare(b.id));
+        this.wildlifeRoster = { startedAt: scene.startedAt, slots: new Map(phones.map((actor, slot) => [actor.id, slot])), birdOwners: new Map() };
+      }
+      soundSlot = this.wildlifeRoster.slots.get(participant.id) ?? -1;
+      soundPhoneCount = this.wildlifeRoster.slots.size;
+      // Freeze each call's owner shortly before its preload window, rather
+      // than excluding every phone that joined after the ending began.
+      // Once assigned, a disconnect leaves a quiet gap; it cannot double a call.
+      const phones = [...this.connections.values()].filter(actor => actor.role === 'participant')
+        .sort((a, b) => a.number - b.number || a.id.localeCompare(b.id));
+      const duration = scoreDurations(scene.settings).afterglowDurationMs;
+      for (let index = 0; index < Math.ceil(duration / BIRD_MIN_GAP_MS); index++) {
+        const event = birdEvent(index, scene, 1);
+        if (event.atMs >= duration - 2000) break;
+        if (!this.wildlifeRoster.birdOwners.has(index) && event.atMs - scene.elapsedMs <= 12000) {
+          const owner = scene.elapsedMs <= event.atMs + 1000 && phones.length ? phones[(index + 3) % phones.length].id : null;
+          this.wildlifeRoster.birdOwners.set(index, owner);
+        }
+        if (this.wildlifeRoster.birdOwners.get(index) === participant.id) birdEvents.push(index);
+      }
+    } else {
+      this.wildlifeRoster = null;
+      soundSlot = [...this.connections.values()].filter(actor => actor.role === 'participant')
+        .sort((a, b) => a.number - b.number || a.id.localeCompare(b.id)).findIndex(actor => actor === participant);
+      soundPhoneCount = joinedCount;
+    }
     const focus = participant.holding && participant.scope !== 'indonesia' ? phoneBrushSummary(this.regions, participant.regionId, this.simulation, participant.position) : null;
     return {
       focus: focus ? { ...focus, position: [...participant.screenPosition], seq: participant.lastSeq } : null,
       type: 'summary', epoch: this.epoch, assignment: participant.scope === 'indonesia' ? COUNTRY_ASSIGNMENT : this.regions.public(participant.regionId), participantNumber: participant.number,
       own: { id: participant.id, number: participant.number, holding: participant.holding, position: participant.position.map(rounded) },
+      soundSlot, soundPhoneCount, birdEvents,
+      rainSupply: rainSupplyState(participant.rainSupply, this.rainCapacity()),
       region: regionalSummaries.get(participant.regionId), ...globalSound, joinedCount, activeCount,
       strength: this.strength, bootstrapAvailable: this.bootstrapAvailable, snapshotVersion: this.snapshotVersion,
-      scene: this.sceneState(), soundSettings: this.soundSettingsState(),
+      scene, soundSettings: this.soundSettingsState(),
     };
   }
 
@@ -341,6 +422,7 @@ export class SharedRoom extends EventEmitter {
     this.actorRevision += 1;
     for (const participant of this.connections.values()) {
       participant.holding = false;
+      if (participant.rainSupply) { participant.rainSupply.touching = false; participant.rainSupply.needsRelease = false; }
       participant.pendingPath = [];
       participant.leaseUntil = 0;
       if (resetSequence) { participant.lastSeq = -1; participant.pressSerial = 0; participant.lastPressPosition = null; }

@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { AUDIENCE_INSTRUCTIONS_HTML, mountAudienceInstructions } from '../app/audience-instructions.js';
 import { DEFAULT_PROGRAM_NOTES, PERFORMANCE_SCENES, sceneAllowsRain, sceneClock, sceneRemaining, sceneInstruction, scenePresentation, scenePhaseReadout, applySharedSound } from '../app/performance-view.js';
+import { FINAL_RAIN_RAMP_MS } from '../app/scene-score.js';
 
 test('audience water remains open during running participation and forest takeover', () => {
   for (const id of PERFORMANCE_SCENES) {
@@ -23,11 +26,13 @@ test('title and programme remain separate from the second cue instructions', () 
   const arrival = scenePresentation({ id: 'arrival', paused: true });
   const instructions = scenePresentation({ id: 'instructions' });
   assert.equal(arrival.opening, true); assert.equal(arrival.showProgramNotes, true); assert.equal(arrival.showInstructions, false);
+  assert.equal(arrival.showWifiJoin, true); assert.equal(arrival.showJoinCode, true); assert.equal(arrival.showOpeningInstructions, false);
   assert.equal(instructions.opening, true); assert.equal(instructions.showProgramNotes, false); assert.equal(instructions.showInstructions, true);
+  assert.equal(instructions.showWifiJoin, true); assert.equal(instructions.showJoinCode, true); assert.equal(instructions.showOpeningInstructions, true);
   assert.equal(instructions.cueScene, 'instructions');
   assert.equal(scenePresentation({ id: 'participation' }).opening, false);
   assert.doesNotMatch(DEFAULT_PROGRAM_NOTES, /Sound on|hold over|media volume/i);
-  assert.match(sceneInstruction({ id: 'arrival' }), /Sound begins shortly/);
+  assert.match(sceneInstruction({ id: 'arrival' }), /Scene 3.*Participation/);
   assert.match(sceneInstruction({ id: 'instructions', paused: true }), /comfortable/);
 });
 test('projection and phones become completely black before phone cricket retreat starts', () => {
@@ -42,7 +47,7 @@ test('projection and phones become completely black before phone cricket retreat
   }
   const phonesOnly = scenePresentation({ id: 'afterglow', elapsedMs: 54_000 });
   assert.equal(phonesOnly.mainGain, 0); assert.equal(phonesOnly.phoneGain, 1);
-  assert.match(scenePhaseReadout({ id: 'afterglow', elapsedMs: 54_000 }), /Phones only.*All screens black.*15 s remaining/);
+  assert.match(scenePhaseReadout({ id: 'afterglow', elapsedMs: 54_000 }), /Phone cricket hold.*Sparse birds.*Faint Main orangutan.*All screens black.*15 s remaining/);
   assert.match(scenePhaseReadout({ id: 'afterglow', elapsedMs: 69_000 }), /Phones fading.*60 s remaining/);
 });
 test('late joins, paused scenes and custom timing use the received show clock', () => {
@@ -112,12 +117,12 @@ test('forest restoration finishes before the independent automatic scene countdo
 
 test('final rain reports the configured slow forest-to-heavy-rain transition from the show clock', () => {
   const start = { id: 'final-rain', elapsedMs: 0 };
-  assert.equal(sceneRemaining(start), 60);
-  assert.match(scenePhaseReadout(start), /Burning forest → heavy rain.*0%.*60 s remaining/);
-  assert.equal(sceneRemaining({ ...start, elapsedMs: 30_000 }), 30);
-  assert.match(scenePhaseReadout({ ...start, elapsedMs: 30_000 }), /50%.*30 s remaining/);
-  assert.equal(sceneRemaining({ ...start, elapsedMs: 60_000 }), 0);
-  assert.match(scenePhaseReadout({ ...start, elapsedMs: 60_000 }), /Heavy rain.*Transition complete/);
+  assert.equal(sceneRemaining(start), FINAL_RAIN_RAMP_MS / 1000);
+  assert.match(scenePhaseReadout(start), new RegExp(`Burning forest → heavy rain.*0%.*${FINAL_RAIN_RAMP_MS / 1000} s remaining`));
+  assert.equal(sceneRemaining({ ...start, elapsedMs: FINAL_RAIN_RAMP_MS / 2 }), FINAL_RAIN_RAMP_MS / 2000);
+  assert.match(scenePhaseReadout({ ...start, elapsedMs: FINAL_RAIN_RAMP_MS / 2 }), new RegExp(`50%.*${FINAL_RAIN_RAMP_MS / 2000} s remaining`));
+  assert.equal(sceneRemaining({ ...start, elapsedMs: FINAL_RAIN_RAMP_MS }), 0);
+  assert.match(scenePhaseReadout({ ...start, elapsedMs: FINAL_RAIN_RAMP_MS }), /Heavy rain.*Transition complete/);
   const configured = { ...start, settings: { finalRainRiseSeconds: 90 }, elapsedMs: 45_000, paused: true };
   assert.equal(sceneRemaining(configured), 45);
   assert.match(scenePhaseReadout(configured), /50%.*45 s remaining/);
@@ -128,9 +133,9 @@ test('final rain reports the configured slow forest-to-heavy-rain transition fro
 
 test('ending readout describes rain/cricket overlap and waits for independent blackout before the PA-only hold', () => {
   assert.match(scenePhaseReadout({ id: 'afterglow', elapsedMs: 15000 }), /Rain → PA crickets.*Screens fading.*15 s remaining/);
-  assert.match(scenePhaseReadout({ id: 'afterglow', elapsedMs: 30000 }), /PA crickets alone.*All screens black.*12 s remaining/);
+  assert.match(scenePhaseReadout({ id: 'afterglow', elapsedMs: 30000 }), /PA crickets \+ distant orangutan.*All screens black.*12 s remaining/);
   const settings = { rainCricketOverlapSeconds: 10, projectionFadeSeconds: 30 };
-  assert.match(scenePhaseReadout({ id: 'afterglow', settings, elapsedMs: 15000 }), /PA crickets.*Screens fading.*Rain stopped.*15 s remaining/);
+  assert.match(scenePhaseReadout({ id: 'afterglow', settings, elapsedMs: 15000 }), /PA crickets \+ distant orangutan.*Screens fading.*Rain stopped.*15 s remaining/);
   const earlyBlack = { rainCricketOverlapSeconds: 30, projectionFadeSeconds: 10 };
   assert.match(scenePhaseReadout({ id: 'afterglow', settings: earlyBlack, elapsedMs: 15000 }), /Rain → PA crickets.*All screens black.*15 s remaining/);
 });
@@ -143,13 +148,40 @@ test('only an authoritative opening entrance reveals the QR and phone welcome du
     assert.equal(scenePresentation(opening, { phone }).openingOverlayGain, 1);
     const midpoint = scenePresentation({ ...opening, elapsedMs: 6_000 }, { phone });
     assert.equal(midpoint.landscapeEntranceGain, .5); assert.equal(midpoint.openingOverlayGain, .5);
+    assert.equal(midpoint.showJoinCode, true); assert.equal(midpoint.showWifiJoin, true); assert.equal(midpoint.showOpeningInstructions, true);
     assert.equal(scenePresentation({ ...opening, elapsedMs: 12_000 }, { phone }).openingOverlayGain, 0);
+    assert.equal(scenePresentation({ ...opening, elapsedMs: 12_000 }, { phone }).showOpeningInstructions, false);
+    assert.equal(scenePresentation({ ...opening, elapsedMs: 12_000 }, { phone }).showWifiJoin, false);
     for (const elapsedMs of [0, 100, 6_000, 12_000]) {
       const returned = { id: 'participation', participationOpening: false, elapsedMs };
       const current = scenePresentation(returned, { phone });
       assert.equal(current.landscapeEntranceGain, 1, 'A direct scene return keeps the complete landscape.');
       assert.equal(current.openingOverlayGain, 0, 'QR and welcome stay hidden after scene 4 or a scene 3 restart.');
+      assert.equal(current.showJoinCode, false); assert.equal(current.showWifiJoin, false); assert.equal(current.showOpeningInstructions, false);
       assert.deepEqual(current, scenePresentation(JSON.parse(JSON.stringify(returned)), { phone }), 'A fresh browser with the same authority packet makes the same choice.');
     }
   }
+});
+
+
+test('Main and phone mount one exact instruction source, including finite water and release-to-refill guidance', async () => {
+  const mainList = {}, phoneList = {};
+  mountAudienceInstructions(mainList); mountAudienceInstructions(phoneList);
+  assert.equal(mainList.innerHTML, phoneList.innerHTML);
+  assert.equal(mainList.innerHTML, AUDIENCE_INSTRUCTIONS_HTML);
+  assert.match(mainList.innerHTML, /Scan the QR code to join the performance/);
+  assert.ok(mainList.innerHTML.indexOf('speaker button') < mainList.innerHTML.indexOf('Silent Mode'));
+  assert.match(mainList.innerHTML, /After enabling sound, your phone stays silent until/);
+  assert.match(mainList.innerHTML, /until the <strong>next scene<\/strong> begins/);
+  assert.match(mainList.innerHTML, /If you still cannot hear sound then, try turning/);
+  assert.match(mainList.innerHTML, /Rain pauses when your water runs out. Release to refill/);
+  assert.doesNotMatch(mainList.innerHTML, /keep raining|below|C or G/);
+  for (const stem of ['peat-study', 'peat-phone']) {
+    const html = await readFile(new URL(`../app/${stem}.html`, import.meta.url), 'utf8');
+    const script = await readFile(new URL(`../app/${stem}.js`, import.meta.url), 'utf8');
+    assert.match(html, /<ol data-audience-instructions><\/ol>/);
+    assert.match(script, /mountAudienceInstructions\(/);
+  }
+  const main = await readFile(new URL('../app/peat-study.html', import.meta.url), 'utf8');
+  assert.ok(main.indexOf('1</span> Join the Wi-Fi network') < main.indexOf('2</span> Then scan the QR code to join'));
 });

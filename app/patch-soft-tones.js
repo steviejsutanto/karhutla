@@ -1,4 +1,5 @@
 import { derivePeatDepthState } from '../visual-assets/peat-section.js';
+import { mainSpatialPosition } from './main-spatial.js';
 
 const clamp = value => Math.max(0, Math.min(1, Number(value) || 0));
 const smooth = value => { const x = clamp(value); return x * x * (3 - 2 * x); };
@@ -34,6 +35,11 @@ export const PATCH_RESIDUE_LEVEL = .08;
 export const PATCH_TEXTURE_SOURCE_LIMIT = 8;
 export const PATCH_TEXTURE_ADMISSION_SECONDS = .1;
 const TONE_RISE_SECONDS = .3;
+export const PATCH_HELD_MOTION_START_SECONDS = 4;
+export const PATCH_HELD_MOTION_RISE_SECONDS = 4;
+export const PATCH_HELD_MOTION_DEPTH = .14;
+const HELD_MOTION_EXIT_SECONDS = .2;
+export const patchHeldToneMotionDepth = age => PATCH_HELD_MOTION_DEPTH * smooth((age - PATCH_HELD_MOTION_START_SECONDS) / PATCH_HELD_MOTION_RISE_SECONDS);
 // A completed short gesture can reach Main after its actor has released.
 // Retain only the measured cooling edge, for one rounded finite response.
 export const PATCH_COOLING_RESPONSE_SECONDS = 1.2;
@@ -162,8 +168,9 @@ export class PatchSoftToneAudio {
     this.random = typeof random === 'function' ? random : Math.random; this.globalHeat = 1;
     this.areaMode = areaMode === true; this.areaEventIds = new Set(); this.areaHotKeys = new Set(); this.areaCompletedKeys = new Set();
     this.lastTextureAdmissionAt = -Infinity;
-    // Count changes act on both materials, including recordings that were
-    // scheduled earlier. Keep spatial paths upstream of these shared gains.
+    // Tone gain stays fixed as the audience grows. The Main signal compressor
+    // and final limiter protect the sum; the finite material pool retains its
+    // own blend. Keep spatial paths upstream of these shared gains.
     this.toneCrowd = context.createGain(); this.textureCrowd = context.createGain();
     this.toneCrowd.gain.value = this.textureCrowd.gain.value = 1;
     this.toneCrowd.connect(destination); this.textureCrowd.connect(textureDestination);
@@ -185,7 +192,7 @@ export class PatchSoftToneAudio {
   setPatches(values = []) {
     const now = this.context.currentTime, next = new Map(), newResidues = [];
     // Multiple holding identities on one patch still produce one pitch and
-    // one extinction edge. Crowd headroom counts those identities separately.
+    // one extinction edge. Holding identities remain diagnostic information.
     for (const value of new Map(Array.from(values, value => [String(value.key), value])).values()) {
       const key = String(value.key), previous = this.patches.get(key);
       const patch = { ...value, key, midi: patchMidi(key), position: previous?.position ?? [...(value.position ?? [.5, .5])] };
@@ -265,6 +272,7 @@ export class PatchSoftToneAudio {
   }
   _morphVoice(voice, patch, residue, now) {
     const from = this._voiceGainAt(voice, now);
+    this._stopHeldMotion(voice, now);
     // Morph notes have their own finite bank; outgoing material cannot reserve
     // every place needed by a new held footprint.
     if (this.morphVoices.size >= this.maxVoices && !this.morphVoices.has(voice.key)) {
@@ -293,20 +301,35 @@ export class PatchSoftToneAudio {
     voice.oscillators[0].onended = () => this._disposeVoice(voice);
   }
   _position(space, position) {
-    const [x, y] = position.map(clamp), panner = space.panner;
+    const pose = mainSpatialPosition(position), panner = space.panner;
+    if (space.focus) space.focus.pan.value = pose.focusPan;
     if (space.mode === 'HRTF') {
-      const world = [(x - .5) * 7, 0, -(.8 + 6 * y)];
+      const world = pose.world;
       if (panner.positionX) [panner.positionX.value, panner.positionY.value, panner.positionZ.value] = world;
       else panner.setPosition?.(...world);
       space.distance.gain.value = 1;
-    } else { if (panner?.pan) panner.pan.value = (x - .5) * 1.8; space.distance.gain.value = 1 / (1 + .8 * y); }
+    } else { if (panner?.pan) panner.pan.value = pose.pan; space.distance.gain.value = pose.distanceGain; }
   }
   _makeVoice(patch, now) {
-    const c = this.context, filter = c.createBiquadFilter(), gain = c.createGain(), mixer = c.createGain(), space = this.makeSpatialPath(this.toneCrowd);
+    const c = this.context, filter = c.createBiquadFilter(), gain = c.createGain(), mixer = c.createGain(), motionGain = c.createGain(), space = this.makeSpatialPath(this.toneCrowd);
     // -3 dB is approximately Butterworth Q in Web Audio's low-pass domain.
     // It avoids a resonant energy bump that would upset the recording match.
     filter.type = 'lowpass'; filter.Q.value = -3; gain.gain.value = 0; mixer.gain.value = this.mixer.chimes * this.toneWeight;
-    filter.connect(gain); gain.connect(mixer); mixer.connect(space.input); this._position(space, patch.position);
+    motionGain.gain.value = 1;
+    filter.connect(gain); gain.connect(motionGain); motionGain.connect(mixer); mixer.connect(space.input); this._position(space, patch.position);
+    // Long cooling areas get a little breath after the initial note has
+    // settled. A quiet native gain LFO leaves every assigned pitch untouched.
+    // It starts after four seconds and grows over four seconds on sustained notes.
+    const motionOscillator = c.createOscillator(), motionDepth = c.createGain();
+    const motionFrequencyHz = .12 + .06 * materialUnit(patch, 'held-motion-speed');
+    motionOscillator.type = 'sine'; motionOscillator.frequency.value = motionFrequencyHz;
+    motionDepth.gain.value = 0; motionDepth.gain.setValueAtTime(0, now + PATCH_HELD_MOTION_START_SECONDS);
+    for (let index = 1; index <= 32; index++) {
+      const age = PATCH_HELD_MOTION_START_SECONDS + PATCH_HELD_MOTION_RISE_SECONDS * index / 32;
+      motionDepth.gain.linearRampToValueAtTime(patchHeldToneMotionDepth(age), now + age);
+    }
+    motionOscillator.connect(motionDepth); motionDepth.connect(motionGain.gain);
+    motionOscillator.start(now + .02 + 2 * materialUnit(patch, 'held-motion-phase'));
     const frequency = patchFrequencyForMidi(patch.midi), shape = patchSoftToneParameters(patch, this.hazeOnlyBlend), oscillators = [], partials = [];
     filter.frequency.value = frequency * shape.cutoffRatio;
     for (const ratio of [1, 2]) {
@@ -349,9 +372,26 @@ export class PatchSoftToneAudio {
     hazeSource.connect(hazeFilter); hazeFilter.connect(hazeGain); hazeGain.connect(gain);
     hazeSource.start(now + .02, this.hazeBuffer.duration * materialUnit(patch, 'haze-phase'));
     return { key: patch.key, midi: patch.midi, frequency, position: patch.position, patch, filter, gain, mixer, space, oscillators, partials,
-      modulators: [blurOscillator], upperBlur, upperBlurCents: shape.upperBlurCents, hazeSource, hazeFilter, hazeGain, hazeMakeup, haziness: shape.haziness, focus: shape.focus, hazeOnlyBlend: shape.hazeOnlyBlend, startedAt: now,
+      modulators: [blurOscillator, motionOscillator], motionOscillator, motionDepth, motionGain, motionFrequencyHz, motionStop: null,
+      upperBlur, upperBlurCents: shape.upperBlurCents, hazeSource, hazeFilter, hazeGain, hazeMakeup, haziness: shape.haziness, focus: shape.focus, hazeOnlyBlend: shape.hazeOnlyBlend, startedAt: now,
       bodyLevel, bodyOscillator, bodyGain,
-      admission: ++this.admissionSequence, nodes: [filter, gain, mixer, ...oscillators, ...partials, ...(bodyOscillator ? [bodyOscillator, bodyGain] : []), blurOscillator, upperBlur, hazeSource, hazeFilter, hazeGain, ...space.nodes] };
+      admission: ++this.admissionSequence, nodes: [filter, gain, motionGain, motionDepth, motionOscillator, mixer, ...oscillators, ...partials, ...(bodyOscillator ? [bodyOscillator, bodyGain] : []), blurOscillator, upperBlur, hazeSource, hazeFilter, hazeGain, ...space.nodes] };
+  }
+  _heldMotionDepthAt(voice, now) {
+    return voice.motionStop ? voice.motionStop.depth * (1 - clamp((now - voice.motionStop.at) / HELD_MOTION_EXIT_SECONDS))
+      : patchHeldToneMotionDepth(now - voice.startedAt);
+  }
+  _stopHeldMotion(voice, now) {
+    if (!voice.motionDepth || voice.motionStop) return;
+    const depth = this._heldMotionDepthAt(voice, now), parameter = voice.motionDepth.gain;
+    if (parameter.cancelAndHoldAtTime) parameter.cancelAndHoldAtTime(now);
+    else parameter.cancelScheduledValues(now);
+    // Anchor the release explicitly. A trailing ramp must not interpolate
+    // all the way back to the last entrance point when the held section has
+    // no later automation event.
+    parameter.setValueAtTime(depth, now);
+    parameter.linearRampToValueAtTime(0, now + HELD_MOTION_EXIT_SECONDS);
+    voice.motionStop = { at: now, depth };
   }
   _toneCharacter(voice, shape, now, seconds = .55) {
     voice.upperBlurCents = shape.upperBlurCents; voice.haziness = shape.haziness; voice.focus = shape.focus; voice.hazeOnlyBlend = shape.hazeOnlyBlend;
@@ -370,6 +410,7 @@ export class PatchSoftToneAudio {
   }
   _releaseVoice(voice, now, seconds = 1.2) {
     if (voice.disposed) return;
+    this._stopHeldMotion(voice, now);
     const from = this._voiceGainAt(voice, now);
     if (from < .000001) { this._disposeVoice(voice); return; }
     // Old Safari needs the original curve start removed, followed by the
@@ -446,13 +487,13 @@ export class PatchSoftToneAudio {
     const keys = new Set([...this.voices.values(), ...this.tails, ...this.handoffTails, ...this.morphVoices.values()].map(voice => voice.key));
     for (const source of this.textureSources) keys.add(source.residue.key);
     this.normalizationCount = Math.max(1, this.participantCount, keys.size);
-    this.crowdTargetGain = 1 / Math.sqrt(this.normalizationCount);
+    this.crowdTargetGain = 1;
     // Pending lifecycles own no native source. The small texture pool keeps
     // its own headroom instead of being buried by a much larger tone crowd.
     this.textureNormalizationCount = Math.max(1, this.textureSources.size);
     this.textureCrowdTargetGain = 1 / Math.sqrt(this.textureNormalizationCount);
-    // Keep attenuation fast enough for the rounded voice attack. Recovery
-    // remains deliberately slower when the audience shrinks.
+    // Only overlapping material recordings share a source-count blend. Tones
+    // never become quieter because more listeners or patch voices join.
     for (const bus of [this.toneCrowd, this.textureCrowd, this.textureReverbCrowd].filter(Boolean)) {
       const gain = bus === this.toneCrowd ? this.crowdTargetGain : this.textureCrowdTargetGain;
       const seconds = gain < valueAt(bus.gain, now) ? .35 : 2.4;
@@ -600,6 +641,7 @@ export class PatchSoftToneAudio {
       maxActiveVoices: this.maxVoices, maxNativeVoices: this.maxVoices * 4, textureSourceCount: this.textureSources.size, textureSourceLimit: PATCH_TEXTURE_SOURCE_LIMIT,
       textureAdmissionSeconds: PATCH_TEXTURE_ADMISSION_SECONDS,
       coolingResponseSeconds: PATCH_COOLING_RESPONSE_SECONDS, recentCoolingCount: this.recentCooling.size, allowReleasedCooling: this.allowReleasedCooling, hazeOnlyBlend: this.hazeOnlyBlend,
+      heldMotion: { startSeconds: PATCH_HELD_MOTION_START_SECONDS, riseSeconds: PATCH_HELD_MOTION_RISE_SECONDS, maxDepth: PATCH_HELD_MOTION_DEPTH },
       globalHeat: this.globalHeat, transposeProbability: patchResidueTransposeProbability(this.globalHeat),
       residueCount: this.residues.size, morphSeconds: this.morphSeconds, toneExitSeconds: Math.min(PATCH_TONE_EXIT_SECONDS, this.morphSeconds), fadeSeconds: this.fadeSeconds, servedTransitions: this.servedTransitions,
       participantCount: this.participantCount, normalizationCount: this.normalizationCount, crowdGain: valueAt(this.toneCrowd.gain, this.context.currentTime), crowdTargetGain: this.crowdTargetGain,
@@ -608,7 +650,7 @@ export class PatchSoftToneAudio {
       textureRmsLevels: Object.fromEntries(PATCH_RESIDUE_IDS.map(id => [id, textureTargetRms(id) * patchTextureLevel(id)])),
       pendingResidues: [...this.residues.values()].filter(residue => !residue.windowsScheduled).length,
       recordings: [...this.textureRecordings.values()].map(recording => ({ ...recording })),
-      voices: [...this.voices.values(), ...this.morphVoices.values()].map(voice => ({ key: voice.key, midi: voice.midi, frequency: voice.frequency, tuningCents: patchTuningCents(voice.midi), position: [...voice.position], emergence: voice.emergence, focus: voice.focus, haziness: voice.haziness, targetGain: voice.targetGain, hazeOnlyBlend: voice.hazeOnlyBlend, currentFundamentalGain: valueAt(voice.partials[0].gain, this.context.currentTime), currentHarmonicGain: valueAt(voice.partials[1].gain, this.context.currentTime), currentBodyGain: voice.bodyGain ? valueAt(voice.bodyGain.gain, this.context.currentTime) : 0, upperBlurCents: voice.upperBlurCents, currentUpperBlurCents: valueAt(voice.upperBlur.gain, this.context.currentTime), currentHazeGain: valueAt(voice.hazeGain.gain, this.context.currentTime) / voice.hazeMakeup })),
+      voices: [...this.voices.values(), ...this.morphVoices.values()].map(voice => ({ key: voice.key, midi: voice.midi, frequency: voice.frequency, tuningCents: patchTuningCents(voice.midi), position: [...voice.position], emergence: voice.emergence, focus: voice.focus, haziness: voice.haziness, targetGain: voice.targetGain, hazeOnlyBlend: voice.hazeOnlyBlend, motionDepth: this._heldMotionDepthAt(voice, this.context.currentTime), motionFrequencyHz: voice.motionFrequencyHz, currentFundamentalGain: valueAt(voice.partials[0].gain, this.context.currentTime), currentHarmonicGain: valueAt(voice.partials[1].gain, this.context.currentTime), currentBodyGain: voice.bodyGain ? valueAt(voice.bodyGain.gain, this.context.currentTime) : 0, upperBlurCents: voice.upperBlurCents, currentUpperBlurCents: valueAt(voice.upperBlur.gain, this.context.currentTime), currentHazeGain: valueAt(voice.hazeGain.gain, this.context.currentTime) / voice.hazeMakeup })),
       residues: [...this.residues.values()].map(residue => ({ key: residue.key, memberKeys: residue.memberKeys, eventId: residue.eventId, texture: residue.id, url: residue.selected?.url ?? residue.assignedUrl,
         ...residue.treatment, windowsScheduled: residue.windowsScheduled, at: residue.at, endAt: residue.endAt })) };
   }

@@ -1,0 +1,63 @@
+{
+  "status": "complete",
+  "catalogRevision": 14,
+  "syntheticInterpretation": true,
+  "activeAssetCount": 42,
+  "generationBatch": "medium-wildlife-v25-batch.json",
+  "unchangedRetainedAssets": 39,
+  "alternateBatch": "medium-wildlife-v25-retry-batch.json",
+  "selectionNotes": "Bird A uses independently generated take 2: dominant frequency about 369Hz. First A take was about 2.5kHz and is excluded; take 3 was diffuse and is excluded. This is a spectral/envelope selection, not a human listening review.",
+  "assets": {
+    "orangutan-distant-v25": {
+      "file": "audio-assets/v3/orangutan-distant-v25.mp3",
+      "durationSeconds": 16,
+      "bytes": 160964,
+      "sha256": "095b5dced9b78e4bd6d3221641c8d05ce79ff7c038532f8e0f5eac9b0b2fc2fa",
+      "validation": {
+        "completeDecode": "passed",
+        "samplesPerChannel": 512000,
+        "nonFiniteSamples": 0,
+        "durationSeconds": 16.0,
+        "peakDbfs": -14.450237808919015,
+        "rmsDbfs": -31.98412649018134,
+        "nearFullScaleSampleFraction": 0.0,
+        "spectralEnergyAbove3kHz": 1.8099795562984614e-06,
+        "scope": "Full decoded signal checks. No human listening, species certification, or animal emotion claim."
+      }
+    },
+    "rainforest-bird-low-a-v25": {
+      "file": "audio-assets/v3/rainforest-bird-low-a-v25.mp3",
+      "durationSeconds": 2.8,
+      "bytes": 23084,
+      "sha256": "4e0683c2989522cd4e23127618a8c6e8010a48d52939d40b93870026ce955cb4",
+      "validation": {
+        "completeDecode": "passed",
+        "samplesPerChannel": 89600,
+        "nonFiniteSamples": 0,
+        "durationSeconds": 2.8,
+        "peakDbfs": -19.608433591501566,
+        "rmsDbfs": -30.444822855196676,
+        "nearFullScaleSampleFraction": 0.0,
+        "spectralEnergyAbove3kHz": 6.367001971750684e-07,
+        "scope": "Full decoded signal checks. No human listening, species certification, or animal emotion claim."
+      }
+    },
+    "rainforest-bird-low-b-v25": {
+      "file": "audio-assets/v3/rainforest-bird-low-b-v25.mp3",
+      "durationSeconds": 2.8,
+      "bytes": 23084,
+      "sha256": "1684b33dae0b615c4613827a66b3674d2d5f6ba670c37362040a2cf711924d64",
+      "validation": {
+        "completeDecode": "passed",
+        "samplesPerChannel": 89600,
+        "nonFiniteSamples": 0,
+        "durationSeconds": 2.8,
+        "peakDbfs": -19.807264495615502,
+        "rmsDbfs": -30.445191046619776,
+        "nearFullScaleSampleFraction": 0.0,
+        "spectralEnergyAbove3kHz": 1.0011376002094175e-05,
+        "scope": "Full decoded signal checks. No human listening, species certification, or animal emotion claim."
+      }
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "purpose": "Two independent original synthetic low-middle rainforest bird phrases for very sparse phone one-shots",
+  "preferredModel": "medium",
+  "durationSeconds": 5,
+  "steps": 8,
+  "cfgScale": 1.0,
+  "sampler": "pingpong",
+  "notes": "Creative rainforest bird sound design, not species-certified field recordings. Independent seeds and prompts; no pitch/time changes. Native phone scheduling supplies the long quiet gaps.",
+  "assets": [
+    {
+      "id": "rainforest-bird-low-a-v25",
+      "kind": "wildlife-bird",
+      "title": "Soft rainforest bird phrase",
+      "seed": 202611052502,
+      "role": "Single soft lower-middle hollow rainforest bird call with silence around it",
+      "prompt": "TrackType: SFX, One solitary distant tropical rainforest bird makes a brief soft hollow mellow two-note coo, low middle pitch, a rounded woody airy warble with a gentle descending finish. A quiet warm breathy bird voice, not a bright chirp or whistle. One isolated brief phrase surrounded by quiet. Natural outdoor sound with subdued upper frequencies. No repetitive calls, busy chorus, high shrill chirping, sharp squeaks, insects, frogs, rain, human voices, music or instruments. Length: 5 seconds."
+    },
+    {
+      "id": "rainforest-bird-low-b-v25",
+      "kind": "wildlife-bird",
+      "title": "Hollow rainforest bird answer",
+      "seed": 202611052503,
+      "role": "Separate soft low-middle rainforest bird answering phrase, brief and unhurried",
+      "prompt": "TrackType: SFX, A single shy tropical forest bird quietly answers with one short mellow hollow three-note throaty coo-woo, warm low middle pitch, round soft wooden resonances and a gently falling airy tail. Subtle and unhurried, distant between trees, a brief isolated bird phrase with quiet before and after. Restrained soft upper frequencies. No high sharp whistles or squeaks, no repeated song, busy bird chorus, insects, frogs, rain, voices, music or instruments. Length: 5 seconds."
+    }
+  ]
+}

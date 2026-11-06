@@ -1,0 +1,116 @@
+{
+  "model": "Stable Audio 3 Medium",
+  "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+  "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+  "license": "Stable Audio Community License",
+  "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+  "backend": "Official MLX local inference on Apple Silicon",
+  "runtimeRevision": "5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84",
+  "optimizedWeightsRepository": "https://huggingface.co/stabilityai/stable-audio-3-optimized",
+  "optimizedWeightsRevision": "30cb2644da54bfa63275d1bc7f1fa67fc718680f",
+  "verifiedWeights": {
+    "t5gemma_f16.npz": {
+      "bytes": 567443068,
+      "sha256": "8deb20489f36d9aec539f26c9c67321f99bc5fe300d470435ed6e76be4f16bbd"
+    },
+    "dit_medium_f16.npz": {
+      "bytes": 2907300946,
+      "sha256": "f9e5647ea3225818657d47d47ae4b34afa29c0568206ca89566c1a758944a38e"
+    },
+    "same_l_decoder_f32.npz": {
+      "bytes": 1704311976,
+      "sha256": "84924be2122d3a20fce443f40b782d9cd88e8e73707476326003ac47659a2287"
+    }
+  },
+  "device": {
+    "device_name": "Apple M1 Pro",
+    "max_recommended_working_set_size": 11453251584,
+    "memory_size": 17179869184,
+    "architecture": "applegpu_g13s",
+    "max_buffer_length": 8589934592,
+    "resource_limit": 499000
+  },
+  "startedAt": "2026-11-05T18:00:56.636101+00:00",
+  "status": "complete",
+  "assets": {
+    "rainforest-chirp-b-v31-take2": {
+      "id": "rainforest-chirp-b-v31",
+      "generationId": "rainforest-chirp-b-v31-take2",
+      "kind": "wildlife-bird",
+      "title": "Rainforest flute chirp",
+      "seed": 202611063104,
+      "role": "One separate clear short tropical forest bird tweet",
+      "prompt": "TrackType: SFX, One solitary small tropical rainforest songbird gives one short clear soft wheet chirp, a delicate flute-like whistle with a quick upward pitch turn and a clean ending. Recognizable natural bird chirping in a gentle middle-high register. The single chirp lasts half a second, surrounded by long silence. A tiny distant outdoor bird tweet, mostly quiet. Length: 5 seconds.",
+      "durationSeconds": 5,
+      "steps": 8,
+      "cfgScale": 1.0,
+      "sampler": "pingpong",
+      "pack": "scripts/stablegen-v31-rainforest-chirps-retry-prompts.json",
+      "model": "Stable Audio 3 Medium",
+      "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+      "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+      "license": "Stable Audio Community License",
+      "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+      "backend": "Official MLX local inference on Apple Silicon",
+      "runtimeRevision": "5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84",
+      "optimizedWeightsRevision": "30cb2644da54bfa63275d1bc7f1fa67fc718680f",
+      "generated": true,
+      "status": "generated",
+      "startedAt": "2026-11-05T18:01:00.583026+00:00",
+      "completedAt": "2026-11-05T18:01:03.810997+00:00",
+      "generationSeconds": 3.226,
+      "peakMetalAllocatedBytes": 6402043226,
+      "unclippedGeneratorPeak": 0.3166753053665161,
+      "unclippedGeneratorRms": 0.0177890132677591,
+      "unclippedGeneratorAboveFullScaleFraction": 0.0,
+      "unclippedGeneratorNearFullScaleFraction": 0.0,
+      "master": {
+        "file": "rainforest-chirp-b-v31-take2-master.wav",
+        "bytes": 1764088,
+        "sha256": "be3dc01fe392a252b153409798624d6227e71c653d7035cb2b554fdb4c0536a1"
+      },
+      "processing": "Official pipeline output preserved as stereo44100Hz32-bit float WAV without clipping or normalization. No reverb, compression, mixing or post-effects added. Browser copy normalized separately.",
+      "listeningReview": "Technical validity checked. Perceptual prompt adherence requires audition."
+    },
+    "rainforest-chirp-c-v31-take2": {
+      "id": "rainforest-chirp-c-v31",
+      "generationId": "rainforest-chirp-c-v31-take2",
+      "kind": "wildlife-bird",
+      "title": "Rainforest small chirp",
+      "seed": 202611063105,
+      "role": "A third independent tiny natural rainforest bird chirp",
+      "prompt": "TrackType: SFX, A small bird in a tropical rainforest makes one little clear sweet chirp, a soft flute-like chweet with a brief upward inflection and quick delicate ending. A recognizable bird tweet, medium high pitched but not piercing, isolated in still quiet outdoor air. Only one short half-second chirp and long silence. Length: 5 seconds.",
+      "durationSeconds": 5,
+      "steps": 8,
+      "cfgScale": 1.0,
+      "sampler": "pingpong",
+      "pack": "scripts/stablegen-v31-rainforest-chirps-retry-prompts.json",
+      "model": "Stable Audio 3 Medium",
+      "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+      "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+      "license": "Stable Audio Community License",
+      "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+      "backend": "Official MLX local inference on Apple Silicon",
+      "runtimeRevision": "5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84",
+      "optimizedWeightsRevision": "30cb2644da54bfa63275d1bc7f1fa67fc718680f",
+      "generated": true,
+      "status": "generated",
+      "startedAt": "2026-11-05T18:01:03.845390+00:00",
+      "completedAt": "2026-11-05T18:01:06.131867+00:00",
+      "generationSeconds": 2.286,
+      "peakMetalAllocatedBytes": 6407258334,
+      "unclippedGeneratorPeak": 0.2596226632595062,
+      "unclippedGeneratorRms": 0.025699400708147833,
+      "unclippedGeneratorAboveFullScaleFraction": 0.0,
+      "unclippedGeneratorNearFullScaleFraction": 0.0,
+      "master": {
+        "file": "rainforest-chirp-c-v31-take2-master.wav",
+        "bytes": 1764088,
+        "sha256": "ae0fe8a1cae390296526bf475ed9976587f3d22e11335f47b95447a967f63333"
+      },
+      "processing": "Official pipeline output preserved as stereo44100Hz32-bit float WAV without clipping or normalization. No reverb, compression, mixing or post-effects added. Browser copy normalized separately.",
+      "listeningReview": "Technical validity checked. Perceptual prompt adherence requires audition."
+    }
+  },
+  "completedAt": "2026-11-05T18:01:06.141711+00:00"
+}

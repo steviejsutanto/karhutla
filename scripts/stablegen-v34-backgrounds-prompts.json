@@ -1,0 +1,35 @@
+{
+  "purpose": "New diffuse rainforest downpour and calm airy arrival texture, independent from all retained sources",
+  "preferredModel": "medium",
+  "durationSeconds": 30,
+  "steps": 8,
+  "cfgScale": 1.0,
+  "sampler": "pingpong",
+  "notes": "Three original local generations with distinct seeds. Two independent calm haze endpoints are required by the two-endpoint palette. Prompts request soft open-air ambience; they do not establish semantic source identity. Original float masters are retained, with fixed filtering/gain and loop conditioning only for browser copies.",
+  "assets": [
+    {
+      "id": "rain-canopy-heavy-v34",
+      "kind": "rain",
+      "title": "Heavy rainforest canopy wash",
+      "seed": 202611063401,
+      "role": "A dense, diffuse heavy rainforest rain wash softened by foliage and forest earth",
+      "prompt": "TrackType: SFX, Immersive natural outdoor ambience deep inside a tropical rainforest during sustained heavy rainfall. A broad dense continuous shhhhh wash of countless overlapping fine raindrops softened by a thick distant leafy canopy and damp soft forest earth. Diffuse soft foliage patter blends smoothly into an abundant even rain curtain, with a warm full middle and rounded gentle detail. Open air, spacious, steady heavy rain throughout, no nearby isolated splatters or hard resonant taps. No roof, tiles, gutters, metallic plinks, thunder, wind gusts, animals, voices or music. Length: 30 seconds."
+    },
+    {
+      "id": "haze-calm-air-v34",
+      "kind": "haze",
+      "title": "Calm suspended warm air",
+      "seed": 202611063402,
+      "role": "A quiet, calm, zen-like diffuse airy arrival atmosphere with a faint warm suspended texture",
+      "prompt": "TrackType: SFX, An extremely calm quiet open-air atmosphere, almost still warm air suspended in a peaceful spacious place. A faint smooth soft airy whisper, delicate diffuse warm air texture drifting slowly and evenly, featherlight and unobtrusive. Fine rounded air grains with very gentle irregular motion, a serene meditative sense of space and rest, stable restrained softness throughout. Non-musical ambient air only. No growing drone, low roar, deep rumble, gusts, rhythmic pulse, heavy breathing, people, voices, instruments, melody, rain or water. Length: 30 seconds."
+    },
+    {
+      "id": "haze-calm-drift-v34",
+      "kind": "haze",
+      "title": "Quiet floating air drift",
+      "seed": 202611063403,
+      "role": "An independent calm, transparent atmospheric air texture for the second arrival haze endpoint",
+      "prompt": "TrackType: SFX, A serene spacious barely audible ambient air texture. Still warm outdoor air with a soft silky diffuse whisper, very fine smooth suspended grains and a faint light airy drift. Gentle rounded detail, quiet restful space, steady restrained texture without dramatic changes. Pure non-musical air ambience with a peaceful meditative quality. No bass drone, building roar, breathing, rhythmic pulse, strong wind, people, voices, instruments, music, rain or liquid drops. Length: 30 seconds."
+    }
+  ]
+}

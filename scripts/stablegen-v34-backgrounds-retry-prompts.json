@@ -1,0 +1,47 @@
+{
+  "purpose": "Independent natural-source retries after initial rain swell and narrow-band haze candidates",
+  "preferredModel": "medium",
+  "durationSeconds": 30,
+  "steps": 8,
+  "cfgScale": 1.0,
+  "sampler": "pingpong",
+  "notes": "Concise natural rain and quiet soft-air prompts. Unchanged earlier masters remain retained but are not selected unless their measured source characteristics are suitable. Prompt adherence still requires audition.",
+  "assets": [
+    {
+      "id": "rain-canopy-heavy-v34",
+      "generationId": "rain-canopy-heavy-v34-take2",
+      "kind": "rain",
+      "title": "Diffuse heavy rainforest shower",
+      "seed": 202611063411,
+      "role": "Independent continuous rain wash softened by distant rainforest foliage",
+      "prompt": "TrackType: SFX, Steady heavy rain falling on dense tropical forest treetops, recorded from a distance outdoors. A constant broad soft shhhhh of abundant rainfall over deep layers of leaves and soft earth. Thousands of small drops merge into a smooth even dense rain curtain. Diffuse forest canopy patter, full natural water wash, stable and unchanging heavy rain throughout the whole recording. Only the continuous soft outdoor rain texture. Length: 30 seconds."
+    },
+    {
+      "id": "rain-canopy-heavy-v34",
+      "generationId": "rain-canopy-heavy-v34-take3",
+      "kind": "rain",
+      "title": "Distant forest downpour wash",
+      "seed": 202611063412,
+      "role": "Independent dense soft broad rain ambience with a distant canopy perspective",
+      "prompt": "TrackType: SFX, Natural ambience of a heavy tropical rain shower deep in a forest. Smooth dense rainfall rushing continuously across a broad leafy canopy, heard from well back. Fine diffuse soft water noise blends with damp foliage rustle into an even broad shhh. Thick soft ground absorbs the drops. A sustained heavy downpour with a stable level and no distinct individual nearby impacts. Clean open air recording of rain alone. Length: 30 seconds."
+    },
+    {
+      "id": "haze-calm-air-v34",
+      "generationId": "haze-calm-air-v34-take2",
+      "kind": "haze",
+      "title": "Calm soft forest air",
+      "seed": 202611063413,
+      "role": "Quiet diffuse soft air from a gentle breeze in distant foliage",
+      "prompt": "TrackType: SFX, Very quiet gentle breeze softly moving distant tree leaves in a calm warm forest. A faint constant diffuse whisper of air and fine dry leaf rustle, smooth broad soft shhh, extremely light and delicate. Still peaceful open space, restrained natural movement, steady soft background air throughout the whole recording. Pure gentle dry air and distant foliage ambience. Length: 30 seconds."
+    },
+    {
+      "id": "haze-calm-drift-v34",
+      "generationId": "haze-calm-drift-v34-take2",
+      "kind": "haze",
+      "title": "Quiet diffuse breeze veil",
+      "seed": 202611063414,
+      "role": "Independent very light open-air whisper for a peaceful arrival",
+      "prompt": "TrackType: SFX, A soft steady light breeze through a quiet grove, heard from far away. Barely audible warm airy rustle, a fine diffuse smooth whisper, broad gentle air noise with faint distant dry foliage texture. Peaceful still outdoor ambience and a stable restrained level from beginning to end. Only delicate breeze and soft distant leaves in an open natural space. Length: 30 seconds."
+    }
+  ]
+}

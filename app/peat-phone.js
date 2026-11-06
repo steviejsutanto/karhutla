@@ -8,7 +8,9 @@ import { WORK_TITLE, DEFAULT_PROGRAM_NOTES, sceneAllowsRain, sceneInstruction, s
 import { nationalPhoneInteraction } from './sound-participants.js';
 import { participantRainIdentity } from '../visual-assets/participant-identity.js';
 import { ExtinctionFeedback } from '../visual-assets/extinction-feedback.js';
-import { audienceRainStrength } from './scene-score.js';
+import { audienceRainStrength, DEFAULT_RAIN_STRENGTH } from './scene-score.js';
+import { mountAudienceInstructions } from './audience-instructions.js';
+import { PhoneMagnifier } from './phone-magnifier.js';
 export { nationalPhoneSoundPatchAt, nationalPhoneInteraction } from './sound-participants.js';
 
 const unit = value => typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 1;
@@ -80,6 +82,7 @@ if (typeof document !== 'undefined' && document.getElementById('peat-instrument'
 
 function initializePeatPhone() {
   const $ = id => document.getElementById(id);
+  mountAudienceInstructions($('phone-instructions').querySelector('ol'));
   const instrument = $('peat-instrument'), stage = $('phone-map-stage'), material = $('phone-material');
   const sound = mountSoundControls($('phone-sound'), { mode: 'phone' });
   $('phone-sound').querySelector('button').disabled = true;
@@ -87,6 +90,7 @@ function initializePeatPhone() {
   function renderScene(scene) {
     if (!scene) return;
     const sceneChanged = currentScene?.id !== scene.id;
+    if (sceneChanged) magnifier.hide();
     if (sceneChanged) notesOpen = false;
     if (gestureError && (sceneChanged || !sceneAllowsRain(scene))) { inputError = ''; gestureError = false; }
     const view = scenePresentation(scene, { phone: true });
@@ -103,17 +107,20 @@ function initializePeatPhone() {
     document.body.dataset.opening = String(view.opening || welcomeGain > 0);
     document.documentElement.style.setProperty('--phone-landscape-gain', String(entrance));
     document.documentElement.style.setProperty('--phone-welcome-gain', String(welcomeGain));
-    $('phone-welcome').hidden = welcomeGain <= 0 || notesOpen;
+    const automaticInstructions = view.showOpeningInstructions && !notesOpen;
+    $('phone-welcome').hidden = welcomeGain <= 0 || notesOpen || automaticInstructions;
     metrics.openingCrossfade = { landscapeGain: entrance, welcomeGain, durationMs: view.soundTransitionDurationMs };
-    $('phone-notes').hidden = !notesOpen;
-    $('phone-notes-close').hidden = false;
-    $('phone-program-notes').hidden = false;
+    $('phone-notes').hidden = !notesOpen && !automaticInstructions;
+    $('phone-notes').style.opacity = automaticInstructions ? String(welcomeGain) : '';
+    $('phone-notes').inert = automaticInstructions && !view.opening;
+    $('phone-notes-close').hidden = automaticInstructions;
+    $('phone-program-notes').hidden = automaticInstructions;
     $('phone-instructions').hidden = false;
-    text('phone-title', WORK_TITLE);
-    $('phone-about').setAttribute('aria-expanded', String(!$('phone-notes').hidden));
+    text('phone-title', automaticInstructions ? 'Instructions' : WORK_TITLE);
+    $('phone-about').setAttribute('aria-expanded', String(notesOpen));
     text('phone-program-notes', scene.settings?.programNotes || DEFAULT_PROGRAM_NOTES);
     text('phone-scene-instruction', '');
-    text('phone-scene-caption', view.opening ? 'Sound begins shortly.' : sceneInstruction(scene));
+    text('phone-scene-caption', view.opening ? scene.id === 'instructions' ? 'Phone sound starts when the next scene begins.' : 'Phone sound starts after the instructions.' : sceneInstruction(scene));
     $('phone-sound-guidance').hidden = !view.opening;
     if (!sceneAllowsRain(scene) && (connection?.holding || pointer !== null || toggleActive || keyboardHold || contact.active)) stop({ tail: false });
     metrics.sceneScore = view;
@@ -124,6 +131,7 @@ function initializePeatPhone() {
   const loading = $('phone-map-loading'), reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
   const map = new PeatSurface(material, { reducedMotion: reducedMotion.matches, maxPixels: 1280 * 720, maxPixelRatio: 1.5,
     materialUrl: new URL('../visual-assets/peat-material-phone.webp', import.meta.url).href, contactOverlay: false });
+  const magnifier = new PhoneMagnifier({ element: $('phone-magnifier'), canvas: $('phone-magnifier-view'), source: material, pixelRatio: window.devicePixelRatio || 1 });
   const rain = new RainFeedback();
   const extinctionFeedback = new ExtinctionFeedback({ maxEvents: 4 });
   let rainIdentity = null;
@@ -134,7 +142,8 @@ function initializePeatPhone() {
   const OVERLAY_WIDTH = 320, OVERLAY_HEIGHT = 240, FRAME_MS = 1000 / 24, SCENE_MS = 1000 / 20;
   let connection = null, pointer = null, toggleActive = false, keyboardHold = false, connectionState = 'connecting';
   let patches = [], summaryCurrent = false, lastPosition = [.4, .48], soundFocusKey = null;
-  let inputError = '', gestureError = false, assetError = '', ready = false, width = 1, height = 1, rainStrength = .5, overlayRatio = 1;
+  let magnifierTouch = null;
+  let inputError = '', gestureError = false, assetError = '', ready = false, width = 1, height = 1, rainStrength = DEFAULT_RAIN_STRENGTH, overlayRatio = 1;
   let sceneFrame = 0, sceneDirty = true, lastScene = -Infinity, lastDiagnostic = -Infinity;
   const text = (id, value) => { const node = $(id); if (node && node.textContent !== String(value)) node.textContent = value; };
   const sample = (list, value) => { if (Number.isFinite(value)) { list.push(value); if (list.length > 120) list.shift(); } };
@@ -165,6 +174,7 @@ function initializePeatPhone() {
     map.context.save(); map.context.setTransform(map.scale, 0, 0, map.scale, 0, 0);
     material.dataset.extinctionCues = String(extinctionFeedback.draw(map.context, { rect: map.mapRect, now, reducedMotion: reducedMotion.matches }));
     map.context.restore();
+    updateMagnifier(null, now);
     metrics.materialDraws++; metrics.patchCount = patches.length;
     const duration = performance.now() - at; sample(metrics.sceneSamples, duration);
     material.dataset.redrawCount = String(metrics.materialDraws);
@@ -198,6 +208,7 @@ function initializePeatPhone() {
     material.dataset.mapRect = JSON.stringify(map.mapRect);
     if (ready) { drawMaterial(); requestScene(); }
     if (contact.active || contact.released !== null) drawContact(performance.now());
+    updateMagnifier();
   }
   function renderField(region) {
     const next = peatPhoneRegion(region);
@@ -312,11 +323,18 @@ function initializePeatPhone() {
     updateContactTransition(contact.released);
     if (!contact.frame) contact.frame = requestAnimationFrame(animateContact);
   }
-  function clearGesture() {
+  function clearGesture({ keepMagnifier = false } = {}) {
+    if (!keepMagnifier) magnifier.hide();
+    magnifierTouch = null;
     const previous = pointer; pointer = null; toggleActive = false; keyboardHold = false;
     if (previous !== null && material.hasPointerCapture(previous)) material.releasePointerCapture(previous);
   }
-  function stop({ tail = true } = {}) { clearGesture(); releaseContact(tail); connection?.stop(); renderStatus(); }
+  function stop({ tail = true } = {}) {
+    const keepMagnifier = Boolean(tail && magnifier.active && pointer !== null);
+    clearGesture({ keepMagnifier });
+    if (keepMagnifier) magnifier.release();
+    releaseContact(tail); connection?.stop(); renderStatus();
+  }
   function syncPhoneSound() {
     const interaction = nationalPhoneInteraction(patches, lastPosition, {
       holding: Boolean(connection?.holding),
@@ -327,14 +345,29 @@ function initializePeatPhone() {
     sound.setPhoneInteraction?.(interaction);
   }
   function renderStatus() {
-    const holding = Boolean(connection?.holding), canRain = Boolean(connection?.canPour && ready && summaryCurrent && sceneAllowsRain(currentScene));
-    if (!holding && (pointer !== null || toggleActive || keyboardHold)) clearGesture();
+    const supply = connection?.rainSupply;
+    const depleted = Boolean(supply?.needsRelease);
+    if (toggleActive && depleted) { stop(); return; }
+    const holding = Boolean(connection?.holding), canRain = Boolean(connection?.canPour && ready && summaryCurrent && sceneAllowsRain(currentScene) && !depleted && (supply?.level ?? 1) > 0);
+    if (!holding && !magnifier.lingering) magnifier.hide();
+    // Keep the physical pointer/Space press until release even after its water
+    // runs out. The authority must not refill while that finger remains down.
+    if (!holding && !(depleted && connection?.inputHeld) && (pointer !== null || toggleActive || keyboardHold)) clearGesture();
     if (!holding && contact.active) clearContact();
     const error = assetError || inputError;
     document.body.dataset.pouring = String(holding && connection.acknowledged);
     document.body.dataset.stale = String(!summaryCurrent || !connection?.connected);
     document.body.dataset.ready = String(canRain || holding);
     document.body.dataset.error = String(Boolean(error));
+    document.body.dataset.waterEmpty = String(depleted || supply?.level === 0);
+    $('rain-supply').hidden = !supply || !['participation', 'forest-takeover'].includes(currentScene?.id);
+    if (supply) {
+      const percent = Math.round(supply.level * 100);
+      $('rain-supply-bar').value = supply.level;
+      $('rain-supply-bar').setAttribute('aria-valuetext', `${percent}% rainwater${depleted ? '; release to refill' : !holding && percent < 100 ? '; refilling' : ''}`);
+      text('rain-supply-label', percent >= 100 ? 'Full' : `${percent}%`);
+      text('rain-supply-hint', depleted ? 'Release to refill' : holding ? 'Release to refill' : percent < 100 ? 'Refilling automatically' : 'Refills while you rest');
+    }
     toggle.disabled = !canRain && !holding;
     toggle.setAttribute('aria-pressed', String(holding));
     toggle.setAttribute('aria-label', holding ? 'Stop rain' : 'Start rain without holding');
@@ -343,10 +376,19 @@ function initializePeatPhone() {
     const state = error || (connection?.connected ? currentScene?.paused ? 'Paused' : 'Connected' : connectionState === 'connecting' ? 'Connecting…' : 'Reconnecting…');
     text('connection-state', state);
     $('connection-dot').dataset.status = error ? 'error' : holding ? 'holding' : connection?.connected && ready && summaryCurrent ? 'ready' : 'connecting';
-    text('local-input-state', error || (!ready ? 'Preparing the map…' : holding ? connection.acknowledged ? 'Rain confirmed' : 'Rain received; waiting for venue' : canRain ? 'Ready. Hold to rain.' : connection?.connected && currentScene ? sceneInstruction(currentScene) : 'Reconnect, then press again.'));
+    text('local-input-state', error || (!ready ? 'Preparing the map…' : depleted ? 'Rainwater empty. Release to refill automatically.' : holding ? connection.acknowledged ? 'Rain confirmed' : 'Rain received; waiting for venue' : canRain ? 'Ready. Hold to rain.' : connection?.connected && currentScene ? sceneInstruction(currentScene) : 'Reconnect, then press again.'));
     syncPhoneSound();
   }
   const position = event => { const box = material.getBoundingClientRect(); return countryInputAt(map.mapRect, event.clientX - box.left, event.clientY - box.top); };
+  function updateMagnifier(event = null, now = performance.now()) {
+    if (event) magnifierTouch = { x: event.clientX, y: event.clientY };
+    if (pointer === null && magnifier.lingering) return;
+    if (pointer === null || !magnifierTouch || !connection?.holding || !sceneAllowsRain(currentScene) || notesOpen || document.hidden || !ready) { magnifier.hide(); return; }
+    const box = material.getBoundingClientRect(), rect = map.mapRect;
+    magnifier.show({ touch: magnifierTouch,
+      point: { x: rect.x + lastPosition[0] * rect.width, y: rect.y + lastPosition[1] * rect.height },
+      width: innerWidth, height: innerHeight, sourceWidth: box.width, sourceHeight: box.height }, now);
+  }
   function selectPosition(position) { lastPosition = [...position]; map.setSelection(lastPosition); syncPhoneSound(); requestScene(); }
   function begin(position, at = performance.now()) {
     if (!ready || !summaryCurrent || !connection?.canPour || !sceneAllowsRain(currentScene) || notesOpen) return false;
@@ -363,6 +405,7 @@ function initializePeatPhone() {
       metrics.packetCount++;
       if (reset) { sound.reset(message.epoch); clearGesture(); clearContact(); extinctionFeedback.clear(); inputError = 'Reset. Press again.'; gestureError = true; }
       if (message.participantNumber !== undefined) setRainIdentity(message.participantNumber);
+      sound.setWildlifeAudience?.({ slot: message.soundSlot, count: message.soundPhoneCount ?? message.joinedCount, events: message.birdEvents });
       if (unit(message.strength)) rainStrength = message.strength;
       sound.setMacroCondition(phoneMacroCondition(message));
       if (sound.applySharedSettings) sound.applySharedSettings(message.soundSettings); else applySharedSound(sound, message.soundSettings, { phone: true });
@@ -376,12 +419,12 @@ function initializePeatPhone() {
     if (!event.isPrimary || event.button !== 0 || pointer !== null || !ready || !summaryCurrent || !connection.canPour) return;
     event.preventDefault(); material.focus({ preventScroll: true });
     if (toggleActive) stop({ tail: false });
-    if (begin(position(event))) { pointer = event.pointerId; material.setPointerCapture(pointer); }
+    if (begin(position(event))) { pointer = event.pointerId; material.setPointerCapture(pointer); updateMagnifier(event); }
   });
   material.addEventListener('pointermove', event => {
     if (event.pointerId !== pointer || !connection.holding) return;
     event.preventDefault(); selectPosition(position(event));
-    connection.move(lastPosition); moveContact(lastPosition);
+    connection.move(lastPosition); moveContact(lastPosition); updateMagnifier(event);
   });
   material.addEventListener('pointerup', event => {
     if (event.pointerId !== pointer) return;

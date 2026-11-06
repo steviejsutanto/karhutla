@@ -10,7 +10,9 @@ export const OUTPUT_LIMIT_INPUT_RANGE = 16;
 const PHONE_DYNAMICS = Object.freeze({ makeupDb: OUTPUT_MAKEUP_DB, makeupGain: OUTPUT_MAKEUP_GAIN, peakKnee: OUTPUT_LIMIT_KNEE,
   transientMakeupDb: 3, transientKnee: .78, threshold: -1, knee: 1, ratio: 20, attack: .001, release: .08 });
 const MAIN_DYNAMICS = Object.freeze({ makeupDb: MAIN_OUTPUT_MAKEUP_DB, makeupGain: MAIN_OUTPUT_MAKEUP_GAIN, peakKnee: .84,
-  transientMakeupDb: 1.5, transientKnee: .85, threshold: -.5, knee: 1, ratio: 12, attack: .003, release: .08 });
+  // A broad knee and moderate ratio manage actual signal energy, rather than
+  // the number of phones. No automatic makeup or participant-count gain ride.
+  transientMakeupDb: 1.5, transientKnee: .85, threshold: -6, knee: 6, ratio: 2, attack: .02, release: .2 });
 export const outputDynamics = mode => mode === 'operator' ? MAIN_DYNAMICS : PHONE_DYNAMICS;
 const preparation = new WeakMap();
 
@@ -48,10 +50,34 @@ export function sampleMakeupGain(rms) {
   return Number.isFinite(rms) && rms > .00001 ? Math.max(.35, Math.min(18, .085 / rms)) : 1;
 }
 
+/** Fixed active-note energy keeps a slower insect pulse from gaining makeup
+ * merely because it contains longer rests. This is measured once at decode. */
+export function measureActiveNoteRms(buffer) {
+  const frames = Math.max(1, Math.round((buffer.sampleRate || 32000) * .005));
+  const length = buffer.getChannelData(0).length, blocks = [];
+  let maximum = 0;
+  for (let first = 0; first < length; first += frames) {
+    const last = Math.min(length, first + frames);
+    let power = 0, count = 0;
+    for (let channel = 0; channel < buffer.numberOfChannels; channel++) {
+      const data = buffer.getChannelData(channel);
+      for (let index = first; index < last; index++) { power += data[index] ** 2; count++; }
+    }
+    const mean = power / Math.max(1, count); maximum = Math.max(maximum, mean);
+    blocks.push({ power, count, mean });
+  }
+  let power = 0, count = 0;
+  for (const block of blocks) if (block.mean >= maximum * .01 && block.mean > 0) {
+    power += block.power; count += block.count;
+  }
+  return Math.sqrt(power / Math.max(1, count));
+}
+
 /** A one-time, local crest reduction cannot duck another layer or pump rain. */
-export function prepareRecording(buffer, { naturalRain = false, mode = 'phone' } = {}) {
+export function prepareRecording(buffer, { naturalRain = false, mode = 'phone', phoneCrickets = false } = {}) {
   const before = measureRecording(buffer);
-  const target = sampleMakeupGain(before.rms);
+  const activeNoteRms = phoneCrickets && mode === 'phone' && !naturalRain ? measureActiveNoteRms(buffer) : null;
+  const target = sampleMakeupGain(activeNoteRms ?? before.rms);
   const previousGain = Math.min(target, before.peak > 0 ? .95 / before.peak : 1);
   const { transientMakeupDb, transientKnee } = outputDynamics(mode);
   // Only peak-constrained files need crest treatment. Main retains more of
@@ -66,7 +92,8 @@ export function prepareRecording(buffer, { naturalRain = false, mode = 'phone' }
     }
   }
   const after = measureRecording(buffer);
-  preparation.set(buffer, { before, after, gain, previousGain, transientConditioned: conditioned, naturalRain });
+  preparation.set(buffer, { before, after, gain, previousGain, transientConditioned: conditioned, naturalRain,
+    ...(activeNoteRms !== null ? { activeNoteRms, preparedActiveNoteRms: measureActiveNoteRms(buffer), phoneCrickets: true } : {}) });
   return buffer;
 }
 

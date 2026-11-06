@@ -57,6 +57,23 @@ function fixture(t, role = 'participant') {
   return { connection, sockets, intervals, timeouts, local, session, states, actors, bells, errors, statuses, welcome, summary, baseline, acknowledge, assignment, time };
 }
 
+test('exhaustion stops rain while preserving the physical touch and sends a real release before refill', t => {
+  const f = fixture(t); f.welcome(); f.summary({ rainSupply: { level: 1, needsRelease: false } });
+  f.connection.begin([.5, .5]); f.acknowledge();
+  f.summary({ rainSupply: { level: 0, needsRelease: true, touching: true } });
+  assert.equal(f.connection.holding, false); assert.equal(f.connection.inputHeld, true);
+  assert.deepEqual(f.errors, []);
+  const count = f.connection.socket.sent.length;
+  f.time.now = 1000; f.intervals[0].callback();
+  assert.equal(f.connection.socket.sent.length, count + 1);
+  assert.equal(f.connection.socket.sent.at(-1).holding, true, 'Keepalive tells the authority the finger remains down.');
+  assert.equal(f.connection.begin([.6, .5]), false);
+  f.connection.stop(); assert.equal(f.connection.socket.sent.at(-1).holding, false);
+  assert.equal(f.connection.inputHeld, false);
+  f.summary({ rainSupply: { level: .2, needsRelease: false, touching: false } });
+  assert.equal(f.connection.begin([.5, .5]), true);
+});
+
 test('bell cues use their own current-epoch callback and Main-only publication without changing a held gesture', t => {
   const { connection, welcome, baseline, bells, errors } = fixture(t, 'operator');
   const detail = { eventId: 'bell-1', key: '400,0', position: [.3, .4], radiusDegrees: .85, wallAt: 1000 };

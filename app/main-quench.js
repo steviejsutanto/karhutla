@@ -62,9 +62,9 @@ export class MainQuenchAudio {
     this._syncGain();
   }
   _syncGain() {
-    // Shared gain also reaches tails already playing. A burst and a busy room
-    // both reduce amplitude; the bounded pool never stacks full-level hits.
-    const count = Math.max(1, this.participantCount, this.quenches.size + this.retiringQuenches.size);
+    // Blend only the small pool of overlapping recordings. More connected or
+    // holding listeners cannot make one unchanged quench/blob quieter.
+    const count = Math.max(1, this.quenches.size + this.retiringQuenches.size);
     this.crowdGain = 1 / Math.sqrt(count);
     const value = this.active ? this.weight * this.crowdGain : 0, now = this.context.currentTime;
     if (this.outputTarget === value) return;

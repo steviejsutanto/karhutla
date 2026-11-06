@@ -133,21 +133,21 @@ test('forest takeover rises smoothly to full forest while the drone fades comple
 test('forest rise and after-extinction texture timings share bounded settings without changing the ending', () => {
   const defaults = scoreDurations();
   assert.equal(defaults.forestRiseMs, 30000); assert.equal(defaults.residueMorphMs, 8000); assert.equal(defaults.residueFadeMs, 20000);
-  assert.equal(defaults.finalRainRiseMs, 60000); assert.equal(defaults.finalRainRiseMs, FINAL_RAIN_RAMP_MS);
+  assert.equal(FINAL_RAIN_RAMP_MS, 52000); assert.equal(defaults.finalRainRiseMs, FINAL_RAIN_RAMP_MS);
   const configured = scoreDurations({ forestRiseSeconds: 60, finalRainRiseSeconds: 90, residueMorphSeconds: 12, residueFadeSeconds: 40 });
   assert.equal(configured.forestRiseMs, 60000); assert.equal(configured.residueMorphMs, 12000); assert.equal(configured.residueFadeMs, 40000);
   assert.equal(configured.finalRainRiseMs, 90000);
   assert.equal(configured.afterglowDurationMs, defaults.afterglowDurationMs);
   for (const invalid of [0, 181, NaN, Infinity, '30']) assert.equal(scoreDurations({ forestRiseSeconds: invalid }).forestRiseMs, 30000);
-  for (const invalid of [9, 181, NaN, Infinity, '60']) assert.equal(scoreDurations({ finalRainRiseSeconds: invalid }).finalRainRiseMs, 60000);
+  for (const invalid of [9, 181, NaN, Infinity, '60']) assert.equal(scoreDurations({ finalRainRiseSeconds: invalid }).finalRainRiseMs, FINAL_RAIN_RAMP_MS);
 });
 
-test('the full forest hands off continuously to slowly rising rain over a shared sixty-second score', () => {
+test('the full forest hands off continuously to slowly rising rain over the shared default score', () => {
   const forest = computeScore({ id: 'forest-takeover', elapsedMs: 30000 });
   const start = computeScore({ id: 'final-rain', elapsedMs: 0 });
   assert.deepEqual(start.mix, { ...forest.mix, phoneCrickets: 0 }, 'Main forest/rain transfer continues while phone crickets wait for the dark reveal.');
-  assert.equal(start.finalRainRampDurationMs, 60000);
-  const samples = Array.from({ length: 601 }, (_, index) => computeScore({ id: 'final-rain', elapsedMs: index * 100 }));
+  assert.equal(start.finalRainRampDurationMs, FINAL_RAIN_RAMP_MS);
+  const samples = Array.from({ length: FINAL_RAIN_RAMP_MS / 100 + 1 }, (_, index) => computeScore({ id: 'final-rain', elapsedMs: index * 100 }));
   for (const [index, score] of samples.entries()) {
     assert.ok(Math.abs(score.mix.mainForest ** 2 + score.mix.mainRain ** 2 - 1) < 1e-12, 'Main forest/rain transfer keeps equal power.');
     assert.equal(score.mix.phoneField, 1); assert.equal(score.mix.phoneCrickets, 0);
@@ -162,10 +162,10 @@ test('the full forest hands off continuously to slowly rising rain over a shared
       assert.ok(score.mix[key] - previous.mix[key] < .01, `${key} cannot jump at the fifth cue.`);
     }
   }
-  assert.equal(samples[300].finalRainProgress, .5);
-  assert.ok(Math.abs(samples[300].mix.mainForest - Math.SQRT1_2) < 1e-12);
-  assert.ok(samples[10].finalRainProgress < .00005, 'The opening second remains very sparse and quiet.');
-  assert.ok(samples[160].mix.mainForest > .98 && samples[160].mix.mainRain < .2, 'The old sixteen-second boundary is still early in the slow build.');
+  assert.equal(samples[FINAL_RAIN_RAMP_MS / 200].finalRainProgress, .5);
+  assert.ok(Math.abs(samples[FINAL_RAIN_RAMP_MS / 200].mix.mainForest - Math.SQRT1_2) < 1e-12);
+  assert.ok(samples[10].finalRainProgress < .0001, 'The opening second remains very sparse and quiet.');
+  assert.ok(samples[160].mix.mainForest > .96 && samples[160].mix.mainRain < .28, 'The old sixteen-second boundary is still early in the slow build.');
   assert.equal(samples.at(-1).mix.mainForest, 0); assert.equal(samples.at(-1).mix.mainRain, 1);
   assert.deepEqual(computeScore({ id: 'afterglow', elapsedMs: 0 }).mix, { ...samples.at(-1).mix, phoneField: 0 });
   const configured = computeScore({ id: 'final-rain', elapsedMs: 8000, settings: { finalRainRiseSeconds: 16 } });

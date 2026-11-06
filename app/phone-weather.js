@@ -1,12 +1,14 @@
 // C/G extinction bells and their small room, owned by the main sound output.
-const BELL_MIDI = Object.freeze([36, 43, 48, 55, 60, 67, 72, 79, 84, 91, 96, 103]); // C2/G2 through C7/G7.
+// Keep the C/G identity in a clearly audible middle register. The previous
+// C2–G7 lottery combined sub-bass-like fundamentals with very thin high notes
+// whose peaks were almost 10 dB lower, so equal completion events varied widely.
+const BELL_MIDI = Object.freeze([48, 55, 60, 67, 72, 79]); // C3/G3 through C5/G5.
 const BELL_OCTAVES = Object.freeze([
-  Object.freeze({ octave: 2, weight: .15, decaySeconds: 14, peak: .027 }),
   Object.freeze({ octave: 3, weight: .34, decaySeconds: 12, peak: .026 }),
-  Object.freeze({ octave: 4, weight: .28, decaySeconds: 10, peak: .022 }),
-  Object.freeze({ octave: 5, weight: .15, decaySeconds: 8, peak: .017 }),
-  Object.freeze({ octave: 6, weight: .06, decaySeconds: 6, peak: .013 }),
-  Object.freeze({ octave: 7, weight: .02, decaySeconds: 5, peak: .009 }),
+  Object.freeze({ octave: 4, weight: .44, decaySeconds: 10, peak: .026 }),
+  // A modest register trim offsets the Main HRTF's weaker upper strike. This
+  // is fixed per note, independent of participants and simultaneous bells.
+  Object.freeze({ octave: 5, weight: .22, decaySeconds: 8, peak: .026 * 10 ** (4 / 20) }),
 ]);
 // The final value is relative partial energy at the end of the whole bell.
 // Earlier short partial envelopes left only a clean fundamental after the strike.
@@ -224,7 +226,7 @@ export class PhoneWeatherAudio {
     return { active: this.active, interaction: { ...this.interaction }, rainGain: 0, rainLoopCount: 0,
       bellsTriggered: this.bellsTriggered, lastBellMidi: this.lastBellMidi, currentBellVoices: this.bells.size, bellVoices: this.bells.size,
       retiringBellVoices: this.retiringBells.size, bellDecaySeconds: this.lastBellDecay ?? BELL_OCTAVES[0].decaySeconds,
-      bellDecayRangeSeconds: [5, 14], bellPitchMidi: [...BELL_MIDI], bellOctaveWeights: BELL_OCTAVES.map(value => ({ ...value })),
+      bellDecayRangeSeconds: [8, 12], bellPitchMidi: [...BELL_MIDI], bellOctaveWeights: BELL_OCTAVES.map(value => ({ ...value })),
       bellPartials: BELL_PARTIALS.map(([ratio, amplitude, remaining]) => ({ ratio, amplitude, remaining })),
       maxBellVoices: MAX_BELLS, maxRetiringBellVoices: MAX_RETIRING_BELLS,
       bellReverb: { active: Boolean(this.reverb), wet: REVERB_WET, durationSeconds: REVERB_SECONDS,

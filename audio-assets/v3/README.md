@@ -1,4 +1,145 @@
-# Fire, rain and a living night — catalog revision 6
+# Fire, rain and a living night — catalog revision 18
+
+All **51** audio entries and their full/mobile files retain their hashes.
+The active rain and haze recordings have returned to the previous choices:
+
+- Rain: `rain-natural-light` → `rain-storm-v23`.
+- Haze: `haze-air-v23` / `haze-float-v23`, also restored as the final two
+  choices in the six-recording haze extinction bank.
+- Phone cricket: the new regular `cricket-steady-phone-v34` stays active;
+  `phone.cricketLayers` remains empty so only one coherent bed plays.
+
+The three revision 17 rain/air studies remain archived in the catalog with
+all masters, encoded files and provenance intact. Main’s cricket bank,
+orangutan and phone bird bank are unchanged. This revision changes source
+selection only; no recordings were regenerated or modified.
+
+# Revision 17 archive notes
+
+The current catalog contains **51** assets. All 47 previous audio/mobile
+files and original masters remain unchanged. The four new entries use
+genuinely new local Stable Audio 3 Medium generations:
+
+- `rain-canopy-heavy-v34`: 24 s stereo / 577 kB, plus a 15 s mono / 121 kB
+  derivative. This replaces the heavy Main rain endpoint; natural light and
+  phone rain remain selected as before.
+- `haze-calm-air-v34` and `haze-calm-drift-v34`: independent 20 s stereo /
+  401 kB calm arrival textures, each with a 15 s mono / 121 kB derivative.
+  Both arrival haze endpoints now use these sources.
+- `cricket-steady-phone-v34`: one 14.6175 s mono / 177 kB regular phone bed
+  arranged from 16 distinct notes in a new generated cricket master. Its
+  existing 0.76× playback gives roughly 1.2 s between notes. Main’s cricket
+  bank and the revision 16 phone bird bank remain unchanged.
+
+The rain/air copies use fixed filters/gain and actual-source circular
+crossfades; they do not add thunder, synthesized filler, reverb, compression
+or envelope riding. Rain has about a 0.97 dB one-second RMS range. Haze is
+about −36.4 dBFS RMS with low wind weight removed. No model runs on phones.
+These remain synthetic interpretations, not verified field recordings, and
+signal/provenance checks do not replace audition.
+
+The three unfiltered source-preview MP3s are in
+`output/audio-preview/*-v34-source-preview.mp3` at the project root. They
+use only fixed audition gain and one encode. Performance copies are the
+catalog files above. See `backgrounds-v34-validation.json`, the source
+JSONs and `../ATTRIBUTION.md` for exact choices, excluded takes and hashes.
+
+To reproduce the new generations and browser derivatives:
+
+```sh
+python3 scripts/stablegen-v3-local-batch.py --packs scripts/stablegen-v34-backgrounds-prompts.json scripts/stablegen-v34-steady-cricket-prompts.json --record audio-assets/v3/medium-backgrounds-v34-batch.json
+python3 scripts/stablegen-v3-local-batch.py --packs scripts/stablegen-v34-backgrounds-retry-prompts.json --record audio-assets/v3/medium-backgrounds-v34-retry-batch.json
+python3 scripts/finish-steady-phone-cricket-v34.py
+python3 scripts/finish-backgrounds-v34.py
+```
+
+# Revision 16 archive notes
+
+The current catalog contains **47** assets. Two compact soft flute-like coos
+join the active phone bank with `rainforest-chirp-c-v31`. The old 45 encoded
+and mobile files, all original masters, and Main’s orangutan audio remain
+unchanged. The active bank is:
+
+- `rainforest-coo-a-v32`: 1.4584 s, 12,428 bytes; active about 0.11–1.16 s.
+- `rainforest-coo-b-v32`: 1.4584 s, 12,428 bytes; active about 0.23–1.19 s.
+- `rainforest-chirp-c-v31`: the retained 0.67 s short chirp.
+
+The new coos derive from the original independent low-bird generated
+masters, with a baked +9-semitone rate lift, smooth edges and offline
+450 Hz / 3000 Hz filtering. They are not new model generations and do not
+use Main’s voice as a source. Whole-file playback stays at 1× with no model
+or pitch DSP on phones. Mono 32 kHz / 64 kbps keeps each new file about
+12.4 kB. Static RMS is about −30.6 dBFS and peak about −20.45 dBFS.
+
+Measured coo dominants are 694/648 Hz, above Main’s 342 Hz dominant and
+442 Hz 95%-energy ceiling. This separation is a signal measurement, not
+a listening review or species certification. The synthetic source and
+original generation license/provenance are retained honestly.
+
+Rebuild the offline derivatives without new inference:
+
+```sh
+python3 scripts/finish-rainforest-coos-v32.py
+```
+
+Source chains and decoded measurements are in
+`rainforest-coo-*-v32-source.json`, `rainforest-coos-v32-validation.json`
+and `../ATTRIBUTION.md`.
+
+# Revision 15 archive notes
+
+The current catalog contains **45** assets. Three new short synthetic bird
+chirps replace the low coo choices for phone wildlife. The old 42 files,
+including Main’s orangutan recording, retain their hashes and provenance.
+
+The current phone bank is `rainforest-chirp-a-v31`,
+`rainforest-chirp-b-v31`, `rainforest-chirp-c-v31`: one measured clear
+mid-register burst per file, 0.60/0.61/0.67 seconds including quiet edges,
+mono 32 kHz / 64 kbps, around 5.5–6.1 kB. Whole source generations are not
+played: the finisher isolates one short chirp from each independent master.
+Dominant measured frequencies are about 3.0/2.8/2.2 kHz, instead of the old
+low coo register. These remain synthetic creative interpretations rather than
+species-certified field recordings; no human listening review is claimed.
+
+To reproduce the new master generations and selected derivatives:
+
+```sh
+python3 scripts/stablegen-v3-local-batch.py --packs scripts/stablegen-v31-rainforest-chirps-prompts.json --record audio-assets/v3/medium-rainforest-chirps-v31-batch.json
+python3 scripts/stablegen-v3-local-batch.py --packs scripts/stablegen-v31-rainforest-chirps-retry-prompts.json --record audio-assets/v3/medium-rainforest-chirps-v31-retry-batch.json
+python3 scripts/finish-rainforest-chirps-v31.py
+```
+
+All former master files and records stay unchanged. Full details are in
+`rainforest-chirps-v31-validation.json`, the new `*-v31-source.json` files
+and `../ATTRIBUTION.md`. No model inference runs on phones.
+
+# Revision 14 archive notes
+
+The revision 14 catalog had **42** browser assets. Revision 14 adds three
+original synthetic wildlife phrases for the finale: a restrained distant
+orangutan interpretation on Main and two short warm low bird phrases for
+sparse distribution across phones. These are sound design interpretations,
+not authentic field recordings or claims about actual animal emotion.
+
+The orangutan file is 16 seconds, mono 32 kHz / 80 kbps (161 kB). Each bird
+file is 2.8 seconds, mono 32 kHz / 64 kbps (23 kB). Filtering, fades, mono
+downmix and fixed gain happen offline. No model runs on phones or during
+a performance. Exact processing, independent prompt/seed records, master
+and encoded hashes, and full-decode results are in the `*-v25-source.json`
+and generation files, `medium-wildlife-v25-batch.json`,
+`medium-wildlife-v25-retry-batch.json`, and `wildlife-v25-validation.json`.
+Technical checks do not replace listening review. See `../ATTRIBUTION.md`
+for the selected master excerpts and license details.
+
+To reproduce using the already installed official local pipeline:
+
+```sh
+python3 scripts/stablegen-v3-local-batch.py --packs scripts/stablegen-v25-orangutan-prompts.json scripts/stablegen-v25-birds-prompts.json --record audio-assets/v3/medium-wildlife-v25-batch.json
+python3 scripts/stablegen-v3-local-batch.py --packs scripts/stablegen-v25-birds-retry-prompts.json --record audio-assets/v3/medium-wildlife-v25-retry-batch.json
+python3 scripts/finish-wildlife-v25.py
+```
+
+## Revision 6 archive notes
 
 The active `manifest.json` now contains **19** browser assets: the 14 retained
 Stable Audio 3 Medium sounds plus two natural rain excerpts and three natural
@@ -186,3 +327,12 @@ All delivered v3/v4/v5 catalog sounds came from local Medium inference. Earlier
 hosted-demo attempts failed because of quota and are recorded as failures;
 they are not credited as successful generations. No paid service or new
 account is used for this palette.
+
+
+Phone rhythm revision v30 retains all source recordings and publishes three
+compact derivatives: `cricket-{far,mid,near}-mobile-rhythm-v30.mp3`. Run
+`python3 scripts/finish-phone-crickets-v30.py` to reproduce the deterministic
+25% onset-spacing increase and 35% note-envelope shortening. Individual
+waveforms preserve pitch; the active mobile mappings select the new files.
+Complete source and edit records are beside the MP3s;
+`phone-crickets-v30-validation.json` records full decode and timing metrics.

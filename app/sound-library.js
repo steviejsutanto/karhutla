@@ -3,7 +3,7 @@ export const SOUND_LIBRARY_URL = '/audio-assets/v3/manifest.json';
 const localAudio = asset => asset && /^audio-assets\/v3\/[a-z0-9-]+\.mp3$/.test(asset.file) &&
   /^[a-f0-9]{64}$/.test(asset.sha256) && Number.isFinite(asset.durationSeconds) && asset.durationSeconds > 0;
 export function soundLibrary(value) {
-  if (!value || !Array.isArray(value.assets) || value.assets.length > 40) throw new Error('The sound library is unavailable.');
+  if (!value || !Array.isArray(value.assets) || value.assets.length > 64) throw new Error('The sound library is unavailable.');
   const ids = new Set();
   const assets = value.assets.map(asset => {
     if (!asset || typeof asset.id !== 'string' || !/^[a-z0-9-]+$/.test(asset.id) || ids.has(asset.id) ||
@@ -66,7 +66,15 @@ export function ambianceSources(library) {
     const entries = ids.map(id => assets.get(id));
     if (entries.every(asset => asset?.kind === kind)) residueSources[kind] = entries.map(asset => ({ id: asset.id, url: soundAssetUrl(asset) }));
   }
-  return { variations, phone, mainQuench, mainBlob, residueSources, phoneCricketLayers: verifiedPhoneCrickets, ...(cricketLayers ? { cricketLayers } : {}) };
+  const orangutan = assets.get(library.wildlife?.orangutan);
+  const birdIds = library.wildlife?.birds;
+  const birds = Array.isArray(birdIds) && birdIds.length <= 3 && new Set(birdIds).size === birdIds.length
+    ? birdIds.map(id => assets.get(id)) : [];
+  const wildlife = orangutan?.kind === 'wildlife-orangutan' && birds.length && birds.every(asset => asset?.kind === 'wildlife-bird')
+    ? { orangutan: soundAssetUrl(orangutan), birds: birds.map(asset => soundAssetUrl(asset.mobile ?? asset)) } : null;
+  return { variations, phone, mainQuench, mainBlob, residueSources, phoneCricketLayers: verifiedPhoneCrickets,
+    ...(wildlife ? { wildlife, mainWildlife: { orangutan: wildlife.orangutan }, phoneWildlife: { birds: [...wildlife.birds] } } : {}),
+    ...(cricketLayers ? { cricketLayers } : {}) };
 }
 export async function loadSoundLibrary() {
   const response = await fetch(SOUND_LIBRARY_URL, { cache: 'no-store' });

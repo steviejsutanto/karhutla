@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { PhoneTapRainAudio } from '../app/phone-tap-rain.js';
+import { PhoneTapRainAudio, PHONE_RAIN_TRIM } from '../app/phone-tap-rain.js';
 
 class Parameter {
   constructor() { this.value = 1; this.events = []; this.automation = []; }
@@ -67,7 +67,7 @@ test('phone rain is lazy while inactive and has no audible or allocated idle loo
   assert.equal(requests.length, 1); assert.equal(context.decodes, 1); assert.equal(prepared.length, 1);
   assert.equal(rain.getMetrics().loaded, true); assert.equal(rain.getMetrics().rainLoopCount, 0);
   assert.equal(rain.getMetrics().rainGain, 0); assert.equal(context.nodes.length, 0);
-  assert.ok(Math.abs(rain.getMetrics().outputRms - .00204) < 1e-8);
+  assert.ok(Math.abs(rain.getMetrics().outputRms - .00204 * PHONE_RAIN_TRIM) < 1e-8);
   for (let index = 0; index < 20; index++) { rain.update(release()); rain.setActive(true); }
   assert.equal(requests.length, 1); assert.equal(prepared.length, 1);
 });

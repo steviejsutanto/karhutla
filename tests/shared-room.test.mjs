@@ -4,7 +4,7 @@ import { mkdtemp, readFile, writeFile, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { SharedRoom, HOLD_LEASE_MS, MAX_PATH_POINTS } from '../app/shared-room.mjs';
-import { DEFAULT_SOUND_SETTINGS, finalRainIntegral } from '../app/performance-scenes.mjs';
+import { DEFAULT_SOUND_SETTINGS, FINAL_RAIN_RAMP_MS, finalRainIntegral } from '../app/performance-scenes.mjs';
 import { RainSimulation, BRUSH_RADIUS, CELL_SIZE, DEFAULT_PARAMETERS, PARAMETER_LIMITS, MOISTURE_UPTAKE_SECONDS, MOISTURE_RETENTION_SECONDS } from '../app/simulation.js';
 import { REGION_DEFINITIONS, RegionCatalog, regionCellKey, normalizedPositionValid } from '../app/regions.mjs';
 
@@ -120,6 +120,71 @@ test('two independent assigned participants add water at server strength only', 
   assert.equal(state.activeCount, 2);
   assert.notEqual(first.assignment.id, second.assignment.id);
   for (const actor of state.participants) assert.ok(room.simulation.sample(...actor.position).moisture > 0);
+});
+
+test('sparse bird allocation uses gap-free connected phone ranks across disconnects and reconnects', async () => {
+  const { room } = await fixture();
+  const first = join(room, 'bird-first'), second = join(room, 'bird-second'), third = join(room, 'bird-third');
+  const operator = join(room, 'bird-operator', 'operator'), projection = join(room, 'bird-projection', 'projection');
+  const checkRanks = welcomes => {
+    const regionalSummaries = new Map();
+    for (const [slot, welcome] of welcomes.entries()) {
+      const summary = room.phoneState(welcome.connectionId, regionalSummaries);
+      assert.equal(summary.soundSlot, slot);
+      assert.equal(summary.soundPhoneCount, welcomes.length);
+      assert.equal(summary.joinedCount, welcomes.length);
+      assert.equal(summary.participantNumber, welcome.participantNumber);
+    }
+    assert.equal(room.phoneState(operator.connectionId, regionalSummaries), null);
+    assert.equal(room.phoneState(projection.connectionId, regionalSummaries), null);
+  };
+  checkRanks([first, second, third]);
+  room.disconnect(second.connectionId);
+  checkRanks([first, third]);
+  const fourth = join(room, 'bird-fourth');
+  assert.ok(fourth.participantNumber > third.participantNumber);
+  checkRanks([first, third, fourth]);
+  const reconnected = join(room, 'bird-second');
+  assert.equal(reconnected.participantNumber, second.participantNumber);
+  checkRanks([first, reconnected, third, fourth]);
+  const replaced = join(room, 'bird-first');
+  assert.equal(room.phoneState(first.connectionId), null);
+  checkRanks([replaced, reconnected, third, fourth]);
+});
+
+test('an afterglow freezes bird slots and phone count until the next finale', async () => {
+  const { room, time } = await fixture();
+  const first = join(room, 'roster-first'), absent = join(room, 'roster-absent'), third = join(room, 'roster-third');
+  join(room, 'roster-operator', 'operator'); join(room, 'roster-projection', 'projection');
+  room.disconnect(absent.connectionId);
+  room.simulation.stepGlobalRain(1000, room.national.fireKeys);
+  await room.setScene({ scene: 'afterglow' });
+  const firstStart = room.sceneState().startedAt;
+  const allocation = welcome => {
+    const summary = room.phoneState(welcome.connectionId);
+    return { slot: summary.soundSlot, count: summary.soundPhoneCount, joined: summary.joinedCount };
+  };
+  assert.deepEqual(allocation(third), { slot: 1, count: 2, joined: 2 }, 'The first summary freezes all connected phones, sorted by identity number.');
+  assert.deepEqual(allocation(first), { slot: 0, count: 2, joined: 2 });
+  room.disconnect(first.connectionId);
+  assert.deepEqual(allocation(third), { slot: 1, count: 2, joined: 1 }, 'A disconnected slot remains a sparse gap.');
+  const late = join(room, 'roster-late');
+  assert.deepEqual(allocation(late), { slot: -1, count: 2, joined: 2 }, 'Late joins listen without claiming a current bird call.');
+  const returning = join(room, 'roster-first');
+  assert.deepEqual(allocation(returning), { slot: 0, count: 2, joined: 3 });
+  const replacement = join(room, 'roster-third');
+  assert.equal(room.phoneState(third.connectionId), null);
+  assert.deepEqual(allocation(replacement), { slot: 1, count: 2, joined: 3 });
+  await room.setScene({ settings: { phoneFadeSeconds: 45 } });
+  assert.deepEqual(allocation(late), { slot: -1, count: 2, joined: 3 }, 'Editing finale timing leaves its frozen ensemble intact.');
+  await room.setScene({ scene: 'participation' });
+  assert.deepEqual(allocation(late), { slot: 2, count: 3, joined: 3 }, 'Outside afterglow, ranks become dynamic again.');
+  const rejoined = join(room, 'roster-absent');
+  time.now++; time.wall++;
+  await room.setScene({ scene: 'afterglow' });
+  assert.notEqual(room.sceneState().startedAt, firstStart);
+  for (const [slot, welcome] of [returning, rejoined, replacement, late].entries())
+    assert.deepEqual(allocation(welcome), { slot, count: 4, joined: 4 }, 'A new finale admits all currently connected phones.');
 });
 
 test('packet frequency and long motion cannot mint extra water', async () => {
@@ -620,10 +685,11 @@ test('phone summaries contain only the assigned region and own control state, wi
   assert.equal(first.region.fireCells, 1);
   assert.equal(first.joinedCount, welcomes.length);
   const { scene, ...regional } = first;
-  assert.ok(JSON.stringify(regional).length < 1300, 'Regional state stays compact independently of the shared score.');
+  // Includes the compact list of authority-owned bird event indices.
+  assert.ok(JSON.stringify(regional).length < 1320, 'Regional state stays compact independently of the shared score.');
   const { programNotes, ...scoreSettings } = scene.settings;
   assert.equal(typeof programNotes, 'string');
-  assert.ok(JSON.stringify({ ...first, scene: { ...scene, settings: scoreSettings } }).length < 3100,
+  assert.ok(JSON.stringify({ ...first, scene: { ...scene, settings: scoreSettings } }).length < 3300,
     'The shared score stays compact independently of editable program-note length.');
 });
 
@@ -910,11 +976,11 @@ test('finale ground cooling follows the configured 10 to 180 second rain rise fo
 test('live finale duration edits preserve cooled ground and reentry captures a fresh field without adding water', async () => {
   const { room, time } = await fixture();
   await room.setScene({ scene: 'final-rain' });
-  time.now = 30000; time.wall += 30000; room.advance();
+  time.now = FINAL_RAIN_RAMP_MS / 2; time.wall += FINAL_RAIN_RAMP_MS / 2; room.advance();
   const halfway = room.simulation.serialize();
   await room.setScene({ settings: { finalRainRiseSeconds: 120 } });
   assert.deepEqual(room.simulation.serialize(), halfway, 'Lengthening the rise cannot reheat the ground or undo absorbed water.');
-  time.now = 40000; time.wall += 10000; room.advance();
+  time.wall += 40000 - time.now; time.now = 40000; room.advance();
   close(room.simulation.sample(...position).heat, .5);
   await room.setScene({ settings: { finalRainRiseSeconds: 60 } });
   const advanced = room.simulation.sample(...position), water = room.simulation.totalWater;
@@ -930,7 +996,7 @@ test('live finale duration edits preserve cooled ground and reentry captures a f
   assert.equal(room.sceneState().elapsedMs, 0);
   time.now += 30000; time.wall += 30000; room.advance();
   close(room.simulation.sample(...position).heat, advanced.heat / 2);
-  close(room.simulation.totalWater, water + finalRainIntegral(30000) / 1000);
+  close(room.simulation.totalWater, water + finalRainIntegral(30000, 60000) / 1000);
   await room.setScene({ scene: 'forest-takeover' });
   assert.equal(room.simulation.finalRainCooling, null);
 });

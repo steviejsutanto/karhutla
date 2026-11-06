@@ -17,6 +17,8 @@ The download includes the runtime, recordings, visuals and a fire snapshot. It r
 
 Use **Operator → Setup → Settings file → Export settings**. Copy that file to the other computer, then choose **Import settings** there.
 
+The [current rehearsal settings](presets/current-performance.json) are included in every download. Import that file to use the saved performance mix and timings; Wi-Fi details are blank.
+
 For an update, extract the new release into its own folder and import your settings. Keep the previous rehearsed version available. Settings files include entered Wi-Fi details; keep them private.
 
 ## Guides

@@ -198,9 +198,10 @@ export class DragAshAudio {
     if (this.destroyed) return;
     const now = this.context.currentTime;
     const moving = [...this.actors.values()].filter(actor => this._energy(actor, now) > .002).length;
-    this.crowdGain = 1 / Math.sqrt(Math.max(1, this.participantCount, moving));
+    this.crowdGain = 1 / Math.sqrt(Math.max(1, moving));
     // Recordings have their own bounded peak. The global pool, independent
-    // trim and crowd normalization retain headroom for sharper grain attacks.
+    // trim and moving-source blend retain headroom for sharper grain attacks.
+    // Unrelated connected/holding listeners never attenuate this layer.
     const value = this.active ? DRAG_ASH_LIMITS.outputGain * this.weight * this.crowdGain : 0;
     if (this.outputTarget === value) return;
     const state = this.outputEnvelope;

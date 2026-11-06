@@ -1,0 +1,28 @@
+{
+  "purpose": "Retries for clear single rainforest bird chirps; low-voiced first B/C masters are excluded",
+  "preferredModel": "medium",
+  "durationSeconds": 5,
+  "steps": 8,
+  "cfgScale": 1.0,
+  "sampler": "pingpong",
+  "assets": [
+    {
+      "id": "rainforest-chirp-b-v31",
+      "generationId": "rainforest-chirp-b-v31-take2",
+      "kind": "wildlife-bird",
+      "title": "Rainforest flute chirp",
+      "seed": 202611063104,
+      "role": "One separate clear short tropical forest bird tweet",
+      "prompt": "TrackType: SFX, One solitary small tropical rainforest songbird gives one short clear soft wheet chirp, a delicate flute-like whistle with a quick upward pitch turn and a clean ending. Recognizable natural bird chirping in a gentle middle-high register. The single chirp lasts half a second, surrounded by long silence. A tiny distant outdoor bird tweet, mostly quiet. Length: 5 seconds."
+    },
+    {
+      "id": "rainforest-chirp-c-v31",
+      "generationId": "rainforest-chirp-c-v31-take2",
+      "kind": "wildlife-bird",
+      "title": "Rainforest small chirp",
+      "seed": 202611063105,
+      "role": "A third independent tiny natural rainforest bird chirp",
+      "prompt": "TrackType: SFX, A small bird in a tropical rainforest makes one little clear sweet chirp, a soft flute-like chweet with a brief upward inflection and quick delicate ending. A recognizable bird tweet, medium high pitched but not piercing, isolated in still quiet outdoor air. Only one short half-second chirp and long silence. Length: 5 seconds."
+    }
+  ]
+}

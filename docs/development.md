@@ -54,7 +54,7 @@ Use `--arch x64` for Intel. The builder can prepare either Mac architecture; nat
 
 The Mac smoke check extracts the final ZIP with the Mac archive utility, checks executable permissions without repairing them, runs the real command launcher with system Node absent from PATH, and verifies stop/restart persistence. Windows verification uses its bundled executable and checks the CMD wrapper. A Mac running the Windows smoke check uses host Node and does not claim native Windows execution. None replaces first-open approval after a browser download, browser audio, firewall access, projector routing or a physical-phone rehearsal.
 
-To publish an update, increase the version in `package.json` and `package-lock.json`, update [release notes](release-notes.md), commit and push, then push an annotated matching tag such as `v1.0.4`. A successful release workflow publishes Windows, Mac Apple Silicon and Mac Intel ZIPs with their checksums, after every native package check passes. Do not move an existing release tag or replace a rehearsed package silently.
+To publish an update, increase the version in `package.json` and `package-lock.json`, update [release notes](release-notes.md), commit and push, then push an annotated matching tag such as `v1.1.1`. A successful release workflow publishes Windows, Mac Apple Silicon and Mac Intel ZIPs with their checksums, after every native package check passes. Do not move an existing release tag or replace a rehearsed package silently.
 
 ## Further notes
 

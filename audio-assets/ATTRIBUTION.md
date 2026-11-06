@@ -1,6 +1,222 @@
 # Sound sources
 
-## Current catalog — revision 13
+## Current catalog — revision 18
+
+Revision **18** restores the previous rain and haze recording choices at
+user request. Main’s active rain morph is `rain-natural-light` →
+`rain-storm-v23`; its haze endpoints are `haze-air-v23` / `haze-float-v23`.
+The six haze extinction choices again end with those two recordings, after
+`haze-light`, `haze-drift`, `haze-grass-v20`, and `haze-leaves-v20`.
+The rain-alternative list also returns to its four preceding choices.
+
+The revision 17 rain/air studies (`rain-canopy-heavy-v34`,
+`haze-calm-air-v34`, `haze-calm-drift-v34`) are inactive archived selections.
+All **51 catalog entries**, all full/mobile encoded files, all master files
+and their provenance/hashes remain unchanged. The new regular phone
+cricket `cricket-steady-phone-v34` remains active as one coherent bed;
+Main’s cricket bank, orangutan and phone bird sources are unchanged.
+This is a selection-only revision, with no audio regeneration or processing.
+
+## Revision 17 archive notes
+
+Revision **17** retains all **47** prior catalog assets and adds four
+entries: a genuinely new diffuse rainforest downpour, two independent new
+calm arrival-air recordings, and a genuinely new regular phone cricket bed.
+The catalog now has **51** entries. All prior encoded/mobile files and
+original masters retain their hashes, including Main’s orangutan and the
+revision 16 phone birds. No external audio service or paid credit was used.
+
+The new sources were generated locally on **6 November 2026** with the
+pinned official Stable Audio 3 Medium MLX runtime, SHA-256-verified cached
+weights and the Stable Audio Community License. They remain **synthetic
+creative interpretations**, not authentic field recordings. Actual source
+character and absence of unwanted voices/music require audition; no human
+listening review is claimed.
+
+| Active asset | New generated source | Full / mobile browser copies |
+| --- | --- | --- |
+| `rain-canopy-heavy-v34` | `rain-canopy-heavy-v34-take2-master.wav` | 24 s stereo 44.1 kHz / 192 kbps, 577,453 bytes; 15 s mono 32 kHz / 64 kbps, 120,716 bytes |
+| `haze-calm-air-v34` | `haze-calm-air-v34-take2-master.wav` | 20 s stereo 44.1 kHz / 160 kbps, 401,284 bytes; 15 s mono 32 kHz / 64 kbps, 120,716 bytes |
+| `haze-calm-drift-v34` | `haze-calm-drift-v34-take2-master.wav` | 20 s stereo 44.1 kHz / 160 kbps, 401,284 bytes; 15 s mono 32 kHz / 64 kbps, 120,716 bytes |
+| `cricket-steady-phone-v34` | `cricket-steady-phone-v34-take2-master.wav` | One 14.6175 s mono 32 kHz / 96 kbps file, 176,732 bytes; selected directly for phones |
+
+The rain prompt asks for a dense, soft distant canopy/foliage/earth wash.
+The first candidate had a large low-band middle swell; it and another
+alternate remain retained but are not selected. The chosen independent
+retry has a substantially steadier broad-band body. Processing selects
+seconds 2–28, applies fixed 100 Hz high-pass / 6000 Hz low-pass, then joins
+the actual source tail/head with a 2 s equal-power circular overlap and
+correlation correction. The 24 s full copy measures about **−28.75 dBFS
+RMS**, **−9.09 dBFS peak**, and a **0.97 dB** one-second RMS range. No thunder
+recording is layered into this rain. Main’s rain morph now runs retained
+natural light rain → the new canopy wash; phone rain stays natural light.
+
+Both haze retries use restrained natural gentle-air/distant-foliage prompts.
+They replace the initial abstract prompts, which produced low/narrow-band
+material and pronounced entrances. Seconds 4–26 receive fixed 450 Hz
+high-pass / 6000 Hz low-pass and the same 2 s circular overlap. Full copies
+measure about **−36.4 dBFS RMS**, peaks **−12.39/−16.37 dBFS**. Low wind
+weight is removed without a compressor or level riding. Both arrival haze
+endpoints now use these new sources; they also replace the two preceding
+haze entries in the six-choice extinction texture bank. The mobile copies
+come directly from processed float seconds 2–18 with their own 1 s circular
+overlap, not from MP3 transcodes. No new rain/haze pitch/rate processing,
+compression, limiting, added noise, external samples, reverb or delay is used.
+
+The new cricket uses **16 distinct short note windows from the new take 2
+master**, not the old cricket audio. Its finisher bakes a four-semitone
+lower note register, 800–3800 Hz filtering, 6 ms edges, 912 ms event grid,
+at most 3 ms deterministic timing jitter and 0.15 dB note variation. A
+25 ms overlap allowance preserves the 16-note period through the existing
+native loop preparation. Existing 0.76× playback yields a measured median
+interval of **1.199 s** and interval coefficient of variation **0.00524**.
+This is one coherent regular bed: `phone.cricketLayers` is empty and
+`phone.crickets` selects the new entry. Main’s three cricket layers remain
+unchanged. Runtime preparation/gain is separate from this asset provenance.
+
+Prompts, seeds, immutable master hashes, full decode/spectral measurements,
+exact edits and output hashes are retained in `v3/*-v34-generation.json`,
+`v3/*-v34-source.json`, `v3/medium-backgrounds-v34-batch.json`,
+`v3/medium-backgrounds-v34-retry-batch.json`,
+`v3/cricket-steady-phone-v34-integration.json` and
+`v3/backgrounds-v34-validation.json`. Unfiltered full-source audition MP3s
+with only fixed gain are available at:
+
+- `output/audio-preview/rain-canopy-heavy-v34-source-preview.mp3`
+- `output/audio-preview/haze-calm-air-v34-source-preview.mp3`
+- `output/audio-preview/haze-calm-drift-v34-source-preview.mp3`
+
+These previews use a louder fixed audition level toward −24 dBFS RMS,
+constrained to −6 dBFS peak; they are not the performance-level derivatives.
+Rebuild with `scripts/finish-steady-phone-cricket-v34.py` followed by
+`scripts/finish-backgrounds-v34.py` after the original generation batches.
+
+## Revision 16 archive notes
+
+Revision **16** retains all 45 previous catalog assets and adds two compact
+phone coo derivatives. The active `wildlife.birds` bank is
+`rainforest-coo-a-v32`, `rainforest-coo-b-v32`, `rainforest-chirp-c-v31`.
+All earlier encoded files, mobile files and original masters retain their
+hashes. Main’s 16-second orangutan file is unchanged; it is not a source for
+these coos.
+
+The two coos come from the **independently generated bird masters** already
+used for `rainforest-bird-low-a-v25` and `rainforest-bird-low-b-v25`. This is
+an offline derivative pass, **not a new model generation**. The pinned
+Stable Audio 3 Medium model, source records and Stable Audio Community
+License remain those of the original 5 November generation. These are
+synthetic sound design interpretations, not species-certified field recordings.
+
+| New browser file | Unchanged bird master / interval | Published file / measured active span |
+| --- | --- | --- |
+| `v3/rainforest-coo-a-v32.mp3` | `rainforest-bird-low-a-v25-take2-master.wav`, 0–2.15 s | 1.4584 s; 12,428 bytes; active 0.11–1.16 s |
+| `v3/rainforest-coo-b-v32.mp3` | `rainforest-bird-low-b-v25-master.wav`, 0.8–2.95 s | 1.4584 s; 12,428 bytes; active 0.23–1.19 s |
+
+Both derivatives bake a rate lift of **1.68178125×**, approximately **+9
+semitones**, into mono 32 kHz / 64 kbps files. The short original phrase is
+followed by a quiet tail, with a two-pole 450 Hz high-pass / 3000 Hz low-pass,
+45 ms onset / 160 ms release fades and 60/120 ms quiet edges. Fixed gain
+retains a soft static budget: decoded RMS about −30.65/−30.60 dBFS, peaks
+−20.45 dBFS. There is no playback-time pitch processing, new synthesis,
+orangutan-source substitution, external sample, looping, compression or reverb.
+
+The old coos overlapped Main’s register (369/385 Hz versus Main’s 342 Hz
+dominant). The new coos have dominant frequencies around **694/648 Hz** and
+median energy frequencies around **657/648 Hz**, while 95% of Main’s
+measured energy is below 442 Hz. The new coos contain about 0.119%/0.0004%
+of measured energy below 450 Hz. This is a technical basis for separation;
+**spectral checks do not establish human perceptual or species identity**.
+The active spans use 10% of each file’s maximum 10 ms RMS envelope.
+
+The source JSONs include original bird generation records, original master
+and encoded-source hashes, exact selected intervals, baked rate, output
+hashes and measurements. See `v3/rainforest-coo-*-v32-source.json` and
+`v3/rainforest-coos-v32-validation.json`. Rebuild without new generation:
+`python3 scripts/finish-rainforest-coos-v32.py`.
+
+## Revision 15 archive notes
+
+Revision **15** retains all 42 previous catalog files and adds three compact
+original synthetic rainforest chirps. `wildlife.birds` now selects
+`rainforest-chirp-a-v31`, `rainforest-chirp-b-v31` and
+`rainforest-chirp-c-v31`. The former low 369/385 Hz coo files remain archived
+with their existing hashes; they are no longer selected for phone wildlife.
+The Main orangutan recording and its hash are unchanged.
+
+The new masters were generated locally on **6 November 2026** using the pinned
+Stable Audio 3 Medium MLX runtime and verified cached model weights, under the
+Stable Audio Community License documented in each source record. They are
+synthetic creative interpretations, not authentic field recordings or
+species-certified calls. The new prompts request short clear bird chirps or
+flute-like whistles instead of throaty low coos. Initial B/C candidates with
+dominant low frequencies around 287/722 Hz were excluded; independent retry
+masters supplied the published B/C chirps.
+
+| Browser file | Unchanged generated master / selected source interval | Published file |
+| --- | --- | --- |
+| `v3/rainforest-chirp-a-v31.mp3` | `rainforest-chirp-a-v31-master.wav`, 0.680–0.900 s | 0.60 s; 5,516 bytes |
+| `v3/rainforest-chirp-b-v31.mp3` | `rainforest-chirp-b-v31-take2-master.wav`, 3.055–3.285 s | 0.61 s; 5,516 bytes |
+| `v3/rainforest-chirp-c-v31.mp3` | `rainforest-chirp-c-v31-take2-master.wav`, 0.055–0.345 s | 0.67 s; 6,092 bytes |
+
+Each final file isolates **one short measured burst**, with 160 ms leading and
+220 ms trailing quiet. The full five-second generations can contain several
+calls; those trains are never played on phones. Processing is mono 32 kHz,
+650 Hz high-pass/3800 Hz low-pass, 12/25 ms source-edge fades, fixed gain and
+64 kbps MP3. There is no pitch/time shift, compression, reverb, loop, external
+sample or mammal-source substitution in these files.
+
+Full decoded-signal checks found one burst per file (about 80/100/240 ms),
+dominant frequencies near 2972/2816/2216 Hz, less than 0.023% energy below
+650 Hz, finite samples and peaks below −14 dBFS. Signal/envelope checks are
+not a human listening review or species certification. Prompts, seeds,
+original-master hashes, exact intervals, encoded hashes and measurements
+are retained in `v3/*-v31-source.json`, the generation records,
+`v3/medium-rainforest-chirps-v31-batch.json`,
+`v3/medium-rainforest-chirps-v31-retry-batch.json` and
+`v3/rainforest-chirps-v31-validation.json`. Rebuild with
+`python3 scripts/finish-rainforest-chirps-v31.py`.
+
+## Revision 14 archive notes
+
+Revision **14** adds three original synthetic wildlife phrases to the 39
+retained browser assets, for **42 assets**. `wildlife.orangutan` selects a
+restrained distant low orangutan interpretation for Main; `wildlife.birds`
+selects two independent warm low bird phrases for sparse phone playback.
+They are creative interpretations generated locally on **5 November 2026**
+using the cached pinned official Stable Audio 3 Medium MLX runtime and
+SHA-256-verified model weights, under the Stable Audio Community License.
+They are **not authentic field recordings or evidence of actual animal
+grief**. The prompts request quiet vulnerability without excited display,
+alarm calls, human voices, music, or a busy bird chorus.
+
+| Browser file | Selected unchanged generated master | Published length / encoding |
+| --- | --- | --- |
+| `v3/orangutan-distant-v25.mp3` | `orangutan-distant-v25-master.wav`, 0–16 s | 16 s; mono 32 kHz / 80 kbps; 160,964 bytes |
+| `v3/rainforest-bird-low-a-v25.mp3` | `rainforest-bird-low-a-v25-take2-master.wav`, 0–2.8 s | 2.8 s; mono 32 kHz / 64 kbps; 23,084 bytes |
+| `v3/rainforest-bird-low-b-v25.mp3` | `rainforest-bird-low-b-v25-master.wav`, 0.8–3.6 s | 2.8 s; mono 32 kHz / 64 kbps; 23,084 bytes |
+
+The orangutan derivative has a 110 Hz high-pass and 1800 Hz low-pass,
+with 0.6 s onset and 1.6 s release fades. Bird derivatives use a 220 Hz
+high-pass, 2600 Hz low-pass, 80 ms onset and 400 ms release fades. These
+are two-pole filters applied offline, followed by fixed gain and one MP3
+encode directly from processed float. No pitch/time changes, looping,
+compression, reverb, external samples or substitute synthesis are added.
+The selected bird phrases have dominant measured frequencies near 369 Hz
+and 385 Hz. The first A take, near 2.5 kHz, and a diffuse alternate take
+are excluded from the performance; their generation records remain.
+
+All three published files fully decode to exact sample counts, with zero
+nonfinite samples, no samples near full scale, and decoded peaks below
+−14 dBFS. Full prompts, seeds, pinned model/runtime revisions, unchanged
+float-master hashes, processing, encoded hashes and signal measurements
+are in `v3/medium-wildlife-v25-batch.json`,
+`v3/medium-wildlife-v25-retry-batch.json`, the corresponding generation and
+source JSON files, and `v3/wildlife-v25-validation.json`. These are signal
+and provenance checks, without a claim of human listening review, species
+certification, or verified emotional effect. Rebuild the derivatives and
+append their catalog entries with `python3 scripts/finish-wildlife-v25.py`.
+
+## Revision 13 archive notes
 
 Revision **13** contains **39 browser assets**. Four new short liquid
 blob one-shots are listed in `main.blob` for individual newly extinguished
@@ -398,3 +614,21 @@ perceptual prompt adherence or claim human listening review.
 The official runtime and approximately 5.18 GB of verified weights remain in
 the project's `.audio-model-cache/` for future revisions. No model request,
 download or generation occurs during a performance.
+
+
+### Phone cricket rhythm derivatives (v30)
+
+The active phone-only `cricket-far`, `cricket-mid` and `cricket-near` mobile
+files now point to `*-mobile-rhythm-v30.mp3`, derived from the retained
+licensed CC0 v18 mobile excerpts. The original Main recordings and previous
+mobile files remain unchanged. Natural waveform peaks are retained at 65%
+of their measured note-envelope duration and placed 25% farther apart,
+with short cosine edge guards and a very quiet original-recording undercurrent.
+No chirps are synthesized and no pitch/time stretch is applied to individual
+notes. Runtime playback returns to the previous 0.76 pitch ratio. These are
+explicit rhythm edits rather than untouched documentary excerpts.
+
+Each file is 20 seconds, mono, 32 kHz/96 kbps and below 250 kB. Exact
+source URLs, authors, CC0 licenses, hashes, selected note centers, envelope
+lengths and validation are retained in `v3/cricket-*-mobile-rhythm-v30-source.json`.
+Reproduce with `python3 scripts/finish-phone-crickets-v30.py`.

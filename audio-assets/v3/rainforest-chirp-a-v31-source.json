@@ -1,0 +1,110 @@
+{
+  "id": "rainforest-chirp-a-v31",
+  "title": "Rainforest rising chirp",
+  "kind": "wildlife-bird",
+  "generated": true,
+  "assetKind": "isolated-excerpt-of-original-model-output",
+  "rawModelOutput": false,
+  "sourceGeneration": {
+    "id": "rainforest-chirp-a-v31",
+    "kind": "wildlife-bird",
+    "title": "Rainforest rising chirp",
+    "seed": 202611063101,
+    "role": "One isolated short rising tropical forest bird chirp",
+    "prompt": "TrackType: SFX, One solitary small tropical rainforest songbird gives one short clear soft wheet chirp, a delicate flute-like rising whistle with a quick clean ending. Recognizable natural bird chirping in a middle register around 1800 to 2500 Hz, not piercing or shrill. The single chirp lasts half a second, surrounded by quiet outdoor air and long silence. No repeated notes, no call train, no chorus, no coo, hoo, hoot, throat, grunt, groan, mammal, ape, owl, pigeon, human voice, insect, rain, music or instruments. Length: 5 seconds.",
+    "durationSeconds": 5,
+    "steps": 8,
+    "cfgScale": 1.0,
+    "sampler": "pingpong",
+    "pack": "scripts/stablegen-v31-rainforest-chirps-prompts.json",
+    "model": "Stable Audio 3 Medium",
+    "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+    "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+    "license": "Stable Audio Community License",
+    "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+    "backend": "Official MLX local inference on Apple Silicon",
+    "runtimeRevision": "5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84",
+    "optimizedWeightsRevision": "30cb2644da54bfa63275d1bc7f1fa67fc718680f",
+    "generated": true,
+    "status": "generated",
+    "startedAt": "2026-11-05T17:59:26.292729+00:00",
+    "completedAt": "2026-11-05T17:59:29.883620+00:00",
+    "generationSeconds": 3.589,
+    "peakMetalAllocatedBytes": 6402454690,
+    "unclippedGeneratorPeak": 0.32237204909324646,
+    "unclippedGeneratorRms": 0.01895510302495897,
+    "unclippedGeneratorAboveFullScaleFraction": 0.0,
+    "unclippedGeneratorNearFullScaleFraction": 0.0,
+    "master": {
+      "file": "rainforest-chirp-a-v31-master.wav",
+      "bytes": 1764088,
+      "sha256": "2a3935d5eb33550be4a623defd3dccc210228526f59d74fe077758037b393a35"
+    },
+    "processing": "Official pipeline output preserved as stereo44100Hz32-bit float WAV without clipping or normalization. No reverb, compression, mixing or post-effects added. Browser copy normalized separately.",
+    "listeningReview": "Technical validity checked. Perceptual prompt adherence requires audition."
+  },
+  "generationBatchRecord": "medium-rainforest-chirps-v31-batch.json",
+  "generationId": "rainforest-chirp-a-v31",
+  "rawGeneratedMaster": {
+    "file": "rainforest-chirp-a-v31-master.wav",
+    "bytes": 1764088,
+    "sha256": "2a3935d5eb33550be4a623defd3dccc210228526f59d74fe077758037b393a35"
+  },
+  "sourceMasterUnchangedCheck": true,
+  "selection": {
+    "generation": "rainforest-chirp-a-v31",
+    "batch": "medium-rainforest-chirps-v31-batch.json",
+    "start": 0.68,
+    "end": 0.9,
+    "title": "Rainforest rising chirp"
+  },
+  "processing": "One source burst from 0.68\u20130.9s, 650Hz high-pass/3800Hz low-pass, 12ms/25ms edge fades; 160ms leading and220ms trailing quiet; fixed-0.676714dBgain; mono32kHz64kbpsMP3. No loop, pitch/time change, compression, reverb, layering, mammal-source substitution or external recording.",
+  "browserAsset": {
+    "file": "audio-assets/v3/rainforest-chirp-a-v31.mp3",
+    "durationSeconds": 0.6,
+    "bytes": 5516,
+    "sha256": "4cd61bf09dd8610dfdbc11908c405f34236a354761baaff54e052cb81c40321e",
+    "sampleRate": 32000,
+    "channels": 1,
+    "bitrateKbps": 64,
+    "validation": {
+      "completeDecode": "passed",
+      "durationSeconds": 0.6,
+      "samplesPerChannel": 19200,
+      "nonFiniteSamples": 0,
+      "rmsDbfs": -32.97158038665262,
+      "peakDbfs": -14.43061123767178,
+      "dominantFrequencyHz": 2971.666666666667,
+      "energyBelow650Hz": 0.00011398763958922475,
+      "energyAbove4kHz": 0.0002519560591741218,
+      "activeBurstCount": 1,
+      "activeBurstSeconds": [
+        0.08
+      ],
+      "scope": "Complete signal and envelope checks only; no human listening or species-certification claim."
+    }
+  },
+  "validation": {
+    "completeDecode": "passed",
+    "durationSeconds": 0.6,
+    "samplesPerChannel": 19200,
+    "nonFiniteSamples": 0,
+    "rmsDbfs": -32.97158038665262,
+    "peakDbfs": -14.43061123767178,
+    "dominantFrequencyHz": 2971.666666666667,
+    "energyBelow650Hz": 0.00011398763958922475,
+    "energyAbove4kHz": 0.0002519560591741218,
+    "activeBurstCount": 1,
+    "activeBurstSeconds": [
+      0.08
+    ],
+    "scope": "Complete signal and envelope checks only; no human listening or species-certification claim."
+  },
+  "completedAt": "2026-11-05T18:03:11.050774+00:00",
+  "listeningReview": "Synthetic creative interpretation; not an authentic field recording or species-certified bird. Technical envelope/spectral checks do not replace listening.",
+  "model": "Stable Audio 3 Medium",
+  "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+  "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+  "license": "Stable Audio Community License",
+  "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md"
+}

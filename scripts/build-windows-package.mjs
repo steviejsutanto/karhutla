@@ -4,7 +4,7 @@ import { spawn } from 'node:child_process';
 import path from 'node:path';
 import os from 'node:os';
 import { fileURLToPath } from 'node:url';
-import { sha256, safePackagePath, validateRequiredFiles, checkPackage, packagePublicFiles, packageTarget, MUTABLE_PACKAGE_FILES } from './check-package.mjs';
+import { sha256, safePackagePath, validateRequiredFiles, validateCatalogIntegrity, checkPackage, packagePublicFiles, packageTarget, MUTABLE_PACKAGE_FILES } from './check-package.mjs';
 import { isMain } from './is-main.mjs';
 
 export const DEFAULT_NODE_VERSION = 'v24.22.2';
@@ -20,6 +20,7 @@ export function includeProjectFile(relative, { platform = 'windows-x64' } = {}) 
   if (parts[0] === 'app') return /\.(?:js|mjs|html|css|svg)$/.test(relative) && !relative.endsWith('.test.mjs');
   if (parts[0] === 'tests') return /\.test\.mjs$/.test(relative);
   if (parts[0] === 'docs') return /\.md$/.test(relative);
+  if (parts[0] === 'presets') return ['presets/current-performance.json', 'presets/README.md'].includes(relative);
   if (parts[0] === 'data') return parts.length === 2 && dataFiles.has(parts[1]);
   if (parts[0] === 'scripts') return parts.length === 2 && scriptFiles.has(parts[1]);
   if (parts[0] === 'audio-assets') return (parts.length === 2 || parts.length === 3 && parts[1] === 'v3') && /\.(?:mp3|json|md)$/.test(relative);
@@ -46,6 +47,10 @@ export async function stageProjectFiles(source, destination, { platform = 'windo
   for (const directory of ['app', 'tests', 'docs', 'data', 'scripts', 'audio-assets', 'visual-assets']) {
     candidates.push(...(await listFiles(path.join(source, directory))).map(file => `${directory}/${file}`));
   }
+  try {
+    if (!(await lstat(path.join(source, 'presets'))).isDirectory()) throw new Error('Source presets must be a directory.');
+    candidates.push('presets/current-performance.json', 'presets/README.md');
+  } catch (error) { if (error.code !== 'ENOENT') throw error; }
   const files = candidates.filter(file => includeProjectFile(file, { platform })).sort();
   for (const file of files) {
     const info = await lstat(path.join(source, file));
@@ -259,6 +264,7 @@ export async function publishStagedPackage({ stage, temporary, output, name, run
   await assertReleaseDestination(output, name, force);
   const platform = runtime.platform === 'darwin' ? `macos-${runtime.architecture}` : 'windows-x64';
   await validateRequiredFiles(stage, { runtime: true, platform });
+  await validateCatalogIntegrity(stage);
   const manifest = await createPackageManifest(stage, runtime, dependencies);
   await checkPackage(stage);
   await mkdir(output, { recursive: true });

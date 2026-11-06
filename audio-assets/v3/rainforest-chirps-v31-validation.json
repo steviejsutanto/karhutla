@@ -1,0 +1,124 @@
+{
+  "status": "complete",
+  "catalogRevision": 15,
+  "activeAssetCount": 45,
+  "syntheticInterpretation": true,
+  "unchangedRetainedAssets": 42,
+  "retainedAssetSha256": {
+    "fire-dry-brush": "7756a79e7dc95dbc786d3392d7b6bb5c0ddf1a8efc62b0fead049bd1f4dfafea",
+    "fire-wind-flames": "6a63c56adc8818402a2d7a566f1a000f954929314ab560320bc05adf0f5a427a",
+    "fire-ground-embers": "0c858cf9127fa558f6ee3b347d7687b862bf0a9c4814d69f4a2b373a82f6c38b",
+    "phone-branches-leaves": "59cf87a8a7b41c536b2a70d9d76c3cf2a0d6f51017893b4ea28e55ba6a55f9d1",
+    "crickets-pulse": "1e57b3d797e0c30db067e61e4045397699255ac484dea308070e70f1973d8152",
+    "crickets-chorus": "a1ce17bfe3bb999864b7c7fc01cd8b2d08bd2f6a2bda37186fe02dcf27802589",
+    "haze-light": "118f50553582686a391155f3655532847bf694fd722db203391df5d2ae329dd5",
+    "haze-drift": "6868e1f1dfef655ae4ddeb8a8de8c781fcce91b429b01c14eb8ffe881064fb9a",
+    "ash-fine": "5dd4be4f862628eff75a77761b82b7fb651f8a0534dbfdc83352f64a95baba98",
+    "ash-scatter": "a439c099959aadb480d24efbff3e5b890b7126497191feb0b8f88a62216c6b00",
+    "rain-light": "7500e70103c855e652d24ac4b3d544aba529f4026bd7698fb93b8561722df055",
+    "rain-steady": "3902bd47425690a815512d466baf24c9ec3122136191f06506f9bbc1d3a1f1f5",
+    "moisture-seep": "bd1039cc5a947f9f6005a1a0cb7665f1662efed6e8a3d133ef4fbbd241553db9",
+    "moisture-trickle": "51b59eedfbb98fed116b407ec2f15971600612ed2c27bc12106156bb2384961d",
+    "rain-natural-light": "d627fd9af9ff45e76100853418885d3906803273fc3b172d76503c48efa4e98c",
+    "rain-natural-steady": "cda4ecc0b5e45d65d6adbebf3ff70709c00a896f692a5be149c908d9533cb63f",
+    "cricket-near": "64a7e0e9b03ce5b38370210f8e6dd332542e1e8325c7fa2d88b9c046dabbdc00",
+    "cricket-mid": "a00eade79246db77b92cc8e4eec4fa6c2249da2018b0475843d3caaa0742f57b",
+    "cricket-far": "221f31277a861d386eda6fc5b127bb3f0b2ff0ab93861d0b2a0ce06e000a8c25",
+    "phone-quench-ember": "e6f9823a5c58d94f8b80c8c8d1b4978c83e79424b1a8b4d38abb3fbf846323dc",
+    "phone-quench-wood": "f5b5747ca969a2c95746137ab0367fca383ec9be335eabffd1ff0d0e885f97f2",
+    "phone-quench-leaf": "6019a4b50526d71523de8b8d0481ae4de7b7324cba78798602a9b20b592064b9",
+    "phone-quench-steam": "8a03d89037d4596432d7e5e98e016a08e707ddbf93bc92412bd26430d65723af",
+    "phone-branches-full": "d5cb1d6dbc12a6fe835753565063c784bfabfa5922dd8fa19eb28a5e16d51a1d",
+    "phone-branches-dry-v20": "12cdd8dd828336d8f674a629764aa03a6034528deb65790992ecb153065fe17e",
+    "ash-flutter-v20": "b80f36d11df3492f290b49f49d15b400782754010f7de6c286cf552340454618",
+    "ash-settle-v20": "2b6e40d3c2a0c1f9beb1ea9fee8aa4c50b14d21eea9bd74ec53747ebde795e3b",
+    "moisture-moss-v20": "1db254a4036a2f1a874d870e2c8a3c0bc9856d8a2fd418314aa056d0472f9b39",
+    "moisture-earth-v20": "90d8b36092ffb271aeb9c790a70826dd2ebb185514da09d3adaa1e8d9c53e990",
+    "haze-grass-v20": "4100eefb4b8340ace244fa0e19e5d8872f603dcc3fc098389ed372dcc1e8c041",
+    "haze-leaves-v20": "caa1dc2728aa44cdbdc772ee743326e6b4b489df752f18b4ea417dba99f825ae",
+    "rain-storm-v23": "364fbca6a0e3c8c4db7fcea507f0d04fa32c297ca65756403500005b68bf8131",
+    "rain-storm-v23-study2": "647b7ebea2b49f1d3da67ea93014cf922f66ac97c1429d1c4552ae35c15c1458",
+    "haze-air-v23": "29daee26f0e3fc2efa7d3e1e618535219505ca65c9ec690dc6d0737b09e5b917",
+    "haze-float-v23": "9398302ef832d970c5ddfad52ba193ab70182678723373bffbc7f8ad641608ee",
+    "extinction-blob-a": "ad6b6cf6cd89570ae3e62915478d0a9b9f5c8dced00bd5b0ec79bc2eba57f1a5",
+    "extinction-blob-b": "ec6f56c23da16d6001cf37af4bb56cf86b3adb8d863044341bdd502b520c1177",
+    "extinction-blob-c": "1dbc9069b00d0d6855032b34bcfff4f34e555f01a6484fa07850a43d15265a7e",
+    "extinction-blob-d": "bc2b5872bb911587fe44631410c40f0b6781f1c8b4f68f110068169a47667b10",
+    "orangutan-distant-v25": "095b5dced9b78e4bd6d3221641c8d05ce79ff7c038532f8e0f5eac9b0b2fc2fa",
+    "rainforest-bird-low-a-v25": "4e0683c2989522cd4e23127618a8c6e8010a48d52939d40b93870026ce955cb4",
+    "rainforest-bird-low-b-v25": "1684b33dae0b615c4613827a66b3674d2d5f6ba670c37362040a2cf711924d64"
+  },
+  "excludedTakes": [
+    "rainforest-chirp-b-v31",
+    "rainforest-chirp-c-v31"
+  ],
+  "selectionNotes": "Initial B and C masters had dominant low frequencies around287/722Hz and are excluded. The published files use one short clear2\u20133kHz burst each; no raw multi-call train is played.",
+  "assets": {
+    "rainforest-chirp-a-v31": {
+      "file": "audio-assets/v3/rainforest-chirp-a-v31.mp3",
+      "durationSeconds": 0.6,
+      "bytes": 5516,
+      "sha256": "4cd61bf09dd8610dfdbc11908c405f34236a354761baaff54e052cb81c40321e",
+      "validation": {
+        "completeDecode": "passed",
+        "durationSeconds": 0.6,
+        "samplesPerChannel": 19200,
+        "nonFiniteSamples": 0,
+        "rmsDbfs": -32.97158038665262,
+        "peakDbfs": -14.43061123767178,
+        "dominantFrequencyHz": 2971.666666666667,
+        "energyBelow650Hz": 0.00011398763958922475,
+        "energyAbove4kHz": 0.0002519560591741218,
+        "activeBurstCount": 1,
+        "activeBurstSeconds": [
+          0.08
+        ],
+        "scope": "Complete signal and envelope checks only; no human listening or species-certification claim."
+      }
+    },
+    "rainforest-chirp-b-v31": {
+      "file": "audio-assets/v3/rainforest-chirp-b-v31.mp3",
+      "durationSeconds": 0.61,
+      "bytes": 5516,
+      "sha256": "154c8f536c6a436b22107ff866e3377f7581f3f64e0f535b0f99b86ab8348e7c",
+      "validation": {
+        "completeDecode": "passed",
+        "durationSeconds": 0.61,
+        "samplesPerChannel": 19520,
+        "nonFiniteSamples": 0,
+        "rmsDbfs": -33.49446837465233,
+        "peakDbfs": -14.4575825544235,
+        "dominantFrequencyHz": 2816.3934426229507,
+        "energyBelow650Hz": 0.00022177572623149626,
+        "energyAbove4kHz": 0.00024120650381371852,
+        "activeBurstCount": 1,
+        "activeBurstSeconds": [
+          0.1
+        ],
+        "scope": "Complete signal and envelope checks only; no human listening or species-certification claim."
+      }
+    },
+    "rainforest-chirp-c-v31": {
+      "file": "audio-assets/v3/rainforest-chirp-c-v31.mp3",
+      "durationSeconds": 0.67,
+      "bytes": 6092,
+      "sha256": "8b875c05e4245936e9c4025e1ca141f237261e909fad10222e3a2a15ec3a314a",
+      "validation": {
+        "completeDecode": "passed",
+        "durationSeconds": 0.67,
+        "samplesPerChannel": 21440,
+        "nonFiniteSamples": 0,
+        "rmsDbfs": -28.290662428398967,
+        "peakDbfs": -14.458255415594826,
+        "dominantFrequencyHz": 2216.417910447761,
+        "energyBelow650Hz": 2.733349561672832e-05,
+        "energyAbove4kHz": 4.5447808460879914e-05,
+        "activeBurstCount": 1,
+        "activeBurstSeconds": [
+          0.24
+        ],
+        "scope": "Complete signal and envelope checks only; no human listening or species-certification claim."
+      }
+    }
+  }
+}

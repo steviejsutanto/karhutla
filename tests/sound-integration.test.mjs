@@ -24,14 +24,14 @@ test('sound prototype serves local samples, credits and controls to both phone a
   assert.equal(phoneRainModule.status, 200, 'Phone touch rain has a static module route');
   assert.match(phoneRainModule.headers.get('content-type'), /^text\/javascript/);
   assert.equal(await phoneRainModule.text(), await readFile(new URL('../app/phone-tap-rain.js', import.meta.url), 'utf8'));
-  for (const route of ['/sound-lab', '/sound-lab.js', '/sound-lab.css', '/sound-library.js', '/sound-participants.js', '/scene-score.js', '/audio-assets/v3/manifest.json']) {
+  for (const route of ['/sound-lab', '/sound-lab.js', '/sound-lab.css', '/sound-library.js', '/sound-participants.js', '/scene-score.js', '/audio-assets/v3/manifest.json', '/phone-drone.js', '/scene-wildlife.js']) {
     assert.equal((await fetch(`${base}${route}`)).status, 200, route);
   }
   assert.equal((await fetch(`${base}/audio-assets/v3/manifest.wav`)).status, 404);
   assert.equal((await fetch(`${base}/audio-assets/v3/private.json`)).status, 404);
   const library = soundLibrary(await (await fetch(`${base}/audio-assets/v3/manifest.json`)).json());
-  assert.equal(library.version, 13);
-  assert.equal(library.assets.length, 39);
+  assert.equal(library.version, 18);
+  assert.equal(library.assets.length, 51);
   assert.equal(library.assets.filter(asset => asset.kind === 'forest').length, 3);
   const palette = ambianceSources(library);
   assert.equal(Object.keys(palette.variations).length, 6);
@@ -79,7 +79,7 @@ test('sound prototype serves local samples, credits and controls to both phone a
   assert.ok(palette.cricketLayers?.length >= 3, 'The main aftermath has distinct near, middle and far recordings');
   assert.ok(palette.cricketLayers.every(entry => library.assets.find(asset => asset.id === entry.id)?.kind === 'crickets'));
   assert.deepEqual(library.morphs.rain, ['rain-natural-light', 'rain-storm-v23']);
-  assert.ok(library.assets.find(asset => asset.id === 'rain-storm-v23')?.generated, 'Finale rain uses the new generated storm');
+  assert.ok(library.assets.find(asset => asset.id === 'rain-storm-v23')?.generated, 'Finale rain returns to the previously selected recording');
   assert.ok(library.assets.find(asset => asset.id === 'rain-storm-v23-study2')?.generated, 'The second new storm remains available for audition');
   for (const asset of library.assets) {
     if (asset.generated) assert.equal(asset.model, 'Stable Audio 3 Medium');

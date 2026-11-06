@@ -1,0 +1,35 @@
+{
+  "purpose": "Three independent isolated rainforest bird chirps, replacing the old voice-like low coos on phones",
+  "preferredModel": "medium",
+  "durationSeconds": 5,
+  "steps": 8,
+  "cfgScale": 1.0,
+  "sampler": "pingpong",
+  "notes": "Synthetic bird sound design, not a field recording or species-certified example. Each master is independent. Final browser assets select one brief middle-register chirp with silence around it. No mammal-like coo or hoot.",
+  "assets": [
+    {
+      "id": "rainforest-chirp-a-v31",
+      "kind": "wildlife-bird",
+      "title": "Rainforest rising chirp",
+      "seed": 202611063101,
+      "role": "One isolated short rising tropical forest bird chirp",
+      "prompt": "TrackType: SFX, One solitary small tropical rainforest songbird gives one short clear soft wheet chirp, a delicate flute-like rising whistle with a quick clean ending. Recognizable natural bird chirping in a middle register around 1800 to 2500 Hz, not piercing or shrill. The single chirp lasts half a second, surrounded by quiet outdoor air and long silence. No repeated notes, no call train, no chorus, no coo, hoo, hoot, throat, grunt, groan, mammal, ape, owl, pigeon, human voice, insect, rain, music or instruments. Length: 5 seconds."
+    },
+    {
+      "id": "rainforest-chirp-b-v31",
+      "kind": "wildlife-bird",
+      "title": "Rainforest falling whistle",
+      "seed": 202611063102,
+      "role": "A separate isolated short descending rainforest bird whistle",
+      "prompt": "TrackType: SFX, A single shy tropical forest bird makes one brief soft descending sweet chirp, a clear airy twee whistle that bends down and stops. A natural short bird call in the middle register around 1500 to 2200 Hz, lightly woody but clearly whistled, never low or throaty. Only one half-second bird phrase with silence before and after. No continuous song, no repeated chirping, no cooing, hooting, mammals, ape voice, owl, pigeon, human voice, insects, weather, music or instruments. Length: 5 seconds."
+    },
+    {
+      "id": "rainforest-chirp-c-v31",
+      "kind": "wildlife-bird",
+      "title": "Rainforest rounded chirrup",
+      "seed": 202611063103,
+      "role": "A third distinct tiny rounded tropical forest bird chirrup",
+      "prompt": "TrackType: SFX, One tiny short rounded chirrup from a solitary rainforest songbird, a gentle clear chwee sound with a quick up-down pitch inflection and a crisp but soft ending. Birdlike flute resonance around 1600 to 2800 Hz, not sharp or squealing. One isolated very brief half-second chirp only, with mostly silence around it. No repeated call, no chorus, no coo-woo, hoot, grunt, growl, low mammal sound, orangutan, owl, pigeon, voice, insects, weather, music or instruments. Length: 5 seconds."
+    }
+  ]
+}

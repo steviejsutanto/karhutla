@@ -23,10 +23,17 @@ export function validateSettingsPreset(preset) {
   completeObject(preset.soundSettings, Object.keys(DEFAULT_SOUND_SETTINGS), 'sound settings');
   if (Object.values(preset.soundSettings).some(value => value === undefined)) fail('Every sound setting must have a value.');
   completeObject(preset.soundSettings.macros, Object.keys(DEFAULT_SOUND_SETTINGS.macros), 'sound macros');
-  completeObject(preset.soundSettings.mixer, Object.keys(DEFAULT_SOUND_SETTINGS.mixer), 'sound mixer');
+  const mixerKeys = Object.keys(DEFAULT_SOUND_SETTINGS.mixer);
+  const mixer = preset.soundSettings.mixer;
+  const legacyMixer = object(mixer) && !Object.hasOwn(mixer, 'orangutan') && !Object.hasOwn(mixer, 'orangutanTail');
+  // Earlier exported presets predate the two wildlife trims. Require their
+  // complete original shape before supplying only these new unity defaults.
+  completeObject(mixer, legacyMixer ? mixerKeys.filter(key => !['orangutan', 'orangutanTail'].includes(key)) : mixerKeys, 'sound mixer');
   // Patch validators also enforce every value's type, range, and text limits.
   const sceneSettings = sceneSettingsPatch(DEFAULT_SCENE_SETTINGS, preset.sceneSettings);
-  const soundSettings = soundSettingsPatch(DEFAULT_SOUND_SETTINGS, preset.soundSettings);
+  const soundSettings = soundSettingsPatch(DEFAULT_SOUND_SETTINGS, {
+    ...preset.soundSettings, mixer: legacyMixer ? { ...mixer, orangutan: 1, orangutanTail: 1 } : mixer,
+  });
   return { format: SETTINGS_PRESET_FORMAT, schemaVersion: SETTINGS_PRESET_VERSION,
     strength: preset.strength, parameters: { ...simulation.parameters }, sceneSettings, soundSettings };
 }

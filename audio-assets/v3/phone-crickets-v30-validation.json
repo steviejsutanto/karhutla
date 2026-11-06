@@ -1,0 +1,87 @@
+{
+  "status": "complete",
+  "assets": [
+    {
+      "id": "cricket-near",
+      "file": "audio-assets/v3/cricket-near-mobile-rhythm-v30.mp3",
+      "bytes": 241100,
+      "sha256": "9d22349150b16ff798cfeef6657be704c53f49ae6c25d105cad82d8edc5a284f",
+      "durationSeconds": 20,
+      "sampleRate": 32000,
+      "channels": 1,
+      "bitrateKbps": 96,
+      "assetKind": "rhythm-edited-mobile-derivative-of-published-cc0-field-recording",
+      "sourceFile": "audio-assets/v3/cricket-near-mobile.mp3",
+      "sourceSha256": "17829f8d9c136ed5e5063baee2c3152d138546fde1428df7b41cf2945ade59ee",
+      "processing": "Detect natural 5ms RMS envelope peaks with >=90ms separation; retain centered waveform excerpts at65% of each detected note envelope, 3ms cosine click guards; place onsets25% farther apart; add original recording undercurrent at\u221227.96dB. Crop at20seconds with10msedgeguards. No pitch/time stretch or synthesized chirps. Constant gain then96kbps mono32kHzMP3. Runtime playback staysat0.76, restoring previous pitch. No long phrase mutes.",
+      "validation": {
+        "samplesPerChannel": 640000,
+        "nonFiniteSamples": 0,
+        "peakAmplitude": 0.665443480014801,
+        "rms": 0.04463141422289087,
+        "events": 121,
+        "medianSourceIntervalSeconds": 0.11000000000000076,
+        "medianTargetIntervalSeconds": 0.13750000000000018,
+        "medianSourceNoteSeconds": 0.023807009972348397,
+        "medianTargetNoteSeconds": 0.01546875,
+        "pitchChange": "none; original waveform excerpts, no resampling/time stretch"
+      },
+      "provenanceFile": "audio-assets/v3/cricket-near-mobile-rhythm-v30-source.json"
+    },
+    {
+      "id": "cricket-mid",
+      "file": "audio-assets/v3/cricket-mid-mobile-rhythm-v30.mp3",
+      "bytes": 241100,
+      "sha256": "bbe01be9147741f5ee018e72a1b261d3a6ac04600aebc46bab57e8d3fca8ee1e",
+      "durationSeconds": 20,
+      "sampleRate": 32000,
+      "channels": 1,
+      "bitrateKbps": 96,
+      "assetKind": "rhythm-edited-mobile-derivative-of-published-cc0-field-recording",
+      "sourceFile": "audio-assets/v3/cricket-mid-mobile.mp3",
+      "sourceSha256": "42d24414f4d85ed175eb4c7723261ab614baf7b9999ffc14180d8f62a463a867",
+      "processing": "Detect natural 5ms RMS envelope peaks with >=90ms separation; retain centered waveform excerpts at65% of each detected note envelope, 3ms cosine click guards; place onsets25% farther apart; add original recording undercurrent at\u221227.96dB. Crop at20seconds with10msedgeguards. No pitch/time stretch or synthesized chirps. Constant gain then96kbps mono32kHzMP3. Runtime playback staysat0.76, restoring previous pitch. No long phrase mutes.",
+      "validation": {
+        "samplesPerChannel": 640000,
+        "nonFiniteSamples": 0,
+        "peakAmplitude": 0.6499775648117065,
+        "rms": 0.05225109371698833,
+        "events": 92,
+        "medianSourceIntervalSeconds": 0.14500000000000002,
+        "medianTargetIntervalSeconds": 0.18125000000000013,
+        "medianSourceNoteSeconds": 0.03199151747226807,
+        "medianTargetNoteSeconds": 0.020796875,
+        "pitchChange": "none; original waveform excerpts, no resampling/time stretch"
+      },
+      "provenanceFile": "audio-assets/v3/cricket-mid-mobile-rhythm-v30-source.json"
+    },
+    {
+      "id": "cricket-far",
+      "file": "audio-assets/v3/cricket-far-mobile-rhythm-v30.mp3",
+      "bytes": 241100,
+      "sha256": "38c282d2420d86cef8dd42afbba7d15ff548bd062a79f678cfb221f6b1148d3d",
+      "durationSeconds": 20,
+      "sampleRate": 32000,
+      "channels": 1,
+      "bitrateKbps": 96,
+      "assetKind": "rhythm-edited-mobile-derivative-of-published-cc0-field-recording",
+      "sourceFile": "audio-assets/v3/cricket-far-mobile.mp3",
+      "sourceSha256": "ee1c4ba88b3fab9e67de89fc7f6354861d8eab969a0f5eb76a66a3764f7a071d",
+      "processing": "Detect natural 5ms RMS envelope peaks with >=90ms separation; retain centered waveform excerpts at65% of each detected note envelope, 3ms cosine click guards; place onsets25% farther apart; add original recording undercurrent at\u221227.96dB. Crop at20seconds with10msedgeguards. No pitch/time stretch or synthesized chirps. Constant gain then96kbps mono32kHzMP3. Runtime playback staysat0.76, restoring previous pitch. No long phrase mutes.",
+      "validation": {
+        "samplesPerChannel": 640000,
+        "nonFiniteSamples": 0,
+        "peakAmplitude": 0.5188412070274353,
+        "rms": 0.05229290571402433,
+        "events": 92,
+        "medianSourceIntervalSeconds": 0.15999999999999837,
+        "medianTargetIntervalSeconds": 0.1999999999999975,
+        "medianSourceNoteSeconds": 0.0876220207022513,
+        "medianTargetNoteSeconds": 0.056953125,
+        "pitchChange": "none; original waveform excerpts, no resampling/time stretch"
+      },
+      "provenanceFile": "audio-assets/v3/cricket-far-mobile-rhythm-v30-source.json"
+    }
+  ],
+  "scope": "Full decoded signal and deterministic note/spacing edits verified. Perceived timbre remains a listening judgment."
+}

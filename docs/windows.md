@@ -3,7 +3,7 @@
 ## Run the performance download
 
 1. Download the Windows ZIP from the [latest release](https://github.com/steviejsutanto/karhutla/releases/latest) in the private repository. Choose the Windows asset, rather than GitHub's automatically generated Source code ZIP.
-2. Extract the whole ZIP to a local folder, for example `C:\Performances\karhutla-1.0.3`. Do not launch from inside the ZIP or put the running folder in OneDrive.
+2. Extract the whole ZIP to a local folder, for example `C:\Performances\karhutla-1.1.0`. Do not launch from inside the ZIP or put the running folder in OneDrive.
 3. Double-click **Start-Karhutla.cmd**. The package includes Node.js and the required libraries; no installation or internet connection is needed to use the included fire snapshot.
 4. If Windows Firewall asks, allow this app on your trusted **Private** performance network. The laptop and audience phones must use the same router, with client isolation disabled. Ethernet from the laptop to the router is preferable when available.
 5. Operator opens at <http://127.0.0.1:4173/operator>. Click **Enable main sound**, select the correct Windows audio output, and check its level through the PA.

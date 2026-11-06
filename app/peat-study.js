@@ -9,9 +9,11 @@ import { mountSoundControls } from '/sound-controls.js';
 import { WORK_TITLE, DEFAULT_PROGRAM_NOTES, sceneAllowsRain, sceneInstruction, scenePresentation, applySharedSound } from '/performance-view.js';
 import { createParticipantSoundField, patchSoundVoices, activeSoundParticipantCount, nationalPhoneInteraction } from '/sound-participants.js';
 import { participantRainIdentity } from '/visual-assets/participant-identity.js';
-import { audienceRainStrength } from '/scene-score.js';
+import { audienceRainStrength, DEFAULT_RAIN_STRENGTH } from '/scene-score.js';
+import { mountAudienceInstructions } from '/audience-instructions.js';
 
 const $ = id => document.getElementById(id);
+mountAudienceInstructions($('projection-instructions').querySelector('ol'));
 const operatorPreview = new URLSearchParams(location.search).get('operator-preview') === '1';
 document.body.dataset.operatorPreview = String(operatorPreview);
 let previewAllowed = false, currentScene = null;
@@ -36,7 +38,7 @@ const cells = new Map(), transitions = new Map();
 let layout = null, connection = null, actors = [], snapshotVersion = null;
 let pointer = null, pointerCanvas = null, lastPosition = [.5, .5], keyboardHold = false, hoverPosition = null;
 let renderer = null, sectionRenderer = null, sectionPatches = [], sectionIndex = new Map(), sectionScale = 1, assetsReady = false, dirty = true, lastScene = -Infinity, lastReadout = -Infinity, lastContactFrame = -Infinity;
-let layoutRequest = 0, requestedRegion = 'indonesia', gestureError = '', connectionLabel = 'Connecting…', rainStrength = .5;
+let layoutRequest = 0, requestedRegion = 'indonesia', gestureError = '', connectionLabel = 'Connecting…', rainStrength = DEFAULT_RAIN_STRENGTH;
 let forceLayout = false, contactDirty = true;
 const metrics = window.__peatStudyMetrics = { sceneDraws: 0, contactDraws: 0, sceneMs: [], sectionMs: [], atmosphereMs: [], combinedMs: [], contactMs: [], region: null, renderErrors: [], ready: false, lastContactEvent: null, lastContactDraw: null };
 
@@ -115,7 +117,7 @@ function syncScene(scene) {
   metrics.openingCrossfade = { landscapeGain, joinGain, durationMs: view.soundTransitionDurationMs };
   stage.dataset.landscapeGain = landscapeGain.toFixed(4);
   stage.dataset.joinGain = joinGain.toFixed(4);
-  const openingInstructions = view.showInstructions || scene.id === 'participation' && scene.participationOpening !== false;
+  const openingInstructions = view.showOpeningInstructions;
   document.body.dataset.openingCopy = openingInstructions ? 'instructions' : 'program';
   $('projection-program-notes').hidden = openingInstructions || !view.showProgramNotes;
   $('projection-instructions').hidden = !openingInstructions;
@@ -123,8 +125,9 @@ function syncScene(scene) {
   $('projection-caption').textContent = '';
   const settings = scene.settings || {};
   text('projection-program-notes', settings.programNotes || DEFAULT_PROGRAM_NOTES);
-  $('projection-wifi').hidden = !settings.wifiName;
-  text('projection-wifi-name', settings.wifiName || '');
+  $('projection-wifi').hidden = !view.showWifiJoin;
+  $('projection-join-code').hidden = !view.showJoinCode;
+  text('projection-wifi-name', settings.wifiName || 'See the venue Wi-Fi details');
   $('projection-password-row').hidden = !settings.wifiPassword;
   text('projection-wifi-password', settings.wifiPassword || '');
   sound.setSceneState?.(scene);
@@ -535,7 +538,7 @@ async function initialize() {
       $('study-sound').querySelector('button').disabled = $('study-sound').dataset.soundState === 'starting';
       if (operatorPreview && window.parent !== window) window.parent.postMessage({ type: 'wildfire-preview-state', state: message }, location.origin);
       applyCells(message.simulation, reset);
-      rainStrength = Number.isFinite(message.strength) ? message.strength : .5;
+      rainStrength = Number.isFinite(message.strength) ? message.strength : DEFAULT_RAIN_STRENGTH;
       $('study-bootstrap').hidden = !message.bootstrapAvailable;
       if (message.snapshotVersion !== snapshotVersion && !forceLayout) {
         forceLayout = true;

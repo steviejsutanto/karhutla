@@ -22,7 +22,7 @@ export const DEFAULT_SCENE_SETTINGS = Object.freeze({
   programNotes: DEFAULT_PROGRAM_NOTES,
   ...DEFAULT_SCORE_SETTINGS,
 });
-export const DEFAULT_SOUND_SETTINGS = Object.freeze({ automation: true, macros: Object.freeze({ haze: .35, forest: .5, ash: .25, rain: .15, moisture: .2 }), mixer: Object.freeze({ haze: 1, forest: 1, ash: 1, rain: 1, moisture: 1, crickets: 1, chimes: 1, outDrone: 1, lowDrone: 1, bells: 1.6, quench: 1, blob: 1, dragAsh: 1 }), level: .55, localPitchIndex: null });
+export const DEFAULT_SOUND_SETTINGS = Object.freeze({ automation: true, macros: Object.freeze({ haze: .35, forest: .5, ash: .25, rain: .15, moisture: .2 }), mixer: Object.freeze({ haze: 1, forest: 1, ash: 1, rain: 1, moisture: 1, crickets: 1, orangutan: 1, orangutanTail: 1, chimes: 1, outDrone: 1, lowDrone: 1, bells: 1.6, quench: 1, blob: 1, dragAsh: 1 }), level: .55, localPitchIndex: null });
 const error = (message, status = 400) => Object.assign(new Error(message), { status });
 const object = value => value && typeof value === 'object' && !Array.isArray(value) && [Object.prototype, null].includes(Object.getPrototypeOf(value));
 const only = (value, keys) => object(value) && Object.keys(value).every(key => keys.includes(key));

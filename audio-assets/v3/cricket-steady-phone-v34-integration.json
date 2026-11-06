@@ -1,0 +1,65 @@
+{
+  "assets": [
+    {
+      "id": "cricket-steady-phone-v34",
+      "title": "Steady solitary phone cricket",
+      "kind": "crickets",
+      "file": "audio-assets/v3/cricket-steady-phone-v34.mp3",
+      "bytes": 176732,
+      "sha256": "bf76d20f54dfcab28acd6f32c7c1b7dd3e9c89b9ad63616e165bc8c9cb9255ed",
+      "durationSeconds": 14.61746875,
+      "sampleRate": 32000,
+      "channels": 1,
+      "bitrateKbps": 96,
+      "generated": true,
+      "fieldRecording": false,
+      "assetKind": "periodic-mobile-bed-of-new-generated-insect-note-excerpts",
+      "model": "Stable Audio 3 Medium",
+      "modelUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium",
+      "sourceUrl": "https://github.com/Stability-AI/stable-audio-3/tree/5f5e6ac21ae9ff78a6e8847eb7a1dcbe969ffb84/optimized/mlx",
+      "license": "Stable Audio Community License",
+      "licenseUrl": "https://huggingface.co/stabilityai/stable-audio-3-medium/blob/main/LICENSE.md",
+      "processing": "Select16 independent65ms waveform windows from the new take2 generated cricket master; transpose each note down4semitones offline, filter800\u20133800Hz,6ms cosine edges, place on a single912ms grid with at most3ms deterministic jitter and0.15dB note-level variation. Add25ms of quiet loop-overlap allowance so existing native cricket crossfade preserves the16-beat loop period. Mono32kHz96kbpsMP3. Runtime playback remains0.76:1200ms inter-note interval, approximately108ms complete note windows; no further rhythmic stretching, overlapping layers, external recordings or synthesized oscillators.",
+      "provenanceFile": "audio-assets/v3/cricket-steady-phone-v34-source.json"
+    }
+  ],
+  "phone": {
+    "crickets": "cricket-steady-phone-v34",
+    "cricketLayers": []
+  },
+  "preserveMainCricketLayers": true,
+  "provenanceFile": "audio-assets/v3/cricket-steady-phone-v34-source.json",
+  "validation": {
+    "durationSeconds": 14.61746875,
+    "samplesPerChannel": 467759,
+    "nonFiniteSamples": 0,
+    "peakAmplitude": 0.5518292188644409,
+    "rms": 0.033249663893651,
+    "noteCount": 16,
+    "detectedPeakSeconds": [
+      0.276,
+      1.189,
+      2.098,
+      3.013,
+      3.935,
+      4.838,
+      5.744,
+      6.66,
+      7.571,
+      8.481,
+      9.397,
+      10.306,
+      11.22,
+      12.128,
+      13.046,
+      13.956
+    ],
+    "medianAssetIntervalSeconds": 0.9109999999999996,
+    "minimumAssetIntervalSeconds": 0.903,
+    "maximumAssetIntervalSeconds": 0.9220000000000002,
+    "intervalCoefficientOfVariation": 0.005235673853646355,
+    "runtimeMedianIntervalSeconds": 1.1986842105263151,
+    "runtimePlaybackRate": 0.76,
+    "validationScope": "Complete decoded signal, regular timing and spectral budget only. Perceived insect timbre requires audition."
+  }
+}
