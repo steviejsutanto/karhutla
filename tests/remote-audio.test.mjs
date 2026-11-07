@@ -10,7 +10,7 @@ function element(dataset = {}) {
     addEventListener(name, handler) { listeners.set(name, handler); },
     async dispatch(name) { await listeners.get(name)?.({ target: this }); } };
 }
-function remoteControls(t, mode = 'operator', { mainSoundControl = null, remoteControl = true } = {}) {
+function remoteControls(t, mode = 'operator', { mainSoundControl = null, remoteControl = true, documentHidden = false } = {}) {
   const selectors = new Map();
   const get = selector => {
     if (!selectors.has(selector)) selectors.set(selector, element());
@@ -26,17 +26,49 @@ function remoteControls(t, mode = 'operator', { mainSoundControl = null, remoteC
   let enables = 0, loads = 0;
   const engine = { getMetrics: () => ({ state: 'off' }), setMacros() {}, setMixer() {},
     setAutomation() {}, setLevel() {}, setLocalBellAudition(value) { this.localBellAudition = value; },
-    async enable() { enables++; }, release() {}, setHidden() {} };
+    hidden: documentHidden, async enable() { enables++; }, release() {}, setHidden(value) { this.hidden = Boolean(value); } };
   const patches = [];
   const previous = { window: globalThis.window, document: globalThis.document, localStorage: globalThis.localStorage, fetch: globalThis.fetch };
   globalThis.fetch = async () => { loads++; throw new Error('Remote controls must not fetch audio assets.'); };
-  globalThis.window = { addEventListener() {} };
-  globalThis.document = { addEventListener() {}, hidden: false, createElement: () => element() };
+  const windowEvents = new Map(), documentEvents = new Map();
+  globalThis.window = { addEventListener(name, handler) { windowEvents.set(name, handler); } };
+  globalThis.document = { addEventListener(name, handler) { documentEvents.set(name, handler); }, hidden: documentHidden, createElement: () => element() };
   globalThis.localStorage = { getItem: () => null, setItem() {} };
   t.after(() => { for (const [key, value] of Object.entries(previous)) { if (value === undefined) delete globalThis[key]; else globalThis[key] = value; } });
   mountSoundControls(host, { mode, engine, shared: true, remoteControl, mainSoundControl, onSettings: patch => patches.push(patch) });
-  return { host, get, groups, engine, patches, enables: () => enables, loads: () => loads };
+  return { host, get, groups, engine, patches, enables: () => enables, loads: () => loads,
+    windowEvent: name => windowEvents.get(name)?.(), documentEvent: name => documentEvents.get(name)?.() };
 }
+
+for (const mode of ['operator', 'projection']) {
+  test(`Main ${mode} first loaded behind another window stays available for explicit audio activation`, t => {
+    const controls = remoteControls(t, mode, { remoteControl: false, documentHidden: true });
+    assert.equal(controls.engine.hidden, false, 'Initial occlusion cannot permanently suspend Main.');
+    controls.windowEvent('pageshow');
+    assert.equal(controls.engine.hidden, false, 'A background pageshow keeps Main available.');
+    controls.windowEvent('pagehide');
+    assert.equal(controls.engine.hidden, true, 'Leaving the page still pauses its engine.');
+    controls.windowEvent('pageshow');
+    assert.equal(controls.engine.hidden, false, 'Restoring behind another window clears pagehide suspension.');
+    globalThis.document.hidden = false; controls.documentEvent('visibilitychange');
+    globalThis.document.hidden = true; controls.documentEvent('visibilitychange');
+    assert.equal(controls.engine.hidden, false, 'Switching windows keeps Main available.');
+    assert.equal(controls.enables(), 0, 'Mounting or restoring never starts sound on its own.');
+  });
+}
+
+test('phone visibility still suspends hidden pages and restores visible pages without enabling audio', t => {
+  const controls = remoteControls(t, 'phone', { remoteControl: false, documentHidden: true });
+  assert.equal(controls.engine.hidden, true);
+  controls.windowEvent('pageshow'); assert.equal(controls.engine.hidden, true);
+  globalThis.document.hidden = false; controls.documentEvent('visibilitychange');
+  assert.equal(controls.engine.hidden, false);
+  globalThis.document.hidden = true; controls.documentEvent('visibilitychange');
+  assert.equal(controls.engine.hidden, true);
+  globalThis.document.hidden = false; controls.windowEvent('pageshow');
+  assert.equal(controls.engine.hidden, false);
+  assert.equal(controls.enables(), 0);
+});
 
 test('remote operator can publish Main and phone mix changes without enabling local sound or loading recordings', async t => {
   const controls = remoteControls(t);

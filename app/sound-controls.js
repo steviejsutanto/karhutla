@@ -490,8 +490,13 @@ export function mountSoundControls(host, { mode = 'phone', engine: suppliedEngin
       }
     }).catch(() => { /* The built-in phone recordings remain available. */ });
   }
+  // Main must also work when its first load or a restored page is behind
+  // another window. Phones still suspend with their screen; leaving a page
+  // itself continues to pause every engine through pagehide below.
+  const restoreAudioVisibility = () => engine.setHidden(fullAudio && !remoteControl ? false : document.hidden);
+  restoreAudioVisibility();
   document.addEventListener('visibilitychange', () => { if (document.hidden) engine.release({ cancelPending: true }); if (!fullAudio) engine.setHidden(document.hidden); });
   window.addEventListener('pagehide', () => { engine.release({ cancelPending: true }); engine.setHidden(true); });
-  window.addEventListener('pageshow', () => engine.setHidden(document.hidden));
+  window.addEventListener('pageshow', restoreAudioVisibility);
   return engine;
 }

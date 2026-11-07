@@ -177,6 +177,9 @@ audio. An ordinary browser can still require a host gesture; a denied or stalled
 activation becomes `needs-gesture` within six seconds, ahead of the remote's
 eight-second completion watchdog. Only a genuinely running context can report
 ready. Late completion of a cancelled start cannot unmute the host.
+Initial mounting and `pageshow` clear visibility suspension for the local Main
+engine even if the window is occluded; `pagehide` still pauses it. Phone and
+silent remote-preview visibility behavior is unchanged.
 The remote then disables and re-enables that host output using its normal smooth fades.
 The button shows the host's reported state and prompts for a host click when needed.
 It never enables audio on the remote device or audience phones.
