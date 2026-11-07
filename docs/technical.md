@@ -167,11 +167,19 @@ LAN mode binds this one prototype to `0.0.0.0`; it does not configure a tunnel, 
 
 Start with the launcher or `npm run start:lan`. Scan the audience QR code on the controller, replace `/audience` with `/operator-remote`, and enter the six-digit PIN shown on the host in **Operator → Setup → Remote control**. Both `/operator-remote` and `/operator-remote/` open the PIN entry page or the remembered controller. Scene transport, shared mixer settings, timings and landscape state continue to come from the one host server, so both operator pages receive the same live updates. This route always uses a silent remote preview, including when opened on the host. Keep the host Operator page open with Main sound enabled and keep the host awake; it remains the Main audio owner.
 
-The remote page also has the Main sound speaker button. Enable Main sound once
-on the host computer to grant its browser audio permission; the remote button
-then disables and re-enables that host output using its normal smooth fades.
-The button shows the host's reported state and prompts for that initial click
-when needed. It never enables audio on the remote device or audience phones.
+The remote page also has the Main sound speaker button. Each explicit Enable
+request attempts to create/resume the host audio context, including a cold start.
+Mac `--remote-sound` launching opens a separate Chrome instance with its own
+`~/Library/Application Support/Karhutla/Chrome` user data directory and
+`--autoplay-policy=no-user-gesture-required`, after the server health check.
+The current shared mixer settings are applied before the first request can start
+audio. An ordinary browser can still require a host gesture; a denied or stalled
+activation becomes `needs-gesture` within six seconds, ahead of the remote's
+eight-second completion watchdog. Only a genuinely running context can report
+ready. Late completion of a cancelled start cannot unmute the host.
+The remote then disables and re-enables that host output using its normal smooth fades.
+The button shows the host's reported state and prompts for a host click when needed.
+It never enables audio on the remote device or audience phones.
 Playback commands and acknowledgements are live session state, excluded from
 saves and settings presets. A newly opened host page does not replay an old
 enable command. Keep the host Operator page open while controlling sound.

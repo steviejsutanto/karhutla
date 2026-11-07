@@ -15,6 +15,7 @@ test('automatic browser opening accepts only the generated local operator URL', 
     'http://127.0.0.1:65536/operator', 'http://localhost:4173/operator', `${url}?x=1`, `${url}#fragment`, `${url}&calc`, `${url}\r\ncalc`,
     'http://127.0.0.1:4173/%6fperator', 'http://user@127.0.0.1:4173/operator', 'http://127.0.0.1:4173/operator/../operator']) {
     assert.throws(() => browserInvocation(value, { platform: 'win32' }), /local Karhutla/);
+    assert.throws(() => browserInvocation(value, { platform: 'darwin', remoteSound: true, homeDir: '/Users/Performance' }), /local Karhutla/);
   }
 });
 
@@ -38,6 +39,22 @@ test('Mac and Linux browser openers receive one literal URI argument', () => {
   assert.deepEqual(browserInvocation(url, { platform: 'linux' }), { command: 'xdg-open', args: [url], options: { shell: false } });
 });
 
+test('remote sound opens a separate Mac Chrome instance with literal local profile and autoplay arguments', () => {
+  const homeDir = "/Users/Performance Desk '$(never-run);";
+  const invocation = browserInvocation(url, { platform: 'darwin', remoteSound: true, homeDir });
+  assert.equal(invocation.command, '/usr/bin/open');
+  assert.equal(invocation.options.shell, false);
+  assert.deepEqual(invocation.args, ['-n', '-a', 'Google Chrome', '--args',
+    `--user-data-dir=${homeDir}/Library/Application Support/Karhutla/Chrome`,
+    '--autoplay-policy=no-user-gesture-required', '--no-first-run', '--no-default-browser-check', url]);
+  for (const platform of ['win32', 'linux']) {
+    assert.throws(() => browserInvocation(url, { platform, remoteSound: true, homeDir }), /macOS only/);
+  }
+  for (const homeDir of ['', 'relative/user', null]) {
+    assert.throws(() => browserInvocation(url, { platform: 'darwin', remoteSound: true, homeDir }), /absolute user home/);
+  }
+});
+
 function mockChild(action) {
   return () => {
     const child = new EventEmitter(); child.unref = () => {};
@@ -52,6 +69,22 @@ test('opener reports success only after a successful exit', async () => {
   assert.equal(result, true); assert.deepEqual(fallback, []);
 });
 
+test('remote sound opener passes the dedicated Chrome invocation without opening or modifying real user profiles', async () => {
+  const invocations = [], fallback = [], env = { TEST_LAUNCH: 'isolated' };
+  const spawnImpl = (command, args, options) => {
+    invocations.push({ command, args, options });
+    return mockChild(child => child.emit('close', 0))();
+  };
+  assert.equal(await openBrowser(url, { platform: 'darwin', remoteSound: true, homeDir: '/Users/Isolated Desk', env, spawnImpl,
+    onFallback: value => fallback.push(value) }), true);
+  assert.equal(invocations.length, 1);
+  assert.deepEqual(invocations[0], { command: '/usr/bin/open', args: ['-n', '-a', 'Google Chrome', '--args',
+    '--user-data-dir=/Users/Isolated Desk/Library/Application Support/Karhutla/Chrome',
+    '--autoplay-policy=no-user-gesture-required', '--no-first-run', '--no-default-browser-check', url],
+  options: { shell: false, env, detached: true, stdio: 'ignore' } });
+  assert.deepEqual(fallback, []);
+});
+
 test('spawn errors, nonzero exits and stalled openers retain a usable manual URL exactly once', async () => {
   for (const spawnImpl of [() => { throw new Error('spawn failed'); }, mockChild(child => {
     child.emit('error', new Error('missing opener')); child.emit('close', -2);
@@ -59,6 +92,17 @@ test('spawn errors, nonzero exits and stalled openers retain a usable manual URL
     const fallback = [];
     assert.equal(await openBrowser(url, { spawnImpl, onFallback: value => fallback.push(value), timeoutMs: 10 }), false);
     assert.deepEqual(fallback, [`Open this address in your browser: ${url}`]);
+  }
+});
+
+test('failed remote sound Chrome opening explains setup and retains manual host control without claiming autoplay', async () => {
+  for (const spawnImpl of [() => { throw new Error('spawn failed'); }, mockChild(child => {
+    child.emit('error', new Error('Chrome missing')); child.emit('close', -2);
+  }), mockChild(child => child.emit('close', 1)), mockChild(() => {})]) {
+    const fallback = [];
+    assert.equal(await openBrowser(url, { platform: 'darwin', remoteSound: true, homeDir: '/Users/Isolated Desk', spawnImpl,
+      onFallback: value => fallback.push(value), timeoutMs: 10 }), false);
+    assert.deepEqual(fallback, [`Chrome could not open in remote sound mode. Check that Google Chrome is installed and can open. Stop this server with Ctrl+C, then relaunch with --remote-sound. For manual host control, open: ${url}`]);
   }
 });
 

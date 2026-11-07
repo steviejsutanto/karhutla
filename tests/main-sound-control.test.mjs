@@ -27,12 +27,13 @@ function clock() {
       now = end;
     }, count: () => timers.size };
 }
-function fixture({ remoteControl = false, initialState = 'off', warmed = false, enablePromise, request, report } = {}) {
+function fixture({ remoteControl = false, initialState = 'off', warmed = false, enablePromise, enableImpl, request, report } = {}) {
   const calls = [], requests = [], reports = [], errors = [], timer = clock();
   const engine = { state: initialState, context: warmed ? { state: 'running' } : null, muted: initialState === 'muted',
     getMetrics() { return { state: this.state }; },
     enable() {
       calls.push('enable'); this.context ??= { state: 'running' }; this.muted = false; this.state = 'starting';
+      if (enableImpl) return enableImpl.call(this);
       return Promise.resolve(enablePromise).then(() => { if (!this.muted) this.state = 'ready'; return !this.muted; });
     },
     setMuted(value) { calls.push(['muted', value]); this.muted = value; this.state = value ? 'muted' : 'ready'; },
@@ -83,13 +84,106 @@ test('a warmed host consumes new remote commands through the existing native ena
   assert.equal(f.calls.length, 2, 'Repeated state packets never resume the same source bank again.');
 });
 
-test('a cold host acknowledges remote enable with a first-gesture instruction and never creates audio', async t => {
+test('an explicit remote enable starts a cold host when its browser permits autoplay', async t => {
   const f = fixture(); t.after(() => f.control.destroy()); f.control.applyState(mainState(), 'show');
+  assert.deepEqual(f.calls, [], 'Loading the host page does not itself enable sound.');
   f.control.applyState(mainState({ revision: 1, requestId: 1, requestedEnabled: true, statusRequestId: 0 }), 'show');
-  await settle(); assert.deepEqual(f.calls, []); assert.equal(f.engine.context, null);
-  assert.equal(f.control.getState().status.state, 'needs-gesture');
+  assert.deepEqual(f.calls, ['enable']);
+  await settle(); assert.equal(f.engine.context.state, 'running');
+  assert.equal(f.control.getState().status.state, 'ready');
+  assert.deepEqual(f.reports.at(-1), { requestId: 1, state: 'ready', activated: true });
+});
+
+test('cold baselines and reconnects never turn an earlier enable intent into automatic playback', async t => {
+  const f = fixture(); t.after(() => f.control.destroy());
+  const oldEnable = mainState({ revision: 4, requestId: 3, requestedEnabled: true, state: 'ready', activated: true });
+  f.control.applyState(oldEnable, 'old'); await settle();
+  f.control.setConnected(false); f.control.setConnected(true); f.control.applyState(oldEnable, 'old'); await settle();
+  f.control.applyState(mainState({ revision: 1, requestId: 1, requestedEnabled: true }), 'new'); await settle();
+  assert.deepEqual(f.calls, []); assert.equal(f.engine.context, null);
+  assert.equal(f.control.getState().enabled, false);
+  f.control.applyState(mainState({ revision: 2, requestId: 2, requestedEnabled: true, statusRequestId: 1 }), 'new');
+  await settle(); assert.deepEqual(f.calls, ['enable']); assert.equal(f.control.getState().status.state, 'ready');
+});
+
+test('browser-blocked cold activation times out safely and a host gesture can recover without replaying the command', async t => {
+  const pending = deferred(); let browserAllows = false;
+  const f = fixture({ enableImpl() {
+    if (!browserAllows) { this.context.state = 'suspended'; return pending.promise; }
+    this.context.state = 'running'; this.state = 'ready'; return Promise.resolve(true);
+  } });
+  t.after(() => f.control.destroy()); f.control.applyState(mainState(), 'show');
+  const enable = mainState({ revision: 1, requestId: 1, requestedEnabled: true, statusRequestId: 0 });
+  f.control.applyState(enable, 'show'); f.timer.advance(5999); await settle();
+  assert.equal(f.control.getState().pending, true);
+  f.timer.advance(1); await settle();
+  assert.equal(f.control.getState().pending, false); assert.equal(f.control.getState().status.state, 'needs-gesture');
+  assert.equal(f.engine.muted, true); assert.equal(f.control.getState().status.activated, false);
   assert.deepEqual(f.reports.at(-1), { requestId: 1, state: 'needs-gesture', activated: false });
-  await f.control.toggle(); assert.deepEqual(f.calls, ['enable']);
+  f.control.setConnected(false); f.control.setConnected(true); f.control.applyState(enable, 'show'); await settle();
+  assert.equal(f.calls.filter(call => call === 'enable').length, 1, 'Reconnection does not retry an old command.');
+  browserAllows = true; await f.control.toggle(); await settle();
+  assert.equal(f.control.getState().status.state, 'ready'); assert.equal(f.engine.muted, false);
+  pending.resolve(); await settle();
+  assert.equal(f.control.getState().status.state, 'ready', 'The earlier pending attempt cannot mute the later explicit activation.');
+});
+
+test('a denied or still-suspended browser result settles to needs-gesture immediately with safe mute', async t => {
+  for (const result of ['suspended', 'denied', 'throw']) {
+    const f = fixture({ enableImpl() {
+      this.context.state = 'suspended'; this.state = 'suspended';
+      const error = Object.assign(new Error('Browser requires interaction'), { name: 'NotAllowedError' });
+      if (result === 'throw') throw error;
+      return result === 'denied' ? Promise.reject(error) : Promise.resolve(false);
+    } });
+    t.after(() => f.control.destroy()); f.control.applyState(mainState(), 'show');
+    f.control.applyState(mainState({ revision: 1, requestId: 1, requestedEnabled: true, statusRequestId: 0 }), 'show');
+    await settle();
+    assert.equal(f.control.getState().status.state, 'needs-gesture', result);
+    assert.equal(f.control.getState().pending, false, result); assert.equal(f.engine.muted, true, result);
+    assert.equal(f.timer.count(), 0, result);
+  }
+});
+
+test('a remote retry after browser denial requests enable again while keeping remote audio silent', async t => {
+  const f = fixture({ remoteControl: true, request: enabled => mainState({ revision: 3, requestId: 2,
+    requestedEnabled: enabled, statusRequestId: 1, state: 'needs-gesture' }) });
+  t.after(() => f.control.destroy());
+  f.control.applyState(mainState({ revision: 2, requestId: 1, requestedEnabled: true, state: 'needs-gesture' }), 'show');
+  assert.equal(f.control.getState().enabled, false, 'A failed activation is not presented as active sound.');
+  await f.control.toggle(); assert.deepEqual(f.requests, [true]); assert.deepEqual(f.calls, []);
+  assert.equal(f.engine.context, null);
+});
+
+test('late cold browser resumes cannot reopen audio after timeout, a newer disable, or disposal', async t => {
+  for (const reason of ['timeout', 'disable', 'destroy', 'new-epoch']) {
+    const pending = deferred(), f = fixture({ enableImpl() {
+      this.context.state = 'suspended';
+      return pending.promise.then(() => { this.context.state = 'running'; this.muted = false; this.state = 'ready'; return true; });
+    } });
+    t.after(() => f.control.destroy()); f.control.applyState(mainState(), 'old');
+    f.control.applyState(mainState({ revision: 1, requestId: 1, requestedEnabled: true, statusRequestId: 0 }), 'old');
+    if (reason === 'timeout') { f.timer.advance(8000); await settle(); }
+    else if (reason === 'disable') f.control.applyState(mainState({ revision: 2, requestId: 2, requestedEnabled: false, statusRequestId: 0 }), 'old');
+    else if (reason === 'new-epoch') f.control.applyState(mainState(), 'new');
+    else f.control.destroy();
+    assert.equal(f.engine.muted, true, reason); assert.equal(f.control.getState().pending, false, reason);
+    assert.equal(f.timer.count(), 0, reason);
+    pending.resolve(); await settle();
+    assert.equal(f.engine.muted, true, `Late ${reason} resume remains muted.`);
+    assert.notEqual(f.control.getState().status.state, 'ready', reason);
+  }
+});
+
+test('a remote disable settles an in-flight host click even if its browser resume remains unresolved', async t => {
+  const pending = deferred(), f = fixture({ enableImpl() { this.context.state = 'suspended'; return pending.promise; } });
+  t.after(() => f.control.destroy()); f.control.applyState(mainState(), 'show');
+  let finished = false;
+  const hostClick = f.control.toggle().then(() => { finished = true; });
+  f.control.applyState(mainState({ revision: 1, requestId: 1, requestedEnabled: false, statusRequestId: 0 }), 'show');
+  await settle(); assert.equal(finished, true);
+  assert.equal(f.control.getState().pending, false); assert.equal(f.engine.muted, true);
+  assert.equal(f.timer.count(), 0); await hostClick;
 });
 
 test('initial and new-epoch baselines never replay old enable commands, and stale revisions cannot roll back state', async t => {

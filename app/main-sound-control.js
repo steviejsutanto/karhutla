@@ -1,5 +1,6 @@
 // Main playback intent is live session state, separate from saved mixer values.
-// Only a gesture on the host may create its first AudioContext.
+// An explicit host or remote enable may ask the browser to activate audio.
+// Browser autoplay permission still decides whether a first context can run.
 const STATES = new Set(['unavailable', 'off', 'needs-gesture', 'starting', 'ready', 'muted', 'suspended', 'error']);
 const validState = value => value && Number.isSafeInteger(value.revision) && value.revision >= 0 &&
   Number.isSafeInteger(value.requestId) && value.requestId >= 0 && typeof value.requestedEnabled === 'boolean' &&
@@ -12,6 +13,8 @@ export function createMainSoundControl({ engine, remoteControl = false, request,
   let activated = false, localBusy = false, requestBusy = false, optimistic = null, timedOut = false;
   let operation = 0, requestOperation = 0, epochVersion = 0, acknowledgementTimer = null, activationTimer = null, sentStatus = '', retryStatus = false;
   let localStatus = engine?.getMetrics?.().state ?? 'off';
+  let targetEnabled = localStatus === 'ready', cancelActivation = null;
+  const cancelled = Symbol('audio activation cancelled'), timeout = Symbol('audio activation timeout');
   let statusQueue = Promise.resolve();
   if (localStatus === 'ready') activated = true;
   const listeners = new Set();
@@ -24,8 +27,7 @@ export function createMainSoundControl({ engine, remoteControl = false, request,
       : { state: localStatus, activated, requestId: consumed ?? 0 };
     const awaitingHost = remoteControl && current && current.status.requestId < current.requestId;
     const pending = requestBusy || localBusy || Boolean(remoteControl && waitingForHost() && !timedOut);
-    const enabled = optimistic ?? (awaitingHost ? current.requestedEnabled
-      : status.state === 'needs-gesture' ? Boolean(current?.requestedEnabled) : ['ready', 'starting'].includes(status.state));
+    const enabled = optimistic ?? (awaitingHost ? current.requestedEnabled : ['ready', 'starting'].includes(status.state));
     return { remoteControl, connected, requestId: current?.requestId ?? 0,
       requestedEnabled: optimistic ?? current?.requestedEnabled ?? false, enabled, pending,
       status: !connected || timedOut ? { ...status, state: 'unavailable' } : { ...status } };
@@ -63,36 +65,56 @@ export function createMainSoundControl({ engine, remoteControl = false, request,
     if (localStatus === 'ready') activated = true;
     reportStatus(); emit();
   }
-  async function play(enabled, gesture) {
-    const token = ++operation;
+  function clearActivation() {
     if (activationTimer != null) cancel(activationTimer);
     activationTimer = null;
+    cancelActivation?.(); cancelActivation = null;
+  }
+  function failActivation(state) {
+    targetEnabled = false;
+    engine.setMuted(true);
+    onStatus({ state });
+  }
+  async function play(enabled) {
+    const token = ++operation;
+    clearActivation();
+    targetEnabled = enabled;
     if (!enabled) {
       localBusy = false; engine.setMuted(true); onStatus(engine.getMetrics?.() ?? { state: 'muted' }); return;
     }
-    if (!gesture && (!activated || !engine.context || engine.context.state === 'closed')) {
-      localStatus = 'needs-gesture'; reportStatus(); emit(); return;
-    }
     localBusy = true;
-    // Call synchronously before any await, preserving a host click's activation.
+    // A host click keeps its activation; a remote request may use a browser's
+    // existing autoplay permission, including the dedicated performance browser.
     let starting;
     try { starting = engine.enable(); }
-    catch { localStatus = 'error'; localBusy = false; reportStatus(); emit(); return; }
+    catch (error) {
+      failActivation(['NotAllowedError', 'SecurityError'].includes(error?.name) ? 'needs-gesture' : 'error');
+      localBusy = false; emit(); return;
+    }
     onStatus({ state: 'starting' });
     try {
-      const timeout = Symbol('audio activation timeout');
-      const enabled = await Promise.race([starting, new Promise(resolve => {
-        activationTimer = schedule(() => { activationTimer = null; resolve(timeout); }, 8000);
+      const completion = Promise.resolve(starting).finally(() => {
+        // A browser resume may settle after its timeout, a later disable, or
+        // disposal. It must not reopen audio after that intent was withdrawn.
+        if ((destroyed || !targetEnabled) && engine.muted !== true) engine.setMuted(true);
+      });
+      const result = await Promise.race([completion, new Promise(resolve => {
+        cancelActivation = () => resolve(cancelled);
+        // Leave time to report the browser fallback before the controller's
+        // separate eight-second acknowledgement deadline expires.
+        activationTimer = schedule(() => { activationTimer = null; resolve(timeout); }, 6000);
       })]);
-      if (destroyed || token !== operation) return;
-      if (enabled === timeout) {
-        engine.setMuted(true);
-        onStatus({ state: 'needs-gesture' });
-      } else onStatus(engine.getMetrics?.() ?? { state: enabled ? 'ready' : 'error' });
-    } catch { if (!destroyed && token === operation) onStatus({ state: 'error' }); }
+      if (destroyed || token !== operation || result === cancelled) return;
+      const metrics = engine.getMetrics?.();
+      if (result === timeout || result === false || engine.context?.state !== 'running' || metrics && metrics.state !== 'ready') {
+        const blocked = result === timeout || engine.context?.state === 'suspended' || metrics?.state !== 'error';
+        failActivation(blocked ? 'needs-gesture' : 'error');
+      } else onStatus(metrics ?? { state: 'ready' });
+    } catch (error) {
+      if (!destroyed && token === operation) failActivation(['NotAllowedError', 'SecurityError'].includes(error?.name) || engine.context?.state === 'suspended' ? 'needs-gesture' : 'error');
+    }
     finally { if (token === operation) {
-      if (activationTimer != null) cancel(activationTimer);
-      activationTimer = null; localBusy = false; emit();
+      clearActivation(); localBusy = false; emit();
     } }
   }
   function applyState(value, nextEpoch) {
@@ -101,6 +123,10 @@ export function createMainSoundControl({ engine, remoteControl = false, request,
       epoch = nextEpoch; ++epochVersion; ++requestOperation;
       requestBusy = false; optimistic = null; clearAcknowledgementTimer();
       current = null; consumed = null; sentStatus = ''; timedOut = false;
+      if (localBusy) {
+        ++operation; clearActivation(); targetEnabled = false; localBusy = false;
+        engine.setMuted(true); localStatus = engine.getMetrics?.().state ?? 'muted';
+      }
     }
     if (current && value.revision < current.revision) return;
     const oldRequest = current?.requestId;
@@ -113,7 +139,7 @@ export function createMainSoundControl({ engine, remoteControl = false, request,
       // A page load/reconnection must never replay an earlier start request.
       consumed = current.requestId; reportStatus();
     } else if (current.requestId > consumed) {
-      consumed = current.requestId; void play(current.requestedEnabled, false);
+      consumed = current.requestId; void play(current.requestedEnabled);
     } else reportStatus();
     emit();
   }
@@ -121,7 +147,7 @@ export function createMainSoundControl({ engine, remoteControl = false, request,
     if (destroyed || !connected) return false;
     if (!remoteControl) {
       if (localBusy) return false;
-      await play(localStatus !== 'ready', true); return true;
+      await play(localStatus !== 'ready'); return true;
     }
     if (requestBusy || getState().pending) return false;
     const token = ++requestOperation, enabled = !getState().enabled;
@@ -142,6 +168,7 @@ export function createMainSoundControl({ engine, remoteControl = false, request,
   }
   return { getState, applyState, toggle, onStatus, setConnected,
     subscribe(listener) { listeners.add(listener); listener(getState()); return () => listeners.delete(listener); },
-    destroy() { destroyed = true; ++operation; ++requestOperation; clearAcknowledgementTimer();
-      if (activationTimer != null) cancel(activationTimer); listeners.clear(); } };
+    destroy() { destroyed = true; ++operation; ++requestOperation; clearAcknowledgementTimer(); clearActivation();
+      targetEnabled = false; if (localBusy && !remoteControl) engine.setMuted(true);
+      localBusy = false; listeners.clear(); } };
 }

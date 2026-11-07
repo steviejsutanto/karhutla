@@ -10,15 +10,17 @@ import { openBrowser } from './open-browser.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-export function launcherOptions(args, env = process.env) {
-  let port = env.PORT || '4173', browser = env.KARHUTLA_NO_BROWSER !== '1';
+export function launcherOptions(args, env = process.env, { platform = process.platform } = {}) {
+  let port = env.PORT || '4173', browser = env.KARHUTLA_NO_BROWSER !== '1', remoteSound = false;
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--no-browser') browser = false;
+    else if (args[i] === '--remote-sound') remoteSound = true;
     else if (args[i] === '--port') port = args[++i];
-    else throw new Error(`Unknown option: ${args[i]}. Use --port NUMBER or --no-browser.`);
+    else throw new Error(`Unknown option: ${args[i]}. Use --port NUMBER, --no-browser or --remote-sound (Mac).`);
   }
   if (typeof port !== 'string' || !/^\d+$/.test(port) || Number(port) > 65535) throw new Error('PORT must be a whole number from 0 to 65535.');
-  return { port: Number(port), browser };
+  if (remoteSound && platform !== 'darwin') throw new Error('--remote-sound is available on macOS only.');
+  return { port: Number(port), browser, ...(remoteSound ? { remoteSound: true } : {}) };
 }
 
 export async function assertPortAvailable(port) {
@@ -32,6 +34,7 @@ export async function assertPortAvailable(port) {
 
 export async function startKarhutla(options) {
   if (Number(process.versions.node.split('.')[0]) < 22) throw new Error('Karhutla needs Node.js 22 or newer. Use the release ZIP for your computer with its included runtime.');
+  if (options.remoteSound && process.platform !== 'darwin') throw new Error('--remote-sound is available on macOS only.');
   try { await assertPortAvailable(options.port); }
   catch (error) {
     if (error.code === 'EADDRINUSE') throw new Error(`Port ${options.port} is already in use. Karhutla was not started. If it is already running, use its existing window; otherwise close the app using that port or choose another with --port NUMBER.`);
@@ -69,7 +72,10 @@ export async function startKarhutla(options) {
   if (instance.network.addresses.length) console.log(`Audience: http://${instance.network.addresses[0]}:${address.port}/audience`);
   else console.log('Connect this computer and audience phones to the same Wi-Fi or Ethernet network.');
   console.log('Press Ctrl+C in this window to stop and save.');
-  if (options.browser) void openBrowser(`${base}/operator`);
+  if (options.remoteSound) console.log(options.browser
+    ? 'Opening the Karhutla Chrome profile for remote sound control. Main sound waits for Enable on Operator or the remote controller.'
+    : 'Browser opening is disabled. Remote sound needs the host Operator in Chrome launched with --remote-sound; opening the URL in an ordinary browser may still require a host click.');
+  if (options.browser) void openBrowser(`${base}/operator`, { remoteSound: options.remoteSound === true });
   return instance;
 }
 

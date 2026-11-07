@@ -65,6 +65,19 @@ test('runtime bundling rejects checksum mismatches and retains the verified runt
   } finally { await rm(temp, { recursive: true, force: true }); }
 });
 
+test('remote sound launcher mode is explicit, Mac-only and respects disabled browser opening', () => {
+  assert.deepEqual(launcherOptions([], {}, { platform: 'darwin' }), { port: 4173, browser: true });
+  assert.deepEqual(launcherOptions(['--remote-sound', '--port', '4188'], {}, { platform: 'darwin' }),
+    { port: 4188, browser: true, remoteSound: true });
+  assert.deepEqual(launcherOptions(['--remote-sound', '--no-browser'], {}, { platform: 'darwin' }),
+    { port: 4173, browser: false, remoteSound: true });
+  assert.deepEqual(launcherOptions(['--remote-sound'], { KARHUTLA_NO_BROWSER: '1' }, { platform: 'darwin' }),
+    { port: 4173, browser: false, remoteSound: true });
+  for (const platform of ['win32', 'linux']) {
+    assert.throws(() => launcherOptions(['--remote-sound'], {}, { platform }), /macOS only/);
+  }
+});
+
 test('launcher validates ports and detects occupied listeners without closing them', async () => {
   assert.deepEqual(launcherOptions(['--port', '0', '--no-browser'], {}), { port: 0, browser: false });
   for (const port of ['-1', '65536', 'abc', '1;calc']) assert.throws(() => launcherOptions(['--port', port], {}), /PORT/);

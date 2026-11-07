@@ -33,7 +33,29 @@ The included performance works offline. **Fetch latest fires** requires internet
 
 Connect the controller to the same Wi-Fi as the Mac and scan the audience QR code. In the browser address, change `/audience` to `/operator-remote`. On the host Mac, open **Operator → Setup → Remote control** and enter its six-digit PIN on the controller. The remote page controls the same scene cues, mixer and settings and receives live updates from the host.
 
-Keep the Mac's Operator page open with Main sound enabled and keep the Mac awake. Main audio remains on its selected output; the remote controller stays silent. The launcher and projector still run on the host. This also works without internet, provided the devices can reach each other on the router.
+Keep the Mac's Operator page open and keep the Mac awake. The remote speaker button controls Main sound through the Mac's selected output; the remote controller stays silent. The launcher and projector still run on the host. This also works without internet, provided the devices can reach each other on the router.
+
+## Enable Main sound from the remote page
+
+Use **remote sound mode** to let the remote's **Enable Main sound** button start the Mac's audio after a fresh launch, without clicking Enable on the Mac first.
+
+1. Install Google Chrome and Node.js LTS on the Mac once.
+2. Open Terminal. Type `cd `, including the space, drag the whole extracted Karhutla folder into Terminal, then press Return.
+3. Run:
+
+   ```sh
+   node scripts/start-karhutla.mjs --remote-sound
+   ```
+
+4. Keep Terminal and the Chrome Operator window open. Connect the remote controller with its PIN, then click **Enable Main sound** there.
+
+This starts the server and opens a separate local Chrome profile with autoplay allowed. It uses your saved shared mixer settings. It waits for your Enable request; it does not start sound or the timed performance automatically. The profile needs no Google sign-in and is reused across updates on the same Mac user account. Opening the remote page on another device still produces no audio there.
+
+With the bundled Node fallback, the equivalent command is `./Start-Karhutla.command --remote-sound`; its normal first-open approvals still apply. The installed-Node command above does not use the downloaded `.command` launcher.
+
+Ordinary launching still opens your default browser. If that browser blocks the remote's first Enable request, the remote shows that Main sound needs to be enabled on the host. A blocked start is bounded so the button becomes usable again. You can click Enable on the Mac or stop the server with Ctrl+C and relaunch in remote sound mode. If Chrome could not open, Terminal prints the host address and setup guidance.
+
+Remote sound mode is a Mac launcher option. It does not change audience phones: each listener still enables sound on their own phone. [Chrome documents the autoplay startup option](https://developer.chrome.com/blog/autoplay); keep the performance browser for Karhutla.
 
 Bookmark the simple `/operator-remote` address for future rehearsals. The browser remembers access for one year across browser and server restarts; clearing browser data requires entering the PIN again. Use **Refresh address** and update the bookmark if the router gives the Mac a different address. Both devices must still be on the same network. **Reset PIN & devices** disconnects remembered controllers and replaces the PIN. Keep the PIN private. Existing long private operator links remain supported.
 

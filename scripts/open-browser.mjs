@@ -1,4 +1,6 @@
 import { spawn } from 'node:child_process';
+import os from 'node:os';
+import path from 'node:path';
 
 export function validateOperatorUrl(value) {
   const match = typeof value === 'string' && value.match(/^http:\/\/127\.0\.0\.1:([1-9]\d{0,4})\/operator$/);
@@ -25,14 +27,24 @@ export function windowsStartInvocation(target, args = [], { env = process.env, w
   };
 }
 
-export function browserInvocation(url, { platform = process.platform, env = process.env } = {}) {
+export function browserInvocation(url, { platform = process.platform, env = process.env, remoteSound = false, homeDir = os.homedir() } = {}) {
   validateOperatorUrl(url);
+  if (remoteSound) {
+    if (platform !== 'darwin') throw new Error('Remote sound browser mode is available on macOS only.');
+    if (typeof homeDir !== 'string' || !path.posix.isAbsolute(homeDir)) throw new Error('The Chrome profile needs an absolute user home directory.');
+    // A separate user-data directory creates a separate Chrome instance. A new
+    // window in everyday Chrome would inherit its existing startup switches.
+    const profile = path.posix.join(homeDir, 'Library/Application Support/Karhutla/Chrome');
+    return { command: '/usr/bin/open', args: ['-n', '-a', 'Google Chrome', '--args',
+      `--user-data-dir=${profile}`, '--autoplay-policy=no-user-gesture-required', '--no-first-run', '--no-default-browser-check', url],
+    options: { shell: false } };
+  }
   if (platform === 'win32') return windowsStartInvocation(url, [], { env });
   return { command: platform === 'darwin' ? '/usr/bin/open' : 'xdg-open', args: [url], options: { shell: false } };
 }
 
 /** Report a usable URL if the opener cannot start, exits unsuccessfully or stalls. */
-export async function openBrowser(url, { platform = process.platform, env = process.env, spawnImpl = spawn,
+export async function openBrowser(url, { platform = process.platform, env = process.env, remoteSound = false, homeDir = os.homedir(), spawnImpl = spawn,
   onFallback = message => console.log(message), timeoutMs = 10000 } = {}) {
   validateOperatorUrl(url);
   return new Promise(resolve => {
@@ -41,11 +53,13 @@ export async function openBrowser(url, { platform = process.platform, env = proc
       if (settled) return;
       settled = true;
       clearTimeout(timer);
-      if (!opened) onFallback(`Open this address in your browser: ${url}`, error);
+      if (!opened) onFallback(remoteSound
+        ? `Chrome could not open in remote sound mode. Check that Google Chrome is installed and can open. Stop this server with Ctrl+C, then relaunch with --remote-sound. For manual host control, open: ${url}`
+        : `Open this address in your browser: ${url}`, error);
       resolve(opened);
     };
     try {
-      const invocation = browserInvocation(url, { platform, env });
+      const invocation = browserInvocation(url, { platform, env, remoteSound, homeDir });
       const child = spawnImpl(invocation.command, invocation.args, { ...invocation.options, env, detached: true, stdio: 'ignore' });
       child.once('error', error => finish(false, error));
       child.once('close', (code, signal) => finish(code === 0, code === 0 ? null : new Error(`Browser opener exited ${signal || code}.`)));

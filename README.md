@@ -26,7 +26,7 @@ Connect the second device to the same Wi-Fi and scan the audience QR code. In it
 
 Bookmark the remote address; the browser remembers access. Updates on the same computer and user account retain the PIN and remembered devices automatically. **Reset PIN & devices** replaces these shared credentials for future updates too. Another computer or user account has its own PIN. If the host's network address changes, use **Refresh address** and update the bookmark. Both devices must still share the same network.
 
-Keep the host's Operator page open with Main sound enabled; audio stays on that computer and the remote device stays silent. Keep the PIN private.
+The remote speaker button enables and disables Main sound on the host. On a Mac, use [remote sound mode](docs/mac.md#enable-main-sound-from-the-remote-page) to let the remote button start sound without a first click on the host. Keep the host's Operator page open; audio stays on that computer and the remote device stays silent. Keep the PIN private.
 
 ## Move settings and install updates
 

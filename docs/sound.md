@@ -7,15 +7,19 @@ not mute Main. Audience members enable their own sound at `/audience`.
 `/study` and `/study/phone` remain compatible aliases.
 
 The speaker button on `/operator-remote` controls Main sound on the host.
-Click Enable once on the host to grant browser audio permission; subsequent
-remote disable/enable actions use the same smooth output fades. Its status
-shows when that first host click is needed. Keep the host Operator page open.
+An explicit remote Enable request attempts to start the host's sound, including
+its first audio context. On Mac, [remote sound mode](mac.md#enable-main-sound-from-the-remote-page)
+opens Chrome with autoplay allowed so no first host click is needed. In a browser
+that blocks autoplay, the status asks you to enable sound on the host instead.
+Remote disable/enable actions retain the normal smooth output fades. Keep the host Operator page open.
 The remote controller stays silent and audience phones retain their own sound
 buttons. Playback commands are temporary and are never saved in a preset.
 The remote waits for the host to confirm each change. If the host does not
 respond or finish starting within about eight seconds, the remote reports
 that host sound is unavailable and releases the button so it can be retried.
 Keep the host Operator page open; a later confirmed response restores its status.
+Page loads and reconnects never replay an old Enable request. A blocked host
+activation stops waiting before the remote's completion deadline and leaves its output muted.
 
 The operator opens in Performance. Mixer keeps all 13 layer levels and the
 five texture-shaping controls beside the same preview; texture shaping starts
