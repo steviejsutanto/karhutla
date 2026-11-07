@@ -10,7 +10,7 @@ npm run launch
 
 `npm run launch` starts the shared LAN server and opens Operator after its startup check. `npm start` runs a loopback-only server; `npm run start:lan` runs the shared LAN server without opening a browser. `npm run study` starts a separate temporary rehearsal on port 4185, with no saved-performance reads or writes. `npm run refresh` fetches a new satellite snapshot using Node; it does not require Python.
 
-On Mac, `npm run launch -- --remote-sound` opens a dedicated Chrome instance with autoplay allowed after the startup check. An explicit remote **Enable Main sound** request can then create and resume the host's audio context. No sound starts automatically on load or reconnect. See the [Mac remote sound setup](mac.md#enable-main-sound-from-the-remote-page). `--no-browser` suppresses browser opening even when `--remote-sound` is present; it does not configure an already running browser.
+On Mac, `npm run launch -- --remote-sound` opens Operator in a dedicated Chrome instance with autoplay allowed and Projection in a separate full-screen Chrome window after the startup check. An explicit remote **Enable Main sound** request can then create and resume the host's audio context. No sound starts automatically on load or reconnect. See the [Mac remote sound setup](mac.md#enable-main-sound-from-the-remote-page). `--no-browser` suppresses both windows even when `--remote-sound` is present; it does not configure an already running browser.
 
 ## Folder layout
 

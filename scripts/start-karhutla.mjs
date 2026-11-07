@@ -6,7 +6,7 @@ import { randomUUID } from 'node:crypto';
 import { createInterface } from 'node:readline/promises';
 import { checkPackage, validateRequiredFiles } from './check-package.mjs';
 import { isMain } from './is-main.mjs';
-import { openBrowser } from './open-browser.mjs';
+import { openBrowser, openProjection } from './open-browser.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -73,9 +73,12 @@ export async function startKarhutla(options) {
   else console.log('Connect this computer and audience phones to the same Wi-Fi or Ethernet network.');
   console.log('Press Ctrl+C in this window to stop and save.');
   if (options.remoteSound) console.log(options.browser
-    ? 'Opening the Karhutla Chrome profile for remote sound control. Main sound waits for Enable on Operator or the remote controller.'
-    : 'Browser opening is disabled. Remote sound needs the host Operator in Chrome launched with --remote-sound; opening the URL in an ordinary browser may still require a host click.');
-  if (options.browser) void openBrowser(`${base}/operator`, { remoteSound: options.remoteSound === true });
+    ? 'Opening Operator for remote sound control and a separate fullscreen Projection window. Main sound waits for Enable on Operator or the remote controller.'
+    : 'Browser opening is disabled; Operator and Projection were not opened. Remote sound needs the host Operator in Chrome launched with --remote-sound; opening the URL in an ordinary browser may still require a host click.');
+  if (options.browser) {
+    void openBrowser(`${base}/operator`, { remoteSound: options.remoteSound === true });
+    if (options.remoteSound) void openProjection(`${base}/operator`);
+  }
   return instance;
 }
 

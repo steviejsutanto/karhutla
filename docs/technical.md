@@ -172,6 +172,11 @@ request attempts to create/resume the host audio context, including a cold start
 Mac `--remote-sound` launching opens a separate Chrome instance with its own
 `~/Library/Application Support/Karhutla/Chrome` user data directory and
 `--autoplay-policy=no-user-gesture-required`, after the server health check.
+The same launch also opens the derived loopback `/projection` address in a
+separate `Chrome Projection` user data directory with `--new-window` and
+`--start-fullscreen`. Projection receives no autoplay override or Main playback
+request. The separate instance keeps its full-screen startup independent of
+Operator. `--no-browser` suppresses both launches.
 The current shared mixer settings are applied before the first request can start
 audio. An ordinary browser can still require a host gesture; a denied or stalled
 activation becomes `needs-gesture` within six seconds, ahead of the remote's

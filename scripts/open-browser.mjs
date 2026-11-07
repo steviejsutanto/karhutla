@@ -43,23 +43,38 @@ export function browserInvocation(url, { platform = process.platform, env = proc
   return { command: platform === 'darwin' ? '/usr/bin/open' : 'xdg-open', args: [url], options: { shell: false } };
 }
 
-/** Report a usable URL if the opener cannot start, exits unsuccessfully or stalls. */
-export async function openBrowser(url, { platform = process.platform, env = process.env, remoteSound = false, homeDir = os.homedir(), spawnImpl = spawn,
-  onFallback = message => console.log(message), timeoutMs = 10000 } = {}) {
-  validateOperatorUrl(url);
+function projectionUrl(operatorUrl) {
+  return validateOperatorUrl(operatorUrl).replace(/\/operator$/, '/projection');
+}
+
+/** The projection inherits only the validated Operator's loopback host and port. */
+export function projectionBrowserInvocation(operatorUrl, { platform = process.platform, homeDir = os.homedir() } = {}) {
+  const url = projectionUrl(operatorUrl);
+  if (platform !== 'darwin') throw new Error('Fullscreen projection browser mode is available on macOS only.');
+  if (typeof homeDir !== 'string' || !path.posix.isAbsolute(homeDir)) throw new Error('The Chrome profile needs an absolute user home directory.');
+  // Fullscreen is a browser startup switch. Its own profile prevents an already
+  // running Operator browser from swallowing it or becoming fullscreen itself.
+  const profile = path.posix.join(homeDir, 'Library/Application Support/Karhutla/Chrome Projection');
+  return { command: '/usr/bin/open', args: ['-n', '-a', 'Google Chrome', '--args', `--user-data-dir=${profile}`,
+    '--no-first-run', '--no-default-browser-check', '--new-window', '--start-fullscreen', url], options: { shell: false } };
+}
+
+function manualUrls(operatorUrl) {
+  return `Operator: ${operatorUrl}\nProjection: ${projectionUrl(operatorUrl)}`;
+}
+
+function launchBrowser(createInvocation, { env, spawnImpl, onFallback, timeoutMs }, fallbackMessage) {
   return new Promise(resolve => {
     let settled = false, timer;
     const finish = (opened, error) => {
       if (settled) return;
       settled = true;
       clearTimeout(timer);
-      if (!opened) onFallback(remoteSound
-        ? `Chrome could not open in remote sound mode. Check that Google Chrome is installed and can open. Stop this server with Ctrl+C, then relaunch with --remote-sound. For manual host control, open: ${url}`
-        : `Open this address in your browser: ${url}`, error);
+      if (!opened) onFallback(fallbackMessage, error);
       resolve(opened);
     };
     try {
-      const invocation = browserInvocation(url, { platform, env, remoteSound, homeDir });
+      const invocation = createInvocation();
       const child = spawnImpl(invocation.command, invocation.args, { ...invocation.options, env, detached: true, stdio: 'ignore' });
       child.once('error', error => finish(false, error));
       child.once('close', (code, signal) => finish(code === 0, code === 0 ? null : new Error(`Browser opener exited ${signal || code}.`)));
@@ -67,4 +82,24 @@ export async function openBrowser(url, { platform = process.platform, env = proc
       child.unref?.();
     } catch (error) { finish(false, error); }
   });
+}
+
+/** Report usable URLs if the opener cannot start, exits unsuccessfully or stalls. */
+export async function openBrowser(url, { platform = process.platform, env = process.env, remoteSound = false, homeDir = os.homedir(), spawnImpl = spawn,
+  onFallback = message => console.log(message), timeoutMs = 10000 } = {}) {
+  validateOperatorUrl(url);
+  const fallback = remoteSound
+    ? `Chrome could not open in remote sound mode. Check that Google Chrome is installed and can open. Stop this server with Ctrl+C, then relaunch with --remote-sound. For manual use:\n${manualUrls(url)}`
+    : `Open this address in your browser: ${url}`;
+  return launchBrowser(() => browserInvocation(url, { platform, env, remoteSound, homeDir }),
+    { env, spawnImpl, onFallback, timeoutMs }, fallback);
+}
+
+/** A separate, silent Projection window; the Operator remains the audio owner. */
+export async function openProjection(operatorUrl, { platform = process.platform, env = process.env, homeDir = os.homedir(), spawnImpl = spawn,
+  onFallback = message => console.log(message), timeoutMs = 10000 } = {}) {
+  validateOperatorUrl(operatorUrl);
+  return launchBrowser(() => projectionBrowserInvocation(operatorUrl, { platform, homeDir }),
+    { env, spawnImpl, onFallback, timeoutMs },
+    `Projection could not open fullscreen in Chrome. Check that Google Chrome is installed and can open. Stop this server with Ctrl+C, then relaunch with --remote-sound. For manual use:\n${manualUrls(operatorUrl)}`);
 }

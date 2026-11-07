@@ -5,7 +5,7 @@ import { spawn } from 'node:child_process';
 import { mkdir, mkdtemp, writeFile, readFile, rm } from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
-import { browserInvocation, windowsStartInvocation, openBrowser, validateOperatorUrl } from '../scripts/open-browser.mjs';
+import { browserInvocation, projectionBrowserInvocation, windowsStartInvocation, openBrowser, openProjection, validateOperatorUrl } from '../scripts/open-browser.mjs';
 
 const url = 'http://127.0.0.1:4173/operator';
 
@@ -16,6 +16,7 @@ test('automatic browser opening accepts only the generated local operator URL', 
     'http://127.0.0.1:4173/%6fperator', 'http://user@127.0.0.1:4173/operator', 'http://127.0.0.1:4173/operator/../operator']) {
     assert.throws(() => browserInvocation(value, { platform: 'win32' }), /local Karhutla/);
     assert.throws(() => browserInvocation(value, { platform: 'darwin', remoteSound: true, homeDir: '/Users/Performance' }), /local Karhutla/);
+    assert.throws(() => projectionBrowserInvocation(value, { platform: 'darwin', homeDir: '/Users/Performance' }), /local Karhutla/);
   }
 });
 
@@ -55,6 +56,30 @@ test('remote sound opens a separate Mac Chrome instance with literal local profi
   }
 });
 
+test('Projection uses its own fullscreen Chrome instance and the validated Operator port without an autoplay override', () => {
+  const homeDir = "/Users/Performance Desk '$(never-run);";
+  for (const port of [1, 4173, 54981, 65535]) {
+    const operatorUrl = `http://127.0.0.1:${port}/operator`;
+    const invocation = projectionBrowserInvocation(operatorUrl, { platform: 'darwin', homeDir });
+    assert.deepEqual(invocation, { command: '/usr/bin/open', args: ['-n', '-a', 'Google Chrome', '--args',
+      `--user-data-dir=${homeDir}/Library/Application Support/Karhutla/Chrome Projection`,
+      '--no-first-run', '--no-default-browser-check', '--new-window', '--start-fullscreen', `http://127.0.0.1:${port}/projection`],
+    options: { shell: false } });
+    const operator = browserInvocation(operatorUrl, { platform: 'darwin', remoteSound: true, homeDir });
+    assert.notEqual(invocation.args.find(value => value.startsWith('--user-data-dir=')),
+      operator.args.find(value => value.startsWith('--user-data-dir=')), 'Distinct profiles prevent Projection from becoming an Operator tab.');
+    assert.equal(operator.args.includes('--start-fullscreen'), false, 'Operator keeps its normal window.');
+    assert.equal(invocation.args.some(value => value.startsWith('--autoplay-policy=')), false, 'Projection is not granted host-audio autoplay.');
+  }
+  for (const platform of ['win32', 'linux']) {
+    assert.throws(() => projectionBrowserInvocation(url, { platform, homeDir }), /macOS only/);
+  }
+  for (const homeDir of ['', 'relative/user', null]) {
+    assert.throws(() => projectionBrowserInvocation(url, { platform: 'darwin', homeDir }), /absolute user home/);
+  }
+  assert.throws(() => projectionBrowserInvocation('http://127.0.0.1:4173/projection', { platform: 'darwin', homeDir }), /local Karhutla operator/);
+});
+
 function mockChild(action) {
   return () => {
     const child = new EventEmitter(); child.unref = () => {};
@@ -85,6 +110,22 @@ test('remote sound opener passes the dedicated Chrome invocation without opening
   assert.deepEqual(fallback, []);
 });
 
+test('Projection opener launches one separate fullscreen target and reports successful invocation only after exit', async () => {
+  const invocations = [], fallback = [], env = { TEST_LAUNCH: 'isolated' };
+  const spawnImpl = (command, args, options) => {
+    invocations.push({ command, args, options });
+    return mockChild(child => child.emit('close', 0))();
+  };
+  assert.equal(await openProjection(url, { platform: 'darwin', homeDir: '/Users/Isolated Desk', env, spawnImpl,
+    onFallback: value => fallback.push(value) }), true);
+  assert.equal(invocations.length, 1);
+  assert.deepEqual(invocations[0], { command: '/usr/bin/open', args: ['-n', '-a', 'Google Chrome', '--args',
+    '--user-data-dir=/Users/Isolated Desk/Library/Application Support/Karhutla/Chrome Projection',
+    '--no-first-run', '--no-default-browser-check', '--new-window', '--start-fullscreen', 'http://127.0.0.1:4173/projection'],
+  options: { shell: false, env, detached: true, stdio: 'ignore' } });
+  assert.deepEqual(fallback, []);
+});
+
 test('spawn errors, nonzero exits and stalled openers retain a usable manual URL exactly once', async () => {
   for (const spawnImpl of [() => { throw new Error('spawn failed'); }, mockChild(child => {
     child.emit('error', new Error('missing opener')); child.emit('close', -2);
@@ -102,7 +143,18 @@ test('failed remote sound Chrome opening explains setup and retains manual host 
     const fallback = [];
     assert.equal(await openBrowser(url, { platform: 'darwin', remoteSound: true, homeDir: '/Users/Isolated Desk', spawnImpl,
       onFallback: value => fallback.push(value), timeoutMs: 10 }), false);
-    assert.deepEqual(fallback, [`Chrome could not open in remote sound mode. Check that Google Chrome is installed and can open. Stop this server with Ctrl+C, then relaunch with --remote-sound. For manual host control, open: ${url}`]);
+    assert.deepEqual(fallback, [`Chrome could not open in remote sound mode. Check that Google Chrome is installed and can open. Stop this server with Ctrl+C, then relaunch with --remote-sound. For manual use:\nOperator: ${url}\nProjection: http://127.0.0.1:4173/projection`]);
+  }
+});
+
+test('Projection launch failure retains both local URLs and never claims fullscreen succeeded', async () => {
+  for (const spawnImpl of [() => { throw new Error('spawn failed'); }, mockChild(child => {
+    child.emit('error', new Error('Chrome missing')); child.emit('close', -2);
+  }), mockChild(child => child.emit('close', 1)), mockChild(() => {})]) {
+    const fallback = [];
+    assert.equal(await openProjection(url, { platform: 'darwin', homeDir: '/Users/Isolated Desk', spawnImpl,
+      onFallback: value => fallback.push(value), timeoutMs: 10 }), false);
+    assert.deepEqual(fallback, [`Projection could not open fullscreen in Chrome. Check that Google Chrome is installed and can open. Stop this server with Ctrl+C, then relaunch with --remote-sound. For manual use:\nOperator: ${url}\nProjection: http://127.0.0.1:4173/projection`]);
   }
 });
 

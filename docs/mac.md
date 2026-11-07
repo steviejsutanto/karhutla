@@ -47,9 +47,11 @@ Use **remote sound mode** to let the remote's **Enable Main sound** button start
    node scripts/start-karhutla.mjs --remote-sound
    ```
 
-4. Keep Terminal and the Chrome Operator window open. Connect the remote controller with its PIN, then click **Enable Main sound** there.
+4. Operator opens in its own Chrome window, and Projection opens automatically in a separate full-screen window. Keep Terminal and both windows open. Connect the remote controller with its PIN, then click **Enable Main sound** there.
 
-This starts the server and opens a separate local Chrome profile with autoplay allowed. It uses your saved shared mixer settings. It waits for your Enable request; it does not start sound or the timed performance automatically. The profile needs no Google sign-in and is reused across updates on the same Mac user account. Opening the remote page on another device still produces no audio there.
+This starts the server, waits until it is ready, then opens both windows. Operator uses a local Chrome profile with autoplay allowed. Projection has its own local profile so its full-screen startup does not change Operator's window. Neither profile needs Google sign-in; both are reused across updates on the same Mac user account. Your saved shared mixer settings apply on Operator. Sound and the timed performance still wait for your explicit controls, and Projection stays silent.
+
+If Projection opens on the wrong display, leave full screen, move its window to the projector, then enter full screen again. The launcher does not select a physical display.
 
 With the bundled Node fallback, the equivalent command is `./Start-Karhutla.command --remote-sound`; its normal first-open approvals still apply. The installed-Node command above does not use the downloaded `.command` launcher.
 

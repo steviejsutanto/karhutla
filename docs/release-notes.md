@@ -1,12 +1,17 @@
-karhutla 1.1.6 lets the remote operator start Main sound on a freshly opened host, when its browser permits autoplay.
+karhutla 1.1.7 opens Projection automatically in full screen when using Mac remote sound mode.
 
-- On Mac, launch with `node scripts/start-karhutla.mjs --remote-sound` from the extracted release folder. This opens a dedicated local Chrome profile with autoplay allowed after the server is ready. Install Google Chrome and Node.js LTS once before using this command.
-- The remote's **Enable Main sound** button can then start the host audio without a first click on the Mac. Audio stays on the host; the remote controller stays silent.
-- Sound still waits for an explicit Enable request. Opening or reconnecting a page does not replay an old request or start the timed performance.
-- If an ordinary browser blocks activation, the request settles within six seconds and shows the host-enable fallback. A later disable, timeout or cancelled request cannot reopen the output.
-- Main sound also remains available if Chrome first opens behind another window. Leaving the page still pauses its audio, and phones retain their normal visibility behavior.
-- Main sound retains its normal smooth fades and shared mixer settings. PIN authorization, remembered devices and audience sound activation are unchanged.
+Run this command from the extracted release folder, with Chrome and Node.js installed:
 
-The full source suite passed 845 checks with no failures and one Windows-only check skipped on Mac. See the [Mac setup instructions](https://github.com/steviejsutanto/karhutla/blob/main/docs/mac.md#enable-main-sound-from-the-remote-page) for remote sound mode. Default launching still uses your default browser and may require one host click to enable sound.
+```sh
+node scripts/start-karhutla.mjs --remote-sound
+```
 
-Windows, Apple Silicon and Intel downloads include the saved rehearsal preset and illustrated Mac approval PDF. Extract an update into a new folder and import your settings through **Operator → Setup → Settings file**. Keep Terminal and the host Operator open while performing. Earlier tested ZIPs are unchanged; all 1.1.5 improvements remain included.
+- After the server passes its startup check, Operator opens in its own normal Chrome window and Projection opens in a separate full-screen window.
+- Projection uses a separate local Chrome profile so its full-screen startup does not change Operator's window. Neither profile needs Google sign-in.
+- Main sound stays on Operator and waits for **Enable Main sound** on the host or remote controller. Projection stays silent, and the timed performance still waits for its Start control.
+- `--no-browser` suppresses both windows. Normal launching without `--remote-sound` keeps its existing behavior.
+- If a window could not open, Terminal provides both local addresses and retry guidance. If Projection appears on the wrong display, leave full screen, move it to the projector, then enter full screen again.
+
+The full source suite passed 848 checks with no failures and one Windows-only check skipped on Mac. Native Mac Chrome verification checked separate normal Operator and full-screen Projection windows, silent Projection, and remote activation of Main sound without a host click.
+
+See the [Mac setup instructions](https://github.com/steviejsutanto/karhutla/blob/main/docs/mac.md#enable-main-sound-from-the-remote-page). Extract updates into a new folder, stop the previous server, and import your saved settings through **Operator → Setup → Settings file**. The saved rehearsal preset and illustrated Mac approval PDF remain included. All 1.1.6 sound-control improvements are retained.
