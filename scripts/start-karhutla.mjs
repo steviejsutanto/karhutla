@@ -73,7 +73,7 @@ export async function startKarhutla(options) {
   else console.log('Connect this computer and audience phones to the same Wi-Fi or Ethernet network.');
   console.log('Press Ctrl+C in this window to stop and save.');
   if (options.remoteSound) console.log(options.browser
-    ? 'Opening Operator for remote sound control and a separate fullscreen Projection window. Main sound waits for Enable on Operator or the remote controller.'
+    ? 'Opening Operator for remote sound control and a separate Projection window using in-app fullscreen. Main sound waits for Enable on Operator or the remote controller.'
     : 'Browser opening is disabled; Operator and Projection were not opened. Remote sound needs the host Operator in Chrome launched with --remote-sound; opening the URL in an ordinary browser may still require a host click.');
   if (options.browser) {
     void openBrowser(`${base}/operator`, { remoteSound: options.remoteSound === true });

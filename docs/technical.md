@@ -172,11 +172,19 @@ request attempts to create/resume the host audio context, including a cold start
 Mac `--remote-sound` launching opens a separate Chrome instance with its own
 `~/Library/Application Support/Karhutla/Chrome` user data directory and
 `--autoplay-policy=no-user-gesture-required`, after the server health check.
-The same launch also opens the derived loopback `/projection` address in a
-separate `Chrome Projection` user data directory with `--new-window` and
-`--start-fullscreen`. Projection receives no autoplay override or Main playback
-request. The separate instance keeps its full-screen startup independent of
-Operator. `--no-browser` suppresses both launches.
+The same launch also opens the derived loopback `/projection?fullscreen=1`
+address in a separate `Chrome Projection` user data directory. That profile
+grants automatic fullscreen for the exact local server origin. Once visual
+assets are ready and the page is visible, the in-app fullscreen controller calls
+`requestFullscreen()` on `#study-stage` once. The manual Project fullscreen button
+uses the same controller. Actual `document.fullscreenElement` drives the stage
+dataset and resize; Escape does not trigger re-entry. Projection receives no
+autoplay override or Main playback request. `--no-browser` suppresses both launches.
+The launcher merges the exact origin's `automatic_fullscreen` exception into
+only the dedicated Projection profile's private Preferences file. It leaves an
+existing grant byte-identical, refuses to change a running/ambiguous profile,
+and writes atomically under a process-owned setup lock. Unrelated preferences
+and ordinary Chrome profiles are preserved.
 The current shared mixer settings are applied before the first request can start
 audio. An ordinary browser can still require a host gesture; a denied or stalled
 activation becomes `needs-gesture` within six seconds, ahead of the remote's

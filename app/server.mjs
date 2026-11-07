@@ -24,6 +24,7 @@ const staticFiles = new Map([
   ['/operator.css', ['app/operator.css', 'text/css; charset=utf-8']],
   ['/performance-view.js', ['app/performance-view.js', 'text/javascript; charset=utf-8']],
   ['/audience-instructions.js', ['app/audience-instructions.js', 'text/javascript; charset=utf-8']],
+  ['/projection-fullscreen.js', ['app/projection-fullscreen.js', 'text/javascript; charset=utf-8']],
   ['/scene-score.js', ['app/scene-score.js', 'text/javascript; charset=utf-8']],
   ['/projection', ['app/peat-study.html', 'text/html; charset=utf-8']],
   ['/projection/', ['app/peat-study.html', 'text/html; charset=utf-8']],

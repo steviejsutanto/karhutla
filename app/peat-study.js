@@ -11,6 +11,7 @@ import { createParticipantSoundField, patchSoundVoices, activeSoundParticipantCo
 import { participantRainIdentity } from '/visual-assets/participant-identity.js';
 import { audienceRainStrength, DEFAULT_RAIN_STRENGTH } from '/scene-score.js';
 import { mountAudienceInstructions } from '/audience-instructions.js';
+import { mountProjectionFullscreen } from '/projection-fullscreen.js';
 
 const $ = id => document.getElementById(id);
 mountAudienceInstructions($('projection-instructions').querySelector('ol'));
@@ -507,12 +508,10 @@ window.addEventListener('blur', endGesture);
 window.addEventListener('pagehide', endGesture);
 document.addEventListener('visibilitychange', () => { if (document.hidden) endGesture(); else { dirty = true; contactDirty = true; } });
 reduced.addEventListener('change', () => { renderer?.setReducedMotion(reduced.matches); sectionRenderer?.setReducedMotion(reduced.matches); dirty = true; contactDirty = true; });
-$('project-study').addEventListener('click', async () => {
-  endGesture();
-  try { if (document.fullscreenElement) await document.exitFullscreen(); else await stage.requestFullscreen(); }
-  catch { text('contact-status', 'Fullscreen unavailable. Use the browser fullscreen command.'); }
+const projectionFullscreen = mountProjectionFullscreen({
+  stage, button: $('project-study'), beforeChange: endGesture, onChange: resize,
+  onError: message => text('contact-status', message),
 });
-document.addEventListener('fullscreenchange', () => { stage.dataset.fullscreen = String(document.fullscreenElement === stage); resize(); });
 new ResizeObserver(resize).observe(stage);
 
 async function initialize() {
@@ -521,6 +520,7 @@ async function initialize() {
   const assetLoad = Promise.all([renderer.ready(), fetch('/data/indonesia.geojson').then(response => { if (!response.ok) throw new Error('The Indonesia outline could not load.'); return response.json(); })]).then(([, geography]) => {
     renderer.setGeography(geography);
     assetsReady = true; metrics.ready = true; resize();
+    void projectionFullscreen.ready();
     if (layout) $('study-loading').hidden = true;
   });
   await loadRegion('indonesia');

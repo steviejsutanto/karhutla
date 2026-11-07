@@ -47,11 +47,15 @@ Use **remote sound mode** to let the remote's **Enable Main sound** button start
    node scripts/start-karhutla.mjs --remote-sound
    ```
 
-4. Operator opens in its own Chrome window, and Projection opens automatically in a separate full-screen window. Keep Terminal and both windows open. Connect the remote controller with its PIN, then click **Enable Main sound** there.
+4. Operator opens in its own Chrome window. Projection opens separately and automatically uses Karhutla's **Project fullscreen** action when its visuals are ready. Keep Terminal and both windows open. Connect the remote controller with its PIN, then click **Enable Main sound** there.
 
-This starts the server, waits until it is ready, then opens both windows. Operator uses a local Chrome profile with autoplay allowed. Projection has its own local profile so its full-screen startup does not change Operator's window. Neither profile needs Google sign-in; both are reused across updates on the same Mac user account. Your saved shared mixer settings apply on Operator. Sound and the timed performance still wait for your explicit controls, and Projection stays silent.
+This starts the server, waits until it is ready, then opens both windows. Operator uses a local Chrome profile with autoplay allowed. Projection has its own local profile with automatic full-screen permission for this local server address. The projection stage itself enters full screen, using the same method as its in-app button. Neither profile needs Google sign-in; both are reused across updates on the same Mac user account. Your saved shared mixer settings apply on Operator. Sound and the timed performance still wait for your explicit controls, and Projection stays silent.
 
 If Projection opens on the wrong display, leave full screen, move its window to the projector, then enter full screen again. The launcher does not select a physical display.
+
+Press Escape to leave the projection's full-screen view; it will stay out until you use its full-screen button again. If automatic entry is blocked, that button remains available for manual entry.
+
+When first updating to this feature, quit an older Projection Chrome instance before relaunching. If Terminal asks you to quit it, activate that Projection window and choose **Chrome → Quit Google Chrome**, then stop the server with Ctrl+C and run the command again. Later launches reuse an existing matching permission.
 
 With the bundled Node fallback, the equivalent command is `./Start-Karhutla.command --remote-sound`; its normal first-open approvals still apply. The installed-Node command above does not use the downloaded `.command` launcher.
 
