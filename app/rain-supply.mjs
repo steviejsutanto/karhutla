@@ -2,10 +2,9 @@ import { DEFAULT_PARAMETERS, MOISTURE_UPTAKE_SECONDS } from './simulation.js';
 import { FOREST_RAIN_STRENGTH_MULTIPLIER, DEFAULT_RAIN_STRENGTH } from './scene-score.js';
 
 export const RAIN_REFILL_SECONDS = 12;
-export const RAIN_SUPPLY_FACTOR = 1.005;
+export const RAIN_SUPPLY_FACTOR = .67;
 // Size the original wetting/cooling/settling allowance, then apply the
-// previous 0.67 supply factor × the requested 1.5 increase. Recharge timing
-// is independent. Round the result to milliseconds for clean wire values.
+// requested 0.67 supply factor. Recharge timing is independent.
 // A source centre inside the circular brush receives at least this fraction
 // of its full-cell rate. Use Scene 4's weaker rain when sizing both scenes.
 export function rainSupplyCapacity(parameters = DEFAULT_PARAMETERS, strength = DEFAULT_RAIN_STRENGTH) {
@@ -13,7 +12,7 @@ export function rainSupplyCapacity(parameters = DEFAULT_PARAMETERS, strength = D
   const soak = MOISTURE_UPTAKE_SECONDS / rate;
   const seconds = soak + (parameters.deepCoolingSeconds ?? DEFAULT_PARAMETERS.deepCoolingSeconds) * Math.log(10)
     + (parameters.extinctionHoldSeconds ?? DEFAULT_PARAMETERS.extinctionHoldSeconds) + 8;
-  return Math.round(Math.max(45, Math.ceil(seconds / 5) * 5) * RAIN_SUPPLY_FACTOR * 1000) / 1000;
+  return Math.max(45, Math.ceil(seconds / 5) * 5) * RAIN_SUPPLY_FACTOR;
 }
 export function createRainSupply(now = 0) {
   return { level: 1, updatedAt: now, touching: false, needsRelease: false };

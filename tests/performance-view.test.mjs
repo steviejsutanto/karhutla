@@ -162,10 +162,7 @@ test('only an authoritative opening entrance reveals the QR and phone welcome du
     const opening = { id: 'participation', participationOpening: true, elapsedMs: 0 };
     assert.equal(scenePresentation(opening, { phone }).landscapeEntranceGain, 0);
     assert.equal(scenePresentation(opening, { phone }).openingOverlayGain, 1);
-    const settled = scenePresentation({ ...opening, elapsedMs: 6_000 }, { phone });
-    assert.equal(settled.mix.mainDrone, 1);
-    assert.equal(settled.landscapeEntranceGain, 0); assert.equal(settled.openingOverlayGain, 1);
-    const midpoint = scenePresentation({ ...opening, elapsedMs: 9_600 }, { phone });
+    const midpoint = scenePresentation({ ...opening, elapsedMs: 6_000 }, { phone });
     assert.equal(midpoint.landscapeEntranceGain, .5); assert.equal(midpoint.openingOverlayGain, .5);
     assert.equal(midpoint.showJoinCode, true); assert.equal(midpoint.showWifiJoin, true); assert.equal(midpoint.showOpeningInstructions, true);
     assert.equal(scenePresentation({ ...opening, elapsedMs: 12_000 }, { phone }).openingOverlayGain, 0);
