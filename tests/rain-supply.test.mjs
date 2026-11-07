@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { SharedRoom } from '../app/shared-room.mjs';
 import { BRUSH_RADIUS, CELL_SIZE } from '../app/simulation.js';
-import { rainSupplyCapacity, createRainSupply, advanceRainSupply, RAIN_REFILL_SECONDS } from '../app/rain-supply.mjs';
+import { rainSupplyCapacity, createRainSupply, advanceRainSupply, rainSupplyState, RAIN_REFILL_SECONDS, RAIN_SUPPLY_FACTOR } from '../app/rain-supply.mjs';
 
 const area = Math.PI * (BRUSH_RADIUS / CELL_SIZE) ** 2;
 const close = (a, b, tolerance = 1e-7) => assert.ok(Math.abs(a - b) < tolerance, `${a} differs from ${b}`);
@@ -17,8 +17,8 @@ async function fixture() {
   return { room, time, phone, hold, advance, supply: () => room.phoneState(phone.connectionId).rainSupply };
 }
 
-test('a full supply is reduced to 0.67 of its previous duration and automatically refills in twelve idle seconds', () => {
-  const capacity = rainSupplyCapacity(); assert.equal(capacity, 33.5); assert.equal(RAIN_REFILL_SECONDS, 12);
+test('a full supply increases 1.5 times to 50.25 seconds and automatically refills in twelve idle seconds', () => {
+  const capacity = rainSupplyCapacity(); assert.equal(capacity, 33.5 * 1.5); assert.equal(RAIN_REFILL_SECONDS, 12);
   const supply = createRainSupply(); supply.touching = true;
   advanceRainSupply(supply, capacity * 1000, capacity, true);
   assert.equal(supply.level, 0); assert.equal(supply.needsRelease, true);
@@ -26,6 +26,36 @@ test('a full supply is reduced to 0.67 of its previous duration and automaticall
   supply.touching = false; supply.needsRelease = false;
   advanceRainSupply(supply, 66000, capacity); close(supply.level, .5);
   advanceRainSupply(supply, 72000, capacity); assert.equal(supply.level, 1);
+});
+
+test('custom capacities also increase 1.5 times and the phone protocol keeps clean millisecond values', () => {
+  assert.equal(RAIN_SUPPLY_FACTOR, 1.005);
+  const cases = [
+    { parameters: undefined, strength: .54, oldCapacity: 33.5, expected: 50.25 },
+    { parameters: { rainResponseSeconds: 10, deepCoolingSeconds: 30, extinctionHoldSeconds: 8 }, strength: .45, oldCapacity: 67, expected: 100.5 },
+    { parameters: { deepCoolingSeconds: 240, extinctionHoldSeconds: 60, rainResponseSeconds: 20 }, strength: .45, oldCapacity: 425.45, expected: 638.175 },
+  ];
+  for (const { parameters, strength, oldCapacity, expected } of cases) {
+    const capacity = rainSupplyCapacity(parameters, strength);
+    assert.equal(capacity, expected); close(capacity, oldCapacity * 1.5);
+    const state = rainSupplyState(createRainSupply(), capacity);
+    assert.equal(JSON.parse(JSON.stringify(state)).capacitySeconds, expected);
+    assert.ok(JSON.stringify(state).includes(`"capacitySeconds":${expected}`));
+    assert.equal(state.rechargeSeconds, 12);
+  }
+});
+
+test('the authority exhausts the fractional final quarter second without adding water afterward', async () => {
+  const f = await fixture(); f.hold(true, true);
+  assert.equal(f.room.rainCapacity(), 50.25);
+  for (let index = 0; index < 100; index++) { f.advance(500); f.hold(true); }
+  assert.equal(f.room.phoneState(f.phone.connectionId).own.holding, true);
+  f.advance(250);
+  assert.equal(f.supply().level, 0); assert.equal(f.supply().needsRelease, true);
+  assert.equal(f.room.phoneState(f.phone.connectionId).own.holding, false);
+  const water = f.room.simulation.totalWater; close(water, area * .54 * 50.25);
+  for (let index = 0; index < 4; index++) { f.advance(500); f.hold(true, true); }
+  assert.equal(f.supply().level, 0); close(f.room.simulation.totalWater, water);
 });
 
 test('authority stops at the exact empty boundary, heartbeats cannot restart or recharge, release recharges automatically', async () => {

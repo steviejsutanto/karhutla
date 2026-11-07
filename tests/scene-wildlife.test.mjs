@@ -50,7 +50,7 @@ test('the distorted phone drone follows Main pitch banks, enters in Scene 4 and 
   assert.equal(weight('forest-takeover', 30000), 1); assert.equal(weight('final-rain', 0), 1);
   assert.equal(weight('final-rain', 26000), .5); assert.equal(weight('final-rain', 52000), 0);
   assert.equal(weight('afterglow', 0), 0);
-  const context = new Context(), drone = new PhoneDroneAudio({ context, destination: {} });
+  const context = new Context(), drone = new PhoneDroneAudio({ context, destination: {}, random: () => 0 });
   const frequencies = [69, 104, 155, 52, 78, 116];
   drone.update({ active: true, weight: .5, frequencies, amplitudes: [.72, .24, .34] });
   assert.equal(drone.getMetrics().oscillatorCount, 6);
@@ -72,7 +72,7 @@ test('the distorted phone drone follows Main pitch banks, enters in Scene 4 and 
 });
 
 test('phone drone raises its previous register by a major third and deepens faster beats without extra voices or gain', () => {
-  const context = new Context(), drone = new PhoneDroneAudio({ context, destination: {} });
+  const context = new Context(), drone = new PhoneDroneAudio({ context, destination: {}, random: () => 0 });
   const frequencies = [100, 150, 200, 100, 150, 200], original = [...frequencies];
   drone.update({ active: true, weight: 1, frequencies, amplitudes: [.72, .24, .34] });
   const voices = drone.voice.oscillators;

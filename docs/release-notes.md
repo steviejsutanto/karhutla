@@ -1,14 +1,15 @@
-karhutla 1.1.3 includes the five performance recovery fixes and the completed remote Main-sound controls.
+karhutla 1.1.4 includes the verified remote-control, sound and phone-interface refinements.
 
-- Phones can enable or resume sound during blackout and fullscreen; working phones and the completed ending remain black.
-- Transient recording downloads retry, and manual sound recovery can retry exhausted failures, including crickets.
-- Map and texture failures retry automatically. A Retry map control restores participation after persistent failure without reloading.
-- Rain strength and ground timing edited before the first Start are saved without starting the performance.
-- An empty fire snapshot completes the Final rain rise and ending instead of stalling.
-- Remote Main-sound controls preserve host-only audio playback and report its current status. A browser gesture on the host is still required for initial audio activation when the browser requests it.
+- Remote Main-sound controls no longer create a status-feedback loop. A host that does not finish responding produces a bounded warning after about eight seconds instead of leaving the button pending indefinitely.
+- Held tones have more audible motion after their first four seconds, with a faster rise into the modulation.
+- Individual Main bell notes have revised calibration trims for a more balanced note family.
+- The phone magnifier paints the first touch immediately and follows the initial drag more promptly.
+- Each phone chooses a drone register at its current pitch, +3, +8 or +12 semitones. The choice stays fixed through mute/resume and scene re-entry for that page session; reloading may choose again.
+- Restart performance is now in the main Performance tab beside Pause. It retains its existing reset behavior and preserves settings.
+- The operator PIN and remembered-device key are stored per user outside the release folder, so later updates on the same computer/account reuse them. Existing app-local credentials migrate when available; another computer or user account has its own PIN.
 
-These fixes begin with **1.1.3**; older downloads are unchanged. The Mac launcher still prefers installed Node.js 22 or newer, with the bundled runtime as fallback. The illustrated Mac setup PDF remains included and available separately.
+The final combined source handoff passed 826 checks, with no failures and one Windows-only check skipped on Mac. Native audio and browser verification covered the tone, bell, magnifier, drone-register and Restart changes. The remote-control fix was also checked with 50 active participant WebSockets; this was software verification, not a physical venue rehearsal.
 
-The combined handoff passed 806 tests, with no failures and one Windows-only check skipped on Mac. Real-browser recovery checks and three isolated 50-participant simulations passed, including reconnects, pause/resume and a three-minute rain/recharge run. Measurements were made on an M1 Pro, not the target M4 Mac mini or 50 physical phones. Aggressive country-wide swipes remain the heaviest workload and can reduce visual smoothness; rehearse on the actual router, projector, audio output and phones.
+These changes are included in the **1.1.4 downloads**. Retained older ZIPs are unchanged. The five performance-recovery fixes from 1.1.3 remain included.
 
-Extract the matching Windows, Apple Silicon or Intel ZIP into a new folder. Import your settings through **Operator → Setup → Settings file**, then fully reload Operator, Projection and phones. Private performance saves, Wi-Fi exports, operator PINs and keys are excluded from the downloads. Keep the previous rehearsed release available.
+Extract the matching Windows, Apple Silicon or Intel ZIP into a new folder, import your settings through **Operator → Setup → Settings file**, and fully reload Operator, Projection and phones. The Mac launcher still prefers installed Node.js 22 or newer, with the bundled runtime as fallback. The illustrated Mac setup PDF remains available in each download and separately. Keep the previous rehearsed release available.

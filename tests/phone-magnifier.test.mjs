@@ -33,13 +33,66 @@ test('bounded source crops keep the selected point at the lens crosshair even at
   }
 });
 
-function fixture() {
+function fixture(options = {}) {
   const calls = [];
   const context = { setTransform() {}, fillRect() {}, drawImage(...args) { calls.push(args); }, beginPath() {}, moveTo() {}, lineTo() {}, stroke() {} };
   const source = { width: 1280, height: 720 }, canvas = { width: 0, height: 0, getContext: () => context };
   const label = { textContent: '' }, element = { hidden: false, style: {}, dataset: {}, querySelector: () => label };
-  return { calls, source, canvas, element, label, lens: new PhoneMagnifier({ element, canvas, source, pixelRatio: 3 }) };
+  return { calls, source, canvas, element, label, lens: new PhoneMagnifier({ element, canvas, source, pixelRatio: 3, ...options }) };
 }
+
+function frames() {
+  const pending = new Map(); let serial = 0;
+  return { pending, requestFrame(callback) { const id = ++serial; pending.set(id, callback); return id; },
+    cancelFrame(id) { pending.delete(id); },
+    paint(at) { const callbacks = [...pending.values()]; pending.clear(); for (const callback of callbacks) callback(at); } };
+}
+
+test('a first immediate drag paints its latest crop on the next frame without waiting for the idle refresh', () => {
+  const clock = frames(), f = fixture(clock);
+  const state = { touch: { x: 300, y: 250 }, point: { x: 300, y: 200 }, width: 640, height: 360, sourceWidth: 640, sourceHeight: 360 };
+  f.lens.show(state, 0);
+  for (let index = 1; index <= 12; index++) f.lens.show({ ...state,
+    touch: { x: 300 + index * 4, y: 250 }, point: { x: 300 + index * 4, y: 200 } }, index);
+  assert.equal(clock.pending.size, 1, 'Fast input coalesces into one small crop copy.');
+  assert.equal(f.calls.length, 1, 'Pointer updates do not redraw the full source or repeat crop copies synchronously.');
+  assert.equal(f.element.style.transform, 'translate(286px, 90px)', 'Lens geometry follows the latest finger position immediately.');
+  clock.paint(16.7);
+  assert.equal(f.calls.length, 2, 'The moved crop paints before the former 41.7 ms idle refresh.');
+  const [, x, y, width, height] = f.calls.at(-1);
+  close(x + width / 2, 348 * 2); close(y + height / 2, 200 * 2);
+  assert.equal(clock.pending.size, 0); assert.equal(f.canvas.width, 186);
+  assert.deepEqual(JSON.parse(f.element.dataset.sourcePoint), [348, 200]);
+});
+
+test('release flushes the latest queued drag once and cancellation leaves no animation work', () => {
+  const clock = frames(), f = fixture(clock);
+  const state = { touch: { x: 300, y: 250 }, point: { x: 300, y: 200 }, width: 640, height: 360, sourceWidth: 640, sourceHeight: 360 };
+  f.lens.show(state, 0); f.lens.show({ ...state, point: { x: 330, y: 200 } }, 1);
+  f.lens.release();
+  assert.equal(clock.pending.size, 0); assert.equal(f.calls.length, 2);
+  assert.deepEqual(JSON.parse(f.element.dataset.sourcePoint), [330, 200]);
+  clock.paint(16.7); assert.equal(f.calls.length, 2, 'No old callback can repaint a released lens.');
+  f.lens.show(state, 20); f.lens.show({ ...state, point: { x: 350, y: 200 } }, 21);
+  assert.equal(clock.pending.size, 1); const count = f.calls.length;
+  f.lens.hide(); clock.paint(33.4);
+  assert.equal(clock.pending.size, 0); assert.equal(f.calls.length, count); assert.equal(f.element.hidden, true);
+});
+
+test('high-refresh phones get the first moved crop next frame but sustained copying stays within 60 Hz', () => {
+  const clock = frames(), f = fixture(clock);
+  const state = { touch: { x: 300, y: 250 }, point: { x: 300, y: 200 }, width: 640, height: 360, sourceWidth: 640, sourceHeight: 360 };
+  f.lens.show(state, 0);
+  f.lens.show({ ...state, point: { x: 310, y: 200 } }, 1); clock.paint(8.33);
+  assert.equal(f.calls.length, 2, 'The first move does not wait for a 60 Hz budget to open.');
+  for (let index = 2; index <= 120; index++) {
+    f.lens.show({ ...state, point: { x: 310 + index, y: 200 } }, index * (1000 / 120) - 1);
+    clock.paint(index * (1000 / 120));
+    assert.ok(clock.pending.size <= 1);
+  }
+  assert.ok(f.calls.length <= 62, 'A 120 Hz screen cannot double the ongoing crop work.');
+  f.lens.hide(); assert.equal(clock.pending.size, 0);
+});
 
 test('lens copies only a small source region at bounded pixel density, never another viewport', () => {
   const f = fixture();

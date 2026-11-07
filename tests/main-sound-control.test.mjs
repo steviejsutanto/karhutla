@@ -153,6 +153,80 @@ test('reconnection rearms the timeout for a command still waiting on its host', 
   assert.equal(f.control.getState().pending, false); assert.equal(f.control.getState().status.state, 'unavailable');
 });
 
+test('routine connected packets cannot postpone a missing host acknowledgement', t => {
+  const f = fixture({ remoteControl: true }); t.after(() => f.control.destroy());
+  const waiting = mainState({ revision: 1, requestId: 1, requestedEnabled: true, statusRequestId: 0 });
+  f.control.applyState(waiting, 'show');
+  // The preview forwards connected after every state packet, even while the
+  // host sound page is absent. Those packets are not reconnections.
+  for (let index = 0; index < 100; index++) {
+    f.timer.advance(100);
+    f.control.applyState(waiting, 'show');
+    f.control.setConnected(true);
+  }
+  assert.equal(f.control.getState().pending, false);
+  assert.equal(f.control.getState().status.state, 'unavailable');
+  assert.equal(f.errors.length, 1, 'The original deadline expires once despite live preview traffic.');
+  assert.equal(f.timer.count(), 0);
+  f.control.applyState(mainState({ revision: 2, requestId: 2, requestedEnabled: false, statusRequestId: 0 }), 'show');
+  assert.equal(f.control.getState().pending, true, 'A new command from another controller gets its own deadline.');
+});
+
+test('a starting acknowledgement cannot leave the remote button busy if the host disappears', t => {
+  const f = fixture({ remoteControl: true }); t.after(() => f.control.destroy());
+  f.control.applyState(mainState({ revision: 1, requestId: 1, requestedEnabled: true, statusRequestId: 0 }), 'show');
+  f.timer.advance(2000);
+  const starting = mainState({ revision: 2, requestId: 1, requestedEnabled: true, state: 'starting', activated: true });
+  f.control.applyState(starting, 'show');
+  for (let index = 0; index < 60; index++) {
+    f.timer.advance(100); f.control.applyState(starting, 'show'); f.control.setConnected(true);
+  }
+  assert.equal(f.control.getState().pending, false);
+  assert.equal(f.control.getState().status.state, 'unavailable');
+  assert.equal(f.errors.length, 1, 'Starting does not reset the original completion deadline.');
+  f.control.applyState(mainState({ revision: 3, requestId: 1, requestedEnabled: true, state: 'ready', activated: true }), 'show');
+  assert.equal(f.control.getState().status.state, 'ready', 'A late confirmed recovery is still accepted.');
+  assert.equal(f.control.getState().pending, false); assert.equal(f.timer.count(), 0);
+});
+
+test('joining during a local host start watches completion without treating old remote intent as disabled', t => {
+  const f = fixture({ remoteControl: true }); t.after(() => f.control.destroy());
+  f.control.applyState(mainState({ state: 'starting', requestedEnabled: false }), 'show');
+  assert.equal(f.control.getState().enabled, true);
+  assert.equal(f.control.getState().pending, true);
+  f.timer.advance(8000);
+  assert.equal(f.control.getState().pending, false); assert.equal(f.control.getState().status.state, 'unavailable');
+  f.control.setConnected(false); f.control.setConnected(true);
+  assert.equal(f.control.getState().pending, true, 'A real reconnection starts a fresh completion deadline.');
+  f.control.applyState(mainState({ revision: 1, state: 'needs-gesture' }), 'show');
+  assert.equal(f.control.getState().pending, false); assert.equal(f.control.getState().status.state, 'needs-gesture');
+  assert.equal(f.timer.count(), 0);
+});
+
+test('status broadcasts do not feed back into repeated host reports, but a real reconnect reports once', async t => {
+  let server = mainState({ state: 'ready', activated: true }), broadcasts = 0;
+  const f = fixture({ initialState: 'ready', warmed: true, report: payload => {
+    server = { ...server, revision: server.revision + 1, status: { ...payload } };
+    // Each status POST broadcasts state followed by a connected notification
+    // through the preview. Cap the reproduction so a broken client cannot loop.
+    if (++broadcasts <= 10) {
+      f.control.applyState(server, 'show');
+      f.control.setConnected(true);
+    }
+    return server;
+  } });
+  t.after(() => f.control.destroy());
+  f.control.applyState(server, 'show'); await settle();
+  assert.equal(f.reports.length, 1, 'One status report must settle without a self-sustaining feedback loop.');
+  for (let index = 0; index < 100; index++) {
+    f.control.applyState(server, 'show');
+    f.control.setConnected(true);
+  }
+  await settle(); assert.equal(f.reports.length, 1);
+  f.control.setConnected(false); f.control.setConnected(true); await settle();
+  assert.equal(f.reports.length, 2, 'A real reconnection still retries the current host status.');
+});
+
 test('an unresolved native start is bounded and cannot leave host controls stuck starting forever', async t => {
   const pending = deferred(), f = fixture({ initialState: 'ready', warmed: true, enablePromise: pending.promise });
   t.after(() => f.control.destroy()); f.control.applyState(mainState({ state: 'ready', activated: true }), 'show');

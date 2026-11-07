@@ -3,12 +3,18 @@
 // C2–G7 lottery combined sub-bass-like fundamentals with very thin high notes
 // whose peaks were almost 10 dB lower, so equal completion events varied widely.
 const BELL_MIDI = Object.freeze([48, 55, 60, 67, 72, 79]); // C3/G3 through C5/G5.
+const BELL_BASE_PEAK = .026;
+// Fixed note calibration through Main's HRTF/output path, measured by the
+// active strike/body rather than source peaks or differing tail lengths.
+// Retain the note's colour and position: no real-time gain riding is added.
+export const BELL_NOTE_TRIM_DB = Object.freeze({ 48: 0, 55: -2, 60: 0, 67: 2, 72: 6, 79: 6 });
+const bellPeak = midi => BELL_BASE_PEAK * 10 ** (BELL_NOTE_TRIM_DB[midi] / 20);
 const BELL_OCTAVES = Object.freeze([
-  Object.freeze({ octave: 3, weight: .34, decaySeconds: 12, peak: .026 }),
-  Object.freeze({ octave: 4, weight: .44, decaySeconds: 10, peak: .026 }),
-  // A modest register trim offsets the Main HRTF's weaker upper strike. This
-  // is fixed per note, independent of participants and simultaneous bells.
-  Object.freeze({ octave: 5, weight: .22, decaySeconds: 8, peak: .026 * 10 ** (4 / 20) }),
+  // Peak is the register's maximum for headroom inspection; each selected
+  // note receives its own fixed calibration below.
+  Object.freeze({ octave: 3, weight: .34, decaySeconds: 12, peak: bellPeak(48) }),
+  Object.freeze({ octave: 4, weight: .44, decaySeconds: 10, peak: bellPeak(67) }),
+  Object.freeze({ octave: 5, weight: .22, decaySeconds: 8, peak: bellPeak(72) }),
 ]);
 // The final value is relative partial energy at the end of the whole bell.
 // Earlier short partial envelopes left only a clean fundamental after the strike.
@@ -24,7 +30,8 @@ function bellChoice() {
   for (let index = 0; index < BELL_OCTAVES.length; index++) {
     const octave = BELL_OCTAVES[index];
     if (draw < octave.weight || index === BELL_OCTAVES.length - 1) {
-      return { ...octave, midi: BELL_MIDI[index * 2 + Number(draw >= octave.weight / 2)] };
+      const midi = BELL_MIDI[index * 2 + Number(draw >= octave.weight / 2)];
+      return { ...octave, midi, peak: bellPeak(midi) };
     }
     draw -= octave.weight;
   }
@@ -227,6 +234,7 @@ export class PhoneWeatherAudio {
       bellsTriggered: this.bellsTriggered, lastBellMidi: this.lastBellMidi, currentBellVoices: this.bells.size, bellVoices: this.bells.size,
       retiringBellVoices: this.retiringBells.size, bellDecaySeconds: this.lastBellDecay ?? BELL_OCTAVES[0].decaySeconds,
       bellDecayRangeSeconds: [8, 12], bellPitchMidi: [...BELL_MIDI], bellOctaveWeights: BELL_OCTAVES.map(value => ({ ...value })),
+      bellNoteTrimsDb: { ...BELL_NOTE_TRIM_DB },
       bellPartials: BELL_PARTIALS.map(([ratio, amplitude, remaining]) => ({ ratio, amplitude, remaining })),
       maxBellVoices: MAX_BELLS, maxRetiringBellVoices: MAX_RETIRING_BELLS,
       bellReverb: { active: Boolean(this.reverb), wet: REVERB_WET, durationSeconds: REVERB_SECONDS,

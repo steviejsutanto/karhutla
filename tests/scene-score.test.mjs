@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { computeSceneScore, computeScore, phoneRetreatGain, scoreDurations, finalRainProgressAt, finalCricketProgressAt, FINAL_RAIN_RAMP_MS } from '../app/scene-score.js';
+import { computeSceneScore, computeScore, phoneRetreatGain, scoreDurations, finalRainProgressAt, finalCricketProgressAt, participationVisualProgress, FINAL_RAIN_RAMP_MS } from '../app/scene-score.js';
 
 test('participation defaults to ten minutes while a saved custom duration remains valid', () => {
   assert.equal(scoreDurations().participationMs, 600000);
@@ -19,10 +19,10 @@ test('phones enter throughout the PA handoff without a second slow ease-in', () 
   assert.ok(computeSceneScore({ id: 'afterglow', elapsedMs: start + 1000 }).mix.phoneCrickets > .13);
 });
 
-test('participation retains a thin haze under the drone, on the same gradual sound transition', () => {
+test('participation retains the original gradual haze and phone field while its opening drone settles first', () => {
   for (const elapsedMs of [0, 1000, 6000, 12000, 60000]) {
     const score = computeSceneScore({ id: 'participation', elapsedMs });
-    assert.equal(score.mix.mainHaze, .18 * score.mix.mainDrone);
+    assert.equal(score.mix.mainHaze, .18 * score.mix.phoneField);
   }
   assert.equal(computeSceneScore({ id: 'participation', elapsedMs: 12000 }).mix.mainHaze, .18);
 });
@@ -41,7 +41,7 @@ test('the five cues open phone sound at participation and reserve main crickets 
   const instructions = computeScore({ id: 'instructions', elapsedMs: 6000 });
   assert.equal(instructions.mix.mainHaze, .5); assert.equal(instructions.mix.mainForest, .5);
   const participation = computeScore({ id: 'participation' }, 6000);
-  assert.equal(participation.mix.mainForest, .5); assert.equal(participation.mix.mainDrone, .5);
+  assert.equal(participation.mix.mainForest, .5); assert.equal(participation.mix.mainDrone, 1);
   assert.equal(participation.mix.mainChimes, .5); assert.equal(participation.mix.phoneField, .5);
   const rain = computeScore({ id: 'final-rain', elapsedMs: 9000 });
   assert.equal(rain.cue, 5); assert.equal(rain.phase, 'rain');

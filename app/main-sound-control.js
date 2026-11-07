@@ -16,11 +16,14 @@ export function createMainSoundControl({ engine, remoteControl = false, request,
   if (localStatus === 'ready') activated = true;
   const listeners = new Set();
 
+  function waitingForHost() {
+    return Boolean(current && (current.status.requestId < current.requestId || current.status.state === 'starting'));
+  }
   function getState() {
     const status = remoteControl ? current?.status ?? { state: 'unavailable', activated: false, requestId: 0 }
       : { state: localStatus, activated, requestId: consumed ?? 0 };
     const awaitingHost = remoteControl && current && current.status.requestId < current.requestId;
-    const pending = requestBusy || localBusy || Boolean(awaitingHost && !timedOut);
+    const pending = requestBusy || localBusy || Boolean(remoteControl && waitingForHost() && !timedOut);
     const enabled = optimistic ?? (awaitingHost ? current.requestedEnabled
       : status.state === 'needs-gesture' ? Boolean(current?.requestedEnabled) : ['ready', 'starting'].includes(status.state));
     return { remoteControl, connected, requestId: current?.requestId ?? 0,
@@ -31,7 +34,8 @@ export function createMainSoundControl({ engine, remoteControl = false, request,
   function clearAcknowledgementTimer() { if (acknowledgementTimer != null) cancel(acknowledgementTimer); acknowledgementTimer = null; }
   function watchAcknowledgement() {
     clearAcknowledgementTimer();
-    if (!remoteControl || !connected || !current || current.status.requestId >= current.requestId) { timedOut = false; return; }
+    if (!remoteControl || !connected || !waitingForHost()) { timedOut = false; return; }
+    timedOut = false;
     acknowledgementTimer = schedule(() => {
       acknowledgementTimer = null; timedOut = true; emit();
       onError('The host did not respond. Keep its Operator page open and check the connection.');
@@ -102,7 +106,9 @@ export function createMainSoundControl({ engine, remoteControl = false, request,
     const oldRequest = current?.requestId;
     current = { ...value, status: { ...value.status } }; connected = true;
     if (remoteControl) {
-      if (oldRequest !== current.requestId || current.status.requestId >= current.requestId || acknowledgementTimer == null && !timedOut) watchAcknowledgement();
+      // An interim "starting" acknowledgement still needs a final result. Keep
+      // the original deadline through ordinary state packets and that interim ack.
+      if (oldRequest !== current.requestId || !waitingForHost() || acknowledgementTimer == null && !timedOut) watchAcknowledgement();
     } else if (consumed === null) {
       // A page load/reconnection must never replay an earlier start request.
       consumed = current.requestId; reportStatus();
@@ -125,7 +131,12 @@ export function createMainSoundControl({ engine, remoteControl = false, request,
     finally { if (token === requestOperation) { requestBusy = false; optimistic = null; emit(); } }
   }
   function setConnected(value) {
-    connected = Boolean(value); if (!connected) clearAcknowledgementTimer();
+    const next = Boolean(value);
+    // The preview announces "connected" on every state/actor packet. Only an
+    // actual reconnection may retry a report or restart the host deadline;
+    // otherwise report -> broadcast -> connected creates a feedback loop.
+    if (destroyed || connected === next) return;
+    connected = next; if (!connected) clearAcknowledgementTimer();
     else { timedOut = false; watchAcknowledgement(); retryStatus = true; reportStatus(); }
     emit();
   }

@@ -3,20 +3,30 @@
 const disconnect = node => { try { node?.disconnect(); } catch {} };
 export const PHONE_DRONE_PITCH_SEMITONES = 16;
 export const PHONE_DRONE_PITCH_RATIO = 2 ** (PHONE_DRONE_PITCH_SEMITONES / 12);
+export const PHONE_DRONE_TRANSPOSITION_OFFSETS = Object.freeze([0, 3, 8, 12]);
+export function phoneDroneTransposition(sample) {
+  const unit = Number.isFinite(sample) ? Math.max(0, Math.min(1 - Number.EPSILON, sample)) : 0;
+  return PHONE_DRONE_TRANSPOSITION_OFFSETS[Math.floor(unit * PHONE_DRONE_TRANSPOSITION_OFFSETS.length)];
+}
 export const PHONE_DRONE_GAIN_TRIM = 10 ** (3 / 20);
 export const PHONE_DRONE_MOVING_BANK_WEIGHT = .38;
 export const PHONE_DRONE_BEAT_OFFSET_HZ = 1.4;
 export const PHONE_DRONE_BEAT_SPREAD_HZ = .3;
 export const PHONE_DRONE_HARMONICS = Object.freeze([0, 1, .18, .10, .04]);
-export const phoneDroneFrequency = (frequencies, index) => Math.max(20,
-  frequencies[index] * PHONE_DRONE_PITCH_RATIO - (index < 3 ? 0 : PHONE_DRONE_BEAT_OFFSET_HZ + PHONE_DRONE_BEAT_SPREAD_HZ * (index - 3)));
+export const phoneDroneFrequency = (frequencies, index, transpositionSemitones = 0) => Math.max(20,
+  frequencies[index] * PHONE_DRONE_PITCH_RATIO * 2 ** (transpositionSemitones / 12) - (index < 3 ? 0 : PHONE_DRONE_BEAT_OFFSET_HZ + PHONE_DRONE_BEAT_SPREAD_HZ * (index - 3)));
 export function phoneDroneWeight(scene, score) {
   if (scene?.id === 'forest-takeover') return score?.forestTakeoverProgress ?? 0;
   if (scene?.id === 'final-rain') return 1 - (score?.finalRainProgress ?? 0);
   return 0;
 }
 export class PhoneDroneAudio {
-  constructor({ context, destination }) { this.context = context; this.destination = destination; this.voice = null; this.retiring = new Set(); this.wave = null; }
+  constructor({ context, destination, random = Math.random }) {
+    this.context = context; this.destination = destination; this.voice = null; this.retiring = new Set(); this.wave = null;
+    // Choose once for this phone controller. Cues, mute and source retirement
+    // never draw another register or turn the whole phone ensemble in unison.
+    this.transpositionSemitones = phoneDroneTransposition(random());
+  }
   update({ active, weight = 0, frequencies = [], amplitudes = [] }) {
     if (!active || weight <= 0) { this.stop(); return; }
     const c = this.context, now = c.currentTime;
@@ -38,7 +48,7 @@ export class PhoneDroneAudio {
         const oscillator = c.createOscillator(), partial = c.createGain();
         oscillator.type = 'sine';
         if (this.wave && oscillator.setPeriodicWave) oscillator.setPeriodicWave(this.wave);
-        oscillator.frequency.value = phoneDroneFrequency(frequencies, index);
+        oscillator.frequency.value = phoneDroneFrequency(frequencies, index, this.transpositionSemitones);
         // A stronger moving bank deepens beating. Its small fixed offsets
         // keep a clear slow pulse even where the Main banks reach unison.
         partial.gain.value = (amplitudes[index % 3] ?? .3) * (index < 3 ? 1 - PHONE_DRONE_MOVING_BANK_WEIGHT : PHONE_DRONE_MOVING_BANK_WEIGHT);
@@ -48,7 +58,7 @@ export class PhoneDroneAudio {
       this.voice = { oscillators, partials, drive, highpass, lowpass, gain };
     }
     this.voice.gain.gain.setTargetAtTime(.032 * PHONE_DRONE_GAIN_TRIM * weight, now, .18);
-    for (const [index, oscillator] of this.voice.oscillators.entries()) oscillator.frequency.setTargetAtTime(phoneDroneFrequency(frequencies, index), now, 4);
+    for (const [index, oscillator] of this.voice.oscillators.entries()) oscillator.frequency.setTargetAtTime(phoneDroneFrequency(frequencies, index, this.transpositionSemitones), now, 4);
   }
   stop() {
     if (!this.voice) return;
@@ -73,5 +83,5 @@ export class PhoneDroneAudio {
     this.retiring.delete(voice);
   }
   destroy() { this.stop(); for (const voice of this.retiring) this._disposeVoice(voice); }
-  getMetrics() { return { oscillatorCount: this.voice?.oscillators.length ?? 0, retiringOscillatorCount: [...this.retiring].reduce((sum, voice) => sum + voice.oscillators.length, 0), pitchSemitones: PHONE_DRONE_PITCH_SEMITONES, trimDb: 3, movingBankWeight: PHONE_DRONE_MOVING_BANK_WEIGHT, beatOffsetHz: PHONE_DRONE_BEAT_OFFSET_HZ, beatSpreadHz: PHONE_DRONE_BEAT_SPREAD_HZ, upperHarmonics: PHONE_DRONE_HARMONICS.slice(2), staticDrive: 2.8, distortion: 'static soft drive', oversample: 'none' }; }
+  getMetrics() { return { oscillatorCount: this.voice?.oscillators.length ?? 0, retiringOscillatorCount: [...this.retiring].reduce((sum, voice) => sum + voice.oscillators.length, 0), pitchSemitones: PHONE_DRONE_PITCH_SEMITONES + this.transpositionSemitones, basePitchSemitones: PHONE_DRONE_PITCH_SEMITONES, transpositionSemitones: this.transpositionSemitones, trimDb: 3, movingBankWeight: PHONE_DRONE_MOVING_BANK_WEIGHT, beatOffsetHz: PHONE_DRONE_BEAT_OFFSET_HZ, beatSpreadHz: PHONE_DRONE_BEAT_SPREAD_HZ, upperHarmonics: PHONE_DRONE_HARMONICS.slice(2), staticDrive: 2.8, distortion: 'static soft drive', oversample: 'none' }; }
 }

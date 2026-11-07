@@ -1,5 +1,5 @@
 // Shared, DOM-free presentation rules. Scene timing always comes from the venue.
-import { computeSceneScore, scoreDurations } from './scene-score.js';
+import { computeSceneScore, scoreDurations, participationVisualProgress } from './scene-score.js';
 export const PERFORMANCE_SCENES = Object.freeze(['arrival', 'instructions', 'participation', 'forest-takeover', 'final-rain', 'afterglow', 'ended']);
 export const WORK_TITLE = 'karhutla';
 export const DEFAULT_PROGRAM_NOTES = 'Drawing on recent Indonesian wildfires, this participatory audiovisual work brings collective action into tension with the persistence of heat. The effort to extinguish the fires is also a confrontation with the human choices that have fed them. The audience becomes a temporary ensemble, its gestures gathering into a shared field of sound and rain. This shared effort unfolds alongside the hope for relief from forces beyond our control.';
@@ -11,7 +11,7 @@ export function scenePresentation(scene, { phone = false } = {}) {
   // The authority identifies the initial entrance. A later return to scene 3
   // must agree across existing displays, late joins, and refreshed phones.
   const enteringFromOpening = scene?.id === 'participation' && scene.participationOpening !== false;
-  const landscapeEntranceGain = opening || scene?.id === 'waiting' ? 0 : enteringFromOpening ? score.mix.phoneField : 1;
+  const landscapeEntranceGain = opening || scene?.id === 'waiting' ? 0 : enteringFromOpening ? participationVisualProgress(scene) : 1;
   const openingOverlayGain = opening ? 1 : enteringFromOpening ? 1 - landscapeEntranceGain : 0;
   return { ...score, gain, blackout: gain <= 0, opening, landscapeEntranceGain, openingOverlayGain,
     showProgramNotes: scene?.id === 'arrival', showInstructions: scene?.id === 'instructions',

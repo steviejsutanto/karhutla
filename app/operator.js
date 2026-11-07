@@ -39,10 +39,6 @@ for (const [index, tab] of workspaceTabs.entries()) {
     selectWorkspace(workspaceTabs[next].dataset.workspaceTab, true);
   });
 }
-$('scene-restart-shortcut').addEventListener('click', () => {
-  selectWorkspace('setup');
-  $('scene-restart').focus();
-});
 const metrics = window.__performanceOperator = { allowed: false, localOperator: false, remoteControl: false, connected: false, lastState: null, scene: null, soundSettings: null, mainSound: null, actions: [], errors: [] };
 let mainSoundControl = null;
 let latestState = null, sound = null, scene = null, pending = 0, soundTimer = null, soundPatch = {}, soundWaiters = [], strengthTimer = null, timingTimer = null, settingsDirty = false, scoreSettingsDirty = false, lastSoundSettings = '', connectionNotice = true;
@@ -95,7 +91,6 @@ function renderScene(next) {
   }
   $('scene-pause').disabled = next.id === 'ended'; text('scene-pause', next.paused ? next.id === 'arrival' && next.elapsedMs === 0 ? 'Start timed performance' : 'Resume' : 'Pause');
   if (next.id === 'ended') text('scene-pause', 'Complete');
-  $('scene-restart-shortcut').hidden = next.id !== 'ended';
   $('scene-end').disabled = next.id === 'ended';
   const descriptions = { arrival: 'Title, program notes and numbered Wi-Fi then QR steps are visible. Start timed performance when the room is ready. Scenes then advance automatically; any scene button overrides the sequence and resets that scene’s timer.', instructions: 'Wi-Fi details, instructions and QR are visible on Projection; the same instructions appear on phones. Main moves from haze into distant burning forest. Participation opens automatically when this countdown ends.', participation: 'Audience rain cools the ground. D♭ soft tones sound in fixed places. Main rings once when an entire rain area is extinguished; phones add light rain during touch. Forest takeover begins automatically when this countdown ends.', 'forest-takeover': 'Fire returns as burning forest rises to 100%. The low drone transfers to phones with soft distortion. Audience rain cools and extinguishes patches while returning heat fights back. Final rain begins automatically after this countdown; the scene buttons can override it.', 'final-rain': `Sparse, quiet rain builds over ${next.settings?.finalRainRiseSeconds ?? DEFAULT_SCORE_SETTINGS.finalRainRiseSeconds} seconds. After all fires are out, rain crossfades into PA crickets over ${next.settings?.rainCricketOverlapSeconds ?? DEFAULT_SCORE_SETTINGS.rainCricketOverlapSeconds} seconds as the screens fade. PA crickets and a distant orangutan voice then hold in complete darkness before the crickets transfer to phones.`, afterglow: 'Rain crossfades smoothly into PA crickets as the screens fade. PA crickets and a distant orangutan voice hold in darkness before crickets transfer to phones. Very sparse bird calls pass between phones while the orangutan remains faint on Main; all recede into silence.', ended: 'Every screen is black and all sound is silent. Restart returns the room to paused Arrival with a fresh landscape.' };
   text('scene-description', next.paused && next.id !== 'arrival' ? `Paused. ${descriptions[next.id]}` : descriptions[next.id]);

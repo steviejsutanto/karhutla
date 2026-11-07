@@ -24,7 +24,9 @@ The downloads include recordings, visuals and a fire snapshot. Performances run 
 
 Connect the second device to the same Wi-Fi and scan the audience QR code. In its browser address, replace `/audience` with `/operator-remote`. Enter the six-digit PIN shown on the host in **Operator → Setup → Remote control**. Scene cues, mixer changes and setup edits stay synchronized across the operator pages.
 
-The device remembers access. Keep the host's Operator page open with Main sound enabled; audio stays on that computer and the remote device stays silent. Keep the PIN private; **Reset PIN & devices** revokes remembered access.
+Bookmark the remote address; the browser remembers access. Updates on the same computer and user account retain the PIN and remembered devices automatically. **Reset PIN & devices** replaces these shared credentials for future updates too. Another computer or user account has its own PIN. If the host's network address changes, use **Refresh address** and update the bookmark. Both devices must still share the same network.
+
+Keep the host's Operator page open with Main sound enabled; audio stays on that computer and the remote device stays silent. Keep the PIN private.
 
 ## Move settings and install updates
 

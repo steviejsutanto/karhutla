@@ -249,13 +249,15 @@ test('simultaneous first launches publish one complete private key without repla
   assert.deepEqual(await readdir(directory), ['remote-operator.json']);
 });
 
-test('normal saves keep the private key beside performance data and never serve or export it', async t => {
+test('normal launches keep the private key outside the release and never serve or export it', async t => {
   const directory = await mkdtemp(path.join(os.tmpdir(), 'karhutla operator private storage '));
-  const instance = await fixture(t, { rootDir: directory, persistencePath: undefined });
+  const operatorDataDir = path.join(directory, 'private');
+  const instance = await fixture(t, { rootDir: directory, persistencePath: undefined, operatorDataDir });
   t.after(async () => { await instance.close(); await rm(directory, { recursive: true, force: true }); });
   const { token } = await pair(instance);
-  const saved = JSON.parse(await readFile(path.join(directory, 'data/remote-operator.json'), 'utf8'));
+  const saved = JSON.parse(await readFile(path.join(operatorDataDir, 'remote-operator.json'), 'utf8'));
   assert.equal(saved.secret, token);
+  await assert.rejects(readFile(path.join(directory, 'data/remote-operator.json')), { code: 'ENOENT' });
   for (const url of ['/data/remote-operator.json', '/data/.remote-operator.json.tmp']) {
     assert.equal((await requestFrom(instance, host, url)).status, 404);
     assert.equal((await requestFrom(instance, remote, url)).status, 404);
@@ -380,4 +382,71 @@ test('PIN attempts retain origin and display-page restrictions and reject malfor
     assert.equal((await requestFrom(instance, `192.168.20.${index}`, '/api/operator/pair', post(value))).status, 403);
   }
   assert.equal((await requestFrom(instance, remote, '/api/operator/pair', post({ pin }))).status, 200, 'Rejected display and cross-origin attempts do not consume legitimate PIN attempts.');
+});
+
+test('new release folders automatically reuse the account PIN and remembered device, including after reset', async t => {
+  const directory = await mkdtemp(path.join(os.tmpdir(), 'karhutla operator update '));
+  const instances = [];
+  t.after(async () => { for (const instance of instances) await instance.close(); await rm(directory, { recursive: true, force: true }); });
+  const rootA = path.join(directory, 'release-a'), rootB = path.join(directory, 'release-b');
+  const operatorDataDir = path.join(directory, 'account');
+  const legacyA = path.join(rootA, 'data/remote-operator.json'), legacyB = path.join(rootB, 'data/remote-operator.json');
+  await mkdir(path.dirname(legacyA), { recursive: true });
+  await mkdir(path.dirname(legacyB), { recursive: true });
+  const legacy = { version: 1, secret: Buffer.alloc(32, 91).toString('base64url'), pin: '007310' };
+  await writeFile(legacyA, JSON.stringify(legacy), { mode: 0o600 });
+  await writeFile(legacyB, JSON.stringify(legacy), { mode: 0o600 });
+  const start = async rootDir => {
+    const instance = await fixture(t, { rootDir, persistencePath: undefined, operatorDataDir });
+    instances.push(instance); return instance;
+  };
+  const a = await start(rootA);
+  const paired = await pair(a);
+  assert.equal(paired.links.pin, legacy.pin);
+  assert.equal(paired.token, legacy.secret);
+  await a.close();
+  const b = await start(rootB);
+  assert.equal((await requestFrom(b, host, '/api/operator/remote')).body.pin, legacy.pin);
+  assert.equal((await requestFrom(b, remote, '/api/session', { headers: { cookie: paired.cookie } })).body.operatorAllowed, true);
+  const reset = await requestFrom(b, host, '/api/operator/remote/renew', post({}));
+  assert.equal(reset.status, 200);
+  const remembered = await pair(b);
+  assert.notEqual(remembered.links.pin, legacy.pin);
+  assert.notEqual(remembered.token, legacy.secret);
+  await b.close();
+  const rootC = path.join(directory, 'fresh-release-without-copied-data');
+  const fresh = await start(rootC);
+  await assert.rejects(readFile(path.join(rootC, 'data/remote-operator.json')), { code: 'ENOENT' });
+  assert.equal((await requestFrom(fresh, host, '/api/operator/remote')).body.pin, remembered.links.pin);
+  assert.equal((await requestFrom(fresh, remote, '/api/session', { headers: { cookie: remembered.cookie } })).body.operatorAllowed, true);
+  await fresh.close();
+  await writeFile(legacyA, 'stale and broken release snapshot');
+  const reopened = await start(rootA);
+  assert.equal((await requestFrom(reopened, host, '/api/operator/remote')).body.pin, remembered.links.pin);
+  assert.equal((await requestFrom(reopened, remote, '/api/session', { headers: { cookie: remembered.cookie } })).body.operatorAllowed, true);
+  assert.equal((await requestFrom(reopened, remote, '/api/session', { headers: { cookie: paired.cookie } })).body.operatorAllowed, false);
+  assert.equal((await requestFrom(reopened, remote, '/api/operator/pair', post({ pin: legacy.pin }))).status, 403);
+  assert.equal((await requestFrom(reopened, remote, '/api/operator/pair', post({ pin: remembered.links.pin }))).status, 200);
+});
+
+test('explicit save paths remain isolated and explicit operator paths take precedence over shared storage', async t => {
+  const directory = await mkdtemp(path.join(os.tmpdir(), 'karhutla isolated operator storage '));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  const operatorDataDir = path.join(directory, 'account');
+  const rootDir = path.join(directory, 'release');
+  const account = await fixture(t, { rootDir, persistencePath: null, operatorDataDir });
+  const shared = await pair(account);
+  assert.equal(JSON.parse(await readFile(path.join(operatorDataDir, 'remote-operator.json'), 'utf8')).secret, shared.token);
+  const isolated = await fixture(t, { rootDir });
+  const privatePair = await pair(isolated);
+  assert.notEqual(privatePair.token, shared.token);
+  assert.equal((await requestFrom(isolated, remote, '/api/session', { headers: { cookie: shared.cookie } })).body.operatorAllowed, false);
+  const explicitPath = path.join(directory, 'explicit', 'remote-operator.json');
+  const overridden = await fixture(t, { rootDir, operatorDataDir, remoteOperatorPath: explicitPath });
+  const overridePair = await pair(overridden);
+  assert.notEqual(overridePair.token, shared.token);
+  assert.equal(JSON.parse(await readFile(explicitPath, 'utf8')).secret, overridePair.token);
+  assert.equal(JSON.parse(await readFile(path.join(operatorDataDir, 'remote-operator.json'), 'utf8')).secret, shared.token);
+  const memory = await fixture(t, { rootDir, operatorDataDir, remoteOperatorPath: null });
+  assert.notEqual((await pair(memory)).token, shared.token);
 });

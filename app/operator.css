@@ -121,7 +121,6 @@ summary { cursor: pointer; }
 .operator-join img { background: white; padding: 5px; }
 .operator-join a { font-size: 11px; overflow-wrap: anywhere; }
 .button-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 14px; }
-.restart-panel button { margin-top: 18px; }
 @media(max-width:1050px) {
   main { padding: 18px 20px 28px; }
   .operator-brand .eyebrow { display: none; }

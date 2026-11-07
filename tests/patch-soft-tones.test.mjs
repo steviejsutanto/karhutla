@@ -83,26 +83,47 @@ const curveAt = (record, at) => {
 };
 
 test('long-held motion leaves short notes unchanged, eases into clearly audible motion and never retunes pitch', () => {
-  assert.equal(PATCH_HELD_MOTION_START_SECONDS, 4); assert.equal(PATCH_HELD_MOTION_RISE_SECONDS, 4);
+  assert.equal(PATCH_HELD_MOTION_START_SECONDS, 4); assert.equal(PATCH_HELD_MOTION_RISE_SECONDS, 1);
   for (const age of [-1, 0, 3, 3.9, 4]) assert.equal(patchHeldToneMotionDepth(age), 0);
-  assert.equal(patchHeldToneMotionDepth(6), PATCH_HELD_MOTION_DEPTH / 2);
-  assert.equal(patchHeldToneMotionDepth(8), .14); assert.equal(patchHeldToneMotionDepth(600), .14);
+  assert.equal(patchHeldToneMotionDepth(4.5), PATCH_HELD_MOTION_DEPTH / 2);
+  assert.equal(patchHeldToneMotionDepth(5), .32); assert.equal(patchHeldToneMotionDepth(600), .32);
   const { audio, context } = harness({ areaMode: true });
   audio.setPatches([patch('long-a'), patch('long-b')]);
   const first = audio.voices.get('long-a'), second = audio.voices.get('long-b');
   const identity = first.motionOscillator, automation = first.motionDepth.gain.events.slice();
   assert.equal(first.motionGain.gain.value, 1);
   assert.equal(first.motionOscillator.frequency.value, first.motionFrequencyHz);
-  assert.ok(first.motionFrequencyHz >= .12 && first.motionFrequencyHz < .18);
+  assert.ok(first.motionFrequencyHz >= .32 && first.motionFrequencyHz < .42);
   assert.notEqual(first.motionFrequencyHz, second.motionFrequencyHz);
   assert.notEqual(first.motionOscillator.startedAt, second.motionOscillator.startedAt);
+  for (const voice of [first, second]) assert.ok(voice.motionOscillator.startedAt >= 4 && voice.motionOscillator.startedAt < 4.15,
+    'A newly held area starts a common breath, with small per-patch timing differences.');
   context.advance(25);
   for (let i = 0; i < 20; i++) audio.setPatches([patch('long-a'), patch('long-b')]);
   assert.equal(audio.voices.get('long-a'), first); assert.equal(first.motionOscillator, identity);
   assert.deepEqual(first.motionDepth.gain.events, automation, 'Repeated packets do not restart movement or add automation.');
-  assert.equal(audio.getMetrics().voices[0].motionDepth, .14);
+  assert.equal(audio.getMetrics().voices[0].motionDepth, .32);
   assert.ok(first.oscillators.every(node => node.frequency.events.length === 0));
   audio.stop(); assert.ok(first.motionOscillator.disconnected && first.motionDepth.disconnected && first.motionGain.disconnected);
+});
+
+test('release before four seconds cancels the future motion without a late restart', () => {
+  for (const completion of [false, true]) {
+    const { audio, context } = harness({ areaMode: completion });
+    const key = `early-motion-${completion}`; audio.setPatches([patch(key)]);
+    const voice = audio.voices.get(key), start = voice.motionOscillator.startedAt;
+    context.advance(1);
+    if (completion) {
+      audio.setPatches([patch(key, { extinguished: true, heat: 0 })]);
+      assert.equal(audio.triggerAreaExtinction({ id: 'early-complete', key, memberKeys: [key] }), true);
+    } else audio.setPatches([]);
+    assert.equal(voice.motionStop.depth, 0);
+    assert.ok(voice.motionOscillator.stoppedAt < start, 'A short gesture stops the future LFO before it can start.');
+    context.advance(8); audio.tick();
+    assert.equal(audio.getMetrics().voices.length, 0);
+    assert.ok(voice.disposed && voice.motionOscillator.disconnected);
+    audio.stop();
+  }
 });
 
 test('motion fades out at release or completion without extending the finite pitched exit', () => {
@@ -114,8 +135,8 @@ test('motion fades out at release or completion without extending the finite pit
       audio.setPatches([patch(key, { extinguished: true, heat: 0 })]);
       assert.equal(audio.triggerAreaExtinction({ id: 'complete-motion', key, memberKeys: [key] }), true);
     } else audio.setPatches([]);
-    assert.equal(voice.motionStop.at, at); assert.equal(voice.motionStop.depth, .14);
-    assert.ok(voice.motionDepth.gain.events.some(event => event[0] === 'set' && event[1] === .14 && event[2] === at), 'Release anchors the held depth before its fade, even with native cancel-and-hold.');
+    assert.equal(voice.motionStop.at, at); assert.equal(voice.motionStop.depth, .32);
+    assert.ok(voice.motionDepth.gain.events.some(event => event[0] === 'set' && event[1] === .32 && event[2] === at), 'Release anchors the held depth before its fade, even with native cancel-and-hold.');
     assert.ok(voice.motionDepth.gain.events.some(event => event[0] === 'linear' && event[1] === 0 && event[2] === at + .2));
     assert.equal(voice.motionOscillator.stoppedAt, voice.oscillators[0].stoppedAt);
     assert.ok(voice.motionOscillator.stoppedAt <= at + PATCH_TONE_EXIT_SECONDS + .02);

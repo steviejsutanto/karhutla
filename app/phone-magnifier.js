@@ -29,13 +29,15 @@ export function magnifierCrop({ x, y, width, height, size = MAGNIFIER_SIZE, zoom
 }
 
 export class PhoneMagnifier {
-  constructor({ element, canvas, source, pixelRatio = 1 }) {
+  constructor({ element, canvas, source, pixelRatio = 1,
+    requestFrame = globalThis.requestAnimationFrame?.bind(globalThis), cancelFrame = globalThis.cancelAnimationFrame?.bind(globalThis) }) {
     if (canvas === source) throw new Error('The magnifier needs a separate source canvas.');
     this.element = element; this.canvas = canvas; this.source = source; this.context = canvas.getContext('2d');
     const label = element.querySelector?.('[data-magnifier-label]');
     if (label) label.textContent = `${MAGNIFIER_ZOOM}×`;
     element.dataset.zoom = String(MAGNIFIER_ZOOM);
     this.pixelRatio = Math.max(1, Math.min(1.5, pixelRatio)); this.active = false; this.lingering = false; this.hideTimer = null; this.lastDraw = -Infinity; this.frames = 0;
+    this.requestFrame = requestFrame; this.cancelFrame = cancelFrame; this.moveFrame = null; this.paintedPoint = null; this.lastMoveDraw = -Infinity;
     this.hide();
   }
   show({ touch, point, width, height, sourceWidth, sourceHeight }, now = performance.now()) {
@@ -48,9 +50,30 @@ export class PhoneMagnifier {
     this.element.style.width = `${size}px`; this.element.style.height = `${size}px`;
     this.element.style.transform = `translate(${left}px, ${top}px)`;
     const pixels = Math.round(size * this.pixelRatio);
-    if (this.canvas.width !== pixels) { this.canvas.width = pixels; this.canvas.height = pixels; }
-    this.draw(now, fresh);
+    const resized = this.canvas.width !== pixels;
+    if (resized) { this.canvas.width = pixels; this.canvas.height = pixels; }
+    if (fresh || resized) { this.lastMoveDraw = -Infinity; this.draw(now, true); }
+    else if (this._pointMoved()) {
+      // The lens follows the finger immediately; its tiny cached-map crop
+      // catches up on the next paint, rather than waiting for the map's 20 Hz
+      // animation or the idle lens's 24 Hz refresh. Coalesce fast input into
+      // one pending copy instead of repainting the full map on every move.
+      this._queueMovement();
+    } else this.draw(now);
   }
+  _pointMoved() { return !this.paintedPoint || Math.abs(this.point.x - this.paintedPoint.x) > .25 || Math.abs(this.point.y - this.paintedPoint.y) > .25; }
+  _queueMovement() {
+    if (this.moveFrame !== null || !this.requestFrame) return;
+    this.moveFrame = this.requestFrame(at => {
+      this.moveFrame = null;
+      if (!this.active || !this._pointMoved()) return;
+      // High-refresh phones still copy at most 60 times per second during a
+      // drag. Its first movement always gets the very next animation frame.
+      if (at - this.lastMoveDraw < 1000 / 60 - .01) { this._queueMovement(); return; }
+      this.draw(at, true); this.lastMoveDraw = at;
+    });
+  }
+  _cancelMovement() { if (this.moveFrame !== null) this.cancelFrame?.(this.moveFrame); this.moveFrame = null; }
   draw(now = performance.now(), force = false) {
     if (!this.active || !this.source.width || !this.source.height || (!force && now - this.lastDraw < 1000 / 24)) return false;
     const size = this.layout.size, context = this.context;
@@ -70,19 +93,23 @@ export class PhoneMagnifier {
     context.moveTo(center, center - 10); context.lineTo(center, center - 4);
     context.moveTo(center, center + 4); context.lineTo(center, center + 10);
     context.stroke();
-    this.lastDraw = now; this.frames++;
+    this.lastDraw = now; this.frames++; this.paintedPoint = { ...this.point };
     this.element.dataset.frames = String(this.frames); this.element.dataset.zoom = String(MAGNIFIER_ZOOM);
     this.element.dataset.sourcePoint = JSON.stringify([this.point.x, this.point.y]);
     return true;
   }
   release() {
     if (!this.active) return;
+    this._cancelMovement();
+    if (this._pointMoved()) this.draw(performance.now(), true);
     this.active = false; this.lingering = true;
     clearTimeout(this.hideTimer);
     this.hideTimer = setTimeout(() => this.hide(), 450);
   }
   hide() {
     clearTimeout(this.hideTimer); this.hideTimer = null;
+    this._cancelMovement();
     this.active = false; this.lingering = false; this.element.hidden = true; this.point = null;
+    this.paintedPoint = null;
   }
 }

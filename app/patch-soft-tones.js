@@ -36,8 +36,8 @@ export const PATCH_TEXTURE_SOURCE_LIMIT = 8;
 export const PATCH_TEXTURE_ADMISSION_SECONDS = .1;
 const TONE_RISE_SECONDS = .3;
 export const PATCH_HELD_MOTION_START_SECONDS = 4;
-export const PATCH_HELD_MOTION_RISE_SECONDS = 4;
-export const PATCH_HELD_MOTION_DEPTH = .14;
+export const PATCH_HELD_MOTION_RISE_SECONDS = 1;
+export const PATCH_HELD_MOTION_DEPTH = .32;
 const HELD_MOTION_EXIT_SECONDS = .2;
 export const patchHeldToneMotionDepth = age => PATCH_HELD_MOTION_DEPTH * smooth((age - PATCH_HELD_MOTION_START_SECONDS) / PATCH_HELD_MOTION_RISE_SECONDS);
 // A completed short gesture can reach Main after its actor has released.
@@ -317,11 +317,12 @@ export class PatchSoftToneAudio {
     filter.type = 'lowpass'; filter.Q.value = -3; gain.gain.value = 0; mixer.gain.value = this.mixer.chimes * this.toneWeight;
     motionGain.gain.value = 1;
     filter.connect(gain); gain.connect(motionGain); motionGain.connect(mixer); mixer.connect(space.input); this._position(space, patch.position);
-    // Long cooling areas get a little breath after the initial note has
-    // settled. A quiet native gain LFO leaves every assigned pitch untouched.
-    // It starts after four seconds and grows over four seconds on sustained notes.
+    // Long cooling areas breathe after the initial note has settled. Keep the
+    // fundamental fixed; a clearly paced native gain LFO provides the motion.
+    // After four seconds it reaches full depth within one second, rather than
+    // taking several more seconds to become distinguishable from a level drift.
     const motionOscillator = c.createOscillator(), motionDepth = c.createGain();
-    const motionFrequencyHz = .12 + .06 * materialUnit(patch, 'held-motion-speed');
+    const motionFrequencyHz = .32 + .10 * materialUnit(patch, 'held-motion-speed');
     motionOscillator.type = 'sine'; motionOscillator.frequency.value = motionFrequencyHz;
     motionDepth.gain.value = 0; motionDepth.gain.setValueAtTime(0, now + PATCH_HELD_MOTION_START_SECONDS);
     for (let index = 1; index <= 32; index++) {
@@ -329,7 +330,11 @@ export class PatchSoftToneAudio {
       motionDepth.gain.linearRampToValueAtTime(patchHeldToneMotionDepth(age), now + age);
     }
     motionOscillator.connect(motionDepth); motionDepth.connect(motionGain.gain);
-    motionOscillator.start(now + .02 + 2 * materialUnit(patch, 'held-motion-phase'));
+    // Begin a held area's voices in roughly the same part of the breath.
+    // The previous two-second phase spread averaged away the movement when
+    // many nearby patches sounded together. Small offsets and varying speeds
+    // still keep the sustained field from becoming one rigid tremolo.
+    motionOscillator.start(now + PATCH_HELD_MOTION_START_SECONDS + .15 * materialUnit(patch, 'held-motion-phase'));
     const frequency = patchFrequencyForMidi(patch.midi), shape = patchSoftToneParameters(patch, this.hazeOnlyBlend), oscillators = [], partials = [];
     filter.frequency.value = frequency * shape.cutoffRatio;
     for (const ratio of [1, 2]) {

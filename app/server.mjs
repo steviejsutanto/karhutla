@@ -1,8 +1,8 @@
 import http from 'node:http';
 import os from 'node:os';
-import { link, mkdir, open, readFile, rename, unlink } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
-import { createHash, randomBytes, randomInt, timingSafeEqual } from 'node:crypto';
+import { timingSafeEqual } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { WebSocketServer, WebSocket } from 'ws';
@@ -10,6 +10,7 @@ import QRCode from 'qrcode';
 import { SharedRoom } from './shared-room.mjs';
 import { stateFrame, statePacket } from './wire-state.mjs';
 import { createBellRelay } from './bell-relay.mjs';
+import { createOperatorCredentials, defaultOperatorDataDirectory, loadOperatorCredentials, saveOperatorCredentials } from './operator-access.mjs';
 import { isMain } from '../scripts/is-main.mjs';
 
 const workspaceRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -126,60 +127,6 @@ const normalizeIP = value => (value || '').replace(/^::ffff:/, '');
 const loopback = address => address === '::1' || /^127\./.test(address);
 const privateIP = address => /^10\./.test(address) || /^192\.168\./.test(address) || /^172\.(1[6-9]|2\d|3[01])\./.test(address);
 const operatorCookie = 'karhutla-operator';
-const newOperatorSecret = () => randomBytes(32).toString('base64url');
-function newOperatorPin(previous) {
-  let pin;
-  do { pin = String(randomInt(1000000)).padStart(6, '0'); } while (pin === previous);
-  return pin;
-}
-async function readOperatorSecret(file) {
-  const saved = JSON.parse(await readFile(file, 'utf8'));
-  if (!saved || saved.version !== 1 || typeof saved.secret !== 'string' || !/^[A-Za-z0-9_-]{43}$/.test(saved.secret)
-    || Buffer.from(saved.secret, 'base64url').toString('base64url') !== saved.secret
-    || (saved.pin !== undefined && (typeof saved.pin !== 'string' || !/^\d{6}$/.test(saved.pin)))) throw new Error('The saved private operator link is invalid.');
-  return { secret: saved.secret, pin: saved.pin };
-}
-async function saveOperatorSecret(file, credentials, exclusive = false) {
-  await mkdir(path.dirname(file), { recursive: true });
-  const temporary = path.join(path.dirname(file), `.${path.basename(file)}.${randomBytes(12).toString('hex')}.tmp`);
-  let handle;
-  try {
-    handle = await open(temporary, 'wx', 0o600);
-    await handle.writeFile(`${JSON.stringify({ version: 1, ...credentials })}\n`, 'utf8');
-    await handle.sync();
-    await handle.close(); handle = null;
-    // Initial creation must not overwrite a key published by a simultaneous
-    // launcher. Linking a completed file also prevents reading partial JSON.
-    if (exclusive) await link(temporary, file);
-    else await rename(temporary, file);
-  } finally {
-    await handle?.close().catch(() => {});
-    await unlink(temporary).catch(() => {});
-  }
-}
-async function addOperatorPin(file, credentials) {
-  if (credentials.pin !== undefined) return credentials;
-  // A stable derivation from the existing random secret lets simultaneous
-  // upgrades agree without a crash-prone lock or changing remembered access.
-  // New installations and explicit resets use independently random PINs.
-  const bytes = createHash('sha256').update('karhutla/operator-pin/v1\0').update(credentials.secret).digest();
-  const migrated = { secret: credentials.secret, pin: String(bytes.readUIntBE(0, 6) % 1000000).padStart(6, '0') };
-  await saveOperatorSecret(file, migrated);
-  return migrated;
-}
-async function loadOperatorSecret(file) {
-  if (file === null) return { secret: newOperatorSecret(), pin: newOperatorPin() };
-  try {
-    try { return await addOperatorPin(file, await readOperatorSecret(file)); }
-    catch (error) { if (error.code !== 'ENOENT') throw error; }
-    const credentials = { secret: newOperatorSecret(), pin: newOperatorPin() };
-    try { await saveOperatorSecret(file, credentials, true); return credentials; }
-    catch (error) { if (error.code !== 'EEXIST') throw error; }
-    return await addOperatorPin(file, await readOperatorSecret(file));
-  } catch (error) {
-    throw new Error(`The saved private operator link could not be opened at ${file}. Check that the file is readable and valid, and its folder is writable.`, { cause: error });
-  }
-}
 function secretMatches(value, secret) {
   if (typeof value !== 'string' || value.length !== secret.length) return false;
   const candidate = Buffer.from(value);
@@ -236,10 +183,14 @@ export async function createPerformanceServer(options = {}) {
     return network;
   };
   const persistencePath = options.persistencePath === undefined ? path.join(root, 'data/performance-state.json') : options.persistencePath;
-  const remoteOperatorPath = options.remoteOperatorPath === undefined
-    ? persistencePath === null ? null : path.join(path.dirname(persistencePath), 'remote-operator.json')
-    : options.remoteOperatorPath;
-  const savedOperator = await loadOperatorSecret(remoteOperatorPath);
+  const sharedOperatorStorage = options.remoteOperatorPath === undefined
+    && (options.operatorDataDir !== undefined || options.persistencePath === undefined);
+  const remoteOperatorPath = options.remoteOperatorPath !== undefined ? options.remoteOperatorPath
+    : sharedOperatorStorage ? path.join(options.operatorDataDir ?? defaultOperatorDataDirectory(), 'remote-operator.json')
+      : persistencePath === null ? null : path.join(path.dirname(persistencePath), 'remote-operator.json');
+  const savedOperator = await loadOperatorCredentials(remoteOperatorPath, {
+    legacyPath: sharedOperatorStorage ? path.join(root, 'data/remote-operator.json') : null,
+  });
   let remoteOperatorSecret = savedOperator.secret, remoteOperatorPin = savedOperator.pin;
   let remoteOperatorRenewing = false;
   const pairingFailures = new Map(), pairingNow = options.clock || (() => performance.now());
@@ -415,10 +366,10 @@ export async function createPerformanceServer(options = {}) {
           if (remoteOperatorRenewing) return sendJSON(response, 409, { error: 'The private operator link is already being reset. Wait a moment and try again.' });
           remoteOperatorRenewing = true;
           try {
-            const nextCredentials = { secret: newOperatorSecret(), pin: newOperatorPin(remoteOperatorPin) };
+            const nextCredentials = createOperatorCredentials(remoteOperatorPin);
             if (remoteOperatorPath !== null) {
-              try { await saveOperatorSecret(remoteOperatorPath, nextCredentials); }
-              catch { return sendJSON(response, 500, { error: 'The new private operator link could not be saved. The existing link and connected controllers still work. Check that the data folder is writable and try again.' }); }
+              try { await saveOperatorCredentials(remoteOperatorPath, nextCredentials); }
+              catch { return sendJSON(response, 500, { error: 'The new private operator link could not be saved. The existing link and connected controllers still work. Check that the private data folder is writable and try again.' }); }
             }
             remoteOperatorSecret = nextCredentials.secret;
             remoteOperatorPin = nextCredentials.pin;

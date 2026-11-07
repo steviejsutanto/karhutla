@@ -37,7 +37,7 @@ Keep the Mac's Operator page open with Main sound enabled and keep the Mac awake
 
 Bookmark the simple `/operator-remote` address for future rehearsals. The browser remembers access for one year across browser and server restarts; clearing browser data requires entering the PIN again. Use **Refresh address** and update the bookmark if the router gives the Mac a different address. Both devices must still be on the same network. **Reset PIN & devices** disconnects remembered controllers and replaces the PIN. Keep the PIN private. Existing long private operator links remain supported.
 
-The PIN and private key are saved locally in `data/remote-operator.json`, outside GitHub, release packages and settings exports. When moving to a new release folder, copy that file privately if you want to retain the same PIN and remembered access; otherwise the new folder creates its own credentials.
+The PIN and private key are saved outside the app folder in `~/Library/Application Support/Karhutla/remote-operator.json`. New release folders use that shared file automatically, retaining the PIN and remembered access for the same Mac user account. The first updated launch imports an existing app-local `data/remote-operator.json` if no shared credentials exist. No manual copying is needed for later updates. **Reset PIN & devices** replaces the shared credentials for future launches and updates. Another computer or user account has its own PIN. Credentials stay outside GitHub, release packages and settings exports.
 
 ## First-open approval
 

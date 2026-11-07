@@ -12,11 +12,16 @@ remote disable/enable actions use the same smooth output fades. Its status
 shows when that first host click is needed. Keep the host Operator page open.
 The remote controller stays silent and audience phones retain their own sound
 buttons. Playback commands are temporary and are never saved in a preset.
+The remote waits for the host to confirm each change. If the host does not
+respond or finish starting within about eight seconds, the remote reports
+that host sound is unavailable and releases the button so it can be retried.
+Keep the host Operator page open; a later confirmed response restores its status.
 
 The operator opens in Performance. Mixer keeps all 13 layer levels and the
 five texture-shaping controls beside the same preview; texture shaping starts
-collapsed and shows Automatic or Manual mode. Setup contains timing, ground
-response, audience information, source updates and Restart performance. View
+collapsed and shows Automatic or Manual mode. Restart performance is beside
+Pause in the Performance transport. Setup contains timing, ground response,
+audience information and source updates. View
 changes leave the preview/audio engine and unsaved form drafts in place.
 
 The work title is **karhutla**. Scene 1 shows program notes, Wi-Fi credentials
@@ -1020,3 +1025,71 @@ restores participation without a page reload.
 Ground strength and timing prepared before the first Start now survive a
 restart. If the source snapshot is empty, Final rain still runs its full
 configured rise and then completes the ending; no fire counts are invented.
+
+## Held-tone motion, bell balance and first-drag magnifier
+
+Held-tone motion still begins four seconds after that geographic patch's
+native voice starts. It now reaches full depth within one second, at ±32%,
+with a 0.32–0.42 Hz cycle. Previously the four-second rise and 0.12–0.18 Hz
+cycle left very little motion just after four seconds. Pitch stays fixed;
+the native gain modulation, smooth release and bounded voice pool remain.
+The native LFO starts at four seconds with only 0–150 ms of phase variation,
+so notes admitted together have a clearer first swell instead of averaging
+away through widely scattered starts; their differing speeds then separate.
+Dragging into a newly admitted patch starts that patch's own four-second
+clock. Many independently moving notes can sound less like a single pulse.
+
+Main bells now have individual note trims rather than one gain for each
+octave. Relative to the 0.026 base: C3 0 dB, G3 −2 dB, C4 0 dB, G4 +2 dB,
+C5 +6 dB and G5 +6 dB. Compared with the previous mix, only G3 (−2 dB),
+G4 (+2 dB), C5 (+2 dB) and G5 (+2 dB) change. The 12/10/8-second register decays,
+inharmonic partials and spatial placement are retained. These are fixed
+calibration trims; participant counts do not turn bells down.
+
+The 2× phone magnifier paints the first touch immediately. During movement,
+its small cached-map crop refreshes on the next animation frame, coalescing
+input and capping sustained copies at 60 Hz. Idle lens animation remains
+24 Hz and the main map remains 20 Hz. Its 124 CSS-pixel diameter and maximum
+186-pixel backing canvas are unchanged. A quick release flushes the final
+point; hiding cancels pending callbacks. No extra map, simulation or network
+request is added.
+
+Each phone chooses one distorted-drone transposition when its audio controller
+is created: the current register, +3 semitones (minor third), +8 semitones
+(minor sixth), or +12 semitones (octave), with equal probability. That choice
+stays fixed through updates, mute/resume and scene re-entry for the page's
+audio session. Reloading the phone can choose again. The entire drone voice
+follows the choice; its six oscillators, fixed-Hz beating and output trim are
+retained. The existing phone Drone mixer slider still controls all variants.
+
+Restart performance is now directly available in the main Performance tab,
+beside Pause. It keeps the existing reset behavior: fresh landscape and paused
+Arrival, preserving sound settings, timings and audience information. Setup
+no longer contains a duplicate restart panel.
+
+Validation: 817 checks pass with one native Windows launch check skipped on
+macOS. Native Main-output renders measured 8-note held motion increasing
+from 1.07 to 4.79 dB at 5–8 seconds, and 32-note motion from 1.57 to 5.36 dB.
+The first four seconds retain their original sound; short releases cannot
+start late motion. Bell K-weighted active-body spread falls from as much as
+5.68 dB to 2.27 dB across the tested left, center and right positions, with
+only 0.19–0.38 dB change in ensemble energy. Overlapping bell bursts remain
+finite and unclipped. This improves the note family while retaining spatial
+color; actual PA speakers and room acoustics still affect perceived balance.
+
+In an isolated phone-page browser check, with venue messages delayed 400 ms,
+median immediate-drag crop delay fell from 78.9 to 11.1 ms. This is browser
+verification, not a physical-phone latency measurement. The moved Restart
+button was checked at 1440, 1024, 390 and 320 CSS pixels, including reset from
+Participation and Ended and from a silent remote controller. Each action
+keeps settings and sends only one reset.
+All four phone-drone variants also passed native phone-output checks, with
+the requested pitch steps, unchanged gain trim, six active oscillators and
+exact silence after mute. Their measured RMS span is 0.57 dB.
+
+Evidence: `output/listening-operator-final-tests.txt`,
+`output/held-tone-audibility/native-summary.json`,
+`output/playwright/bell-balance/summary.json`,
+`output/magnifier-first-drag/summary.json` and
+`output/operator-restart-layout/report.json` and
+`output/phone-drone-transposition/native-summary.json`.

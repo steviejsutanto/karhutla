@@ -24,7 +24,7 @@ Keep the host's Operator page open with Main sound enabled and keep the computer
 
 Bookmark the simple `/operator-remote` address to return later. The browser remembers access for one year across browser and server restarts. Clearing browser data requires entering the PIN again. If the router changes the host's address, choose **Refresh address** and update the bookmark; the devices must still share the same network. **Reset PIN & devices** disconnects remembered controllers and replaces the PIN. Keep the PIN private. Existing long private operator links also work.
 
-The PIN and private key live in `data/remote-operator.json`, excluded from GitHub, release packages and settings exports. Copy that file privately into a new release folder to preserve the same PIN and remembered access; a new folder otherwise creates its own credentials.
+The PIN and private key live outside the app folder in `%LOCALAPPDATA%\Karhutla\remote-operator.json`. New release folders use this shared file automatically, keeping the PIN and remembered access for the same Windows user account. The first updated launch imports an existing app-local `data/remote-operator.json` if no shared credentials exist. No manual copying is needed for later updates. **Reset PIN & devices** replaces the shared credentials for future launches and updates. Another computer or user account has its own PIN. Credentials remain excluded from GitHub, release packages and settings exports.
 
 ## Transfer your settings
 

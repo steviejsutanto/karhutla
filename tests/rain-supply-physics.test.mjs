@@ -45,26 +45,26 @@ function extinguishArea({ sceneId, position = center, parameters = {}, strength 
 test('one default full supply completes a stationary visible rain area in Scenes 3 and 4, including off-grid brush edges', () => {
   for (const sceneId of ['participation', 'forest-takeover']) for (const offset of [[0, 0], [.0625, 0], [.125, 0], [.0625, .0625], [.125, .125], [.001, .124]]) {
     const result = extinguishArea({ sceneId, strength: .54, position: [center[0] + offset[0], center[1] + offset[1]] });
-    assert.equal(result.capacity, 33.5);
+    assert.equal(result.capacity, 50.25);
     assert.ok(result.sourceCount >= 30);
-    assert.ok(result.at <= 32, `Actual ${sceneId} area completion still fits the reduced default supply.`);
+    assert.ok(result.at <= 32, `Actual ${sceneId} area completion still fits the expanded default supply without changing fire physics.`);
   }
 });
 
-test('slower custom cooling retains the requested 0.67 capacity scale without accelerating fire physics', () => {
+test('slower custom cooling receives 1.5 times the previous supply without accelerating fire physics', () => {
   const settings = { rainResponseSeconds: 10, deepCoolingSeconds: 30, extinctionHoldSeconds: 8 };
   for (const sceneId of ['participation', 'forest-takeover']) {
     const result = extinguishArea({ sceneId, parameters: settings, calibratedWindow: true });
-    assert.equal(result.capacity, 67);
+    assert.equal(result.capacity, 100.5);
     assert.ok(result.at < 100, 'Independent physical cooling still completes within the original calibration window.');
   }
 });
 
-test('the 0.67 scale also applies at maximum custom timings, which can require more than one tank', () => {
+test('the 1.5-times supply increase also covers maximum custom timings', () => {
   const result = extinguishArea({ sceneId: 'forest-takeover', step: .5, calibratedWindow: true,
     parameters: { deepCoolingSeconds: 240, extinctionHoldSeconds: 60, rainResponseSeconds: 20 } });
-  assert.equal(result.capacity, 635 * RAIN_SUPPLY_FACTOR);
-  assert.ok(result.at > result.capacity);
+  assert.equal(result.capacity, 638.175);
+  assert.ok(result.at < result.capacity);
   assert.ok(result.at < 605);
 });
 

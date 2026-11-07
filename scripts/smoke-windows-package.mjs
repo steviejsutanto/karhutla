@@ -36,10 +36,11 @@ async function capture(command, args, options = {}) {
   }
 }
 
-async function startRuntime(root) {
+async function startRuntime(root, temporary) {
   const runtime = process.platform === 'win32' ? path.join(root, 'runtime/node.exe') : process.execPath;
   const running = launch(runtime, [path.join(root, 'scripts/start-karhutla.mjs'), '--port', '0', '--no-browser'], {
-    cwd: root, env: { ...process.env, ...(process.platform === 'win32' ? { PATH: '' } : {}) },
+    cwd: root, env: { ...process.env, ...(process.platform === 'win32' ? { PATH: '' } : {}),
+      KARHUTLA_DATA_DIR: path.join(temporary, 'Isolated operator access') },
   });
   try {
     const base = await deadline(new Promise((resolve, reject) => {
@@ -127,7 +128,7 @@ export async function smokeWindowsPackage(output) {
       await verifyWindowsWrapper(root);
       await verifyWindowsBrowserParser(root, temporary);
     }
-    active = await startRuntime(root);
+    active = await startRuntime(root, temporary);
     const request = async route => {
       const response = await fetch(`${active.base}${route}`, { signal: AbortSignal.timeout(5000) });
       assert.equal(response.status, 200, `${route} returned ${response.status}`); return response;
@@ -141,11 +142,11 @@ export async function smokeWindowsPackage(output) {
     const preset = await prepareFreshOperator(active.base);
     await stopRuntime(active); active = null;
     assert.equal(JSON.parse(await readFile(path.join(root, 'data/performance-state.json'), 'utf8')).settingsOnly, true);
-    active = await startRuntime(root);
+    active = await startRuntime(root, temporary);
     await assertRestartedOperator(active.base, preset, { initialized: false });
     await exercisePreparedOperator(active.base, preset);
     await stopRuntime(active); active = null;
-    active = await startRuntime(root);
+    active = await startRuntime(root, temporary);
     await assertRestartedOperator(active.base, preset, { initialized: true });
     await stopRuntime(active); active = null;
     console.log(`Windows package smoke passed: ${verified.files} verified files, ${publicFiles.length} byte-identical public URLs, fresh Start/cues4-5/Restart without manual initialization and prepared-settings restart persistence (${process.platform === 'win32' ? 'native CMD wrapper, real CMD/start browser argument probe and bundled Windows runtime' : 'host runtime; native Windows CMD/browser checks run in CI'}).`);

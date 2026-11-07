@@ -63,6 +63,7 @@ async function startWrapper(root, temporary, { installed = false } = {}) {
       ...globalThis.process.env, PATH: installed ? path.dirname(globalThis.process.execPath) : '',
       KARHUTLA_USE_BUNDLED_NODE: installed ? '0' : '1', KARHUTLA_NO_BROWSER: '1',
       KARHUTLA_RUNTIME_CACHE: path.join(temporary, installed ? 'Unused installed runtime cache' : 'Reusable runtime cache with spaces'),
+      KARHUTLA_DATA_DIR: path.join(temporary, 'Isolated operator access'),
     },
   });
   try {
@@ -143,7 +144,8 @@ export async function smokeMacPackage({ output, arch }) {
 
     const runtimeCache = path.join(temporary, 'Reusable runtime cache with spaces');
     const cachedNode = path.join(runtimeCache, manifest.files.find(file => file.path === 'runtime/bin/node').sha256, 'node');
-    const env = { ...process.env, PATH: '', KARHUTLA_USE_BUNDLED_NODE: '1', KARHUTLA_NO_BROWSER: '1', KARHUTLA_RUNTIME_CACHE: runtimeCache };
+    const env = { ...process.env, PATH: '', KARHUTLA_USE_BUNDLED_NODE: '1', KARHUTLA_NO_BROWSER: '1', KARHUTLA_RUNTIME_CACHE: runtimeCache,
+      KARHUTLA_DATA_DIR: path.join(temporary, 'Isolated operator access') };
     const invalid = await capture(command, ['--port', 'invalid', '--no-browser'], { cwd: temporary, env });
     assert.equal(invalid.code, 1, 'The .command wrapper must preserve startup error exit codes.');
     assert.match(invalid.output, /PORT must be a whole number/);

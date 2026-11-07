@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { PhoneWeatherAudio } from '../app/phone-weather.js';
+import { PhoneWeatherAudio, BELL_NOTE_TRIM_DB } from '../app/phone-weather.js';
 import { nationalPhoneInteraction, peatPhonePatches } from '../app/peat-phone.js';
 import { COUNTRY_BOUNDS, countryPoint } from '../app/country-view.mjs';
 
@@ -163,7 +163,7 @@ test('fresh taps across fully extinguished brush footprints keep ringing outside
   assert.equal(weather.getMetrics().bellsTriggered, 100);
 });
 
-test('C3/G3 through C5/G5 keep equal C/G odds with a fixed upper-register clarity trim', t => {
+test('C3/G3 through C5/G5 keep equal C/G odds with fixed individual note calibration', t => {
   const { weather, context } = fixture(t), random = Math.random; weather.setActive(true);
   t.after(() => { Math.random = random; });
   const probabilities = [.17, .17, .22, .22, .11, .11];
@@ -179,7 +179,9 @@ test('C3/G3 through C5/G5 keep equal C/G odds with a fixed upper-register clarit
   }
   assert.deepEqual(heard, [48, 55, 60, 67, 72, 79]);
   assert.deepEqual(decays, [12, 12, 10, 10, 8, 8]);
-  assert.deepEqual(peaks, [.026, .026, .026, .026, .026 * 10 ** (4 / 20), .026 * 10 ** (4 / 20)]);
+  assert.deepEqual(peaks, [0, -2, 0, 2, 6, 6].map(db => .026 * 10 ** (db / 20)));
+  assert.deepEqual(weather.getMetrics().bellNoteTrimsDb, { 48: 0, 55: -2, 60: 0, 67: 2, 72: 6, 79: 6 });
+  assert.deepEqual(weather.getMetrics().bellNoteTrimsDb, BELL_NOTE_TRIM_DB);
   assert.deepEqual(weather.getMetrics().bellOctaveWeights.map(value => value.weight), [.34, .44, .22]);
   assert.deepEqual(weather.getMetrics().bellPitchMidi, heard);
   assert.deepEqual(weather.getMetrics().bellDecayRangeSeconds, [8, 12]);
@@ -269,7 +271,7 @@ test('the upper middle-register bell retains its metallic partials within every 
   for (const sampleRate of [22050, 32000, 48000, 96000]) {
     const { weather, context } = fixture(t, sampleRate); weather.setActive(true); weather.update(out());
     const voice = audibleVoice(weather, context);
-    assert.equal(voice.midi, 79); assert.equal(voice.decaySeconds, 8); assert.equal(voice.peak, .026 * 10 ** (4 / 20));
+    assert.equal(voice.midi, 79); assert.equal(voice.decaySeconds, 8); assert.equal(voice.peak, .026 * 10 ** (6 / 20));
     assert.ok(voice.oscillators.every(oscillator => oscillator.frequency.value < sampleRate * .45));
     assert.equal(voice.oscillators.length, 4);
     context.advance(10); assert.ok(context.nodes.every(node => node.disconnected));
@@ -291,7 +293,7 @@ test('one fixed low-cost room has delayed reflections, bounded wet output and pa
   assert.ok(absoluteSum > .99 && absoluteSum < 1.001);
   const highestPeak = Math.max(...weather.getMetrics().bellOctaveWeights.map(value => value.peak));
   const worstCasePeak = 16 * highestPeak * (1 + .24 * 1.053 + .11 * 1.071 + .055 * 1.089) * (1 + .18 * absoluteSum);
-  assert.ok(worstCasePeak < 1.2, 'Even a coherent maximum burst has bounded float headroom before Main protection.');
+  assert.ok(worstCasePeak < 1.5, 'The calibrated coherent burst stays bounded in the float graph before Main protection; native output is checked separately.');
   assert.ok(weather.getMetrics().bellDecaySeconds >= 5 && weather.getMetrics().bellDecaySeconds <= 14);
   assert.equal(weather.getMetrics().bellReverb.durationSeconds, 1.4);
   context.advance(8); weather.update(released()); weather.update(out());
