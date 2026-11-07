@@ -209,9 +209,16 @@ export class SharedConnection {
   }
 }
 
-export async function operatorRequest(path, body = {}) {
-  const response = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Wildfire-Role': 'operator' }, body: JSON.stringify(body) });
-  const data = await response.json();
-  if (!response.ok) throw new Error(data.error || 'The operator action could not be completed.');
-  return data;
+export async function operatorRequest(path, body = {}, { timeoutMs } = {}) {
+  const controller = Number.isFinite(timeoutMs) && timeoutMs > 0 ? new AbortController() : null;
+  const timer = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
+  try {
+    const response = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Wildfire-Role': 'operator' }, body: JSON.stringify(body), ...(controller ? { signal: controller.signal } : {}) });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'The operator action could not be completed.');
+    return data;
+  } catch (error) {
+    if (controller?.signal.aborted) throw new Error('The venue did not respond. Check the connection and try again.');
+    throw error;
+  } finally { if (timer != null) clearTimeout(timer); }
 }

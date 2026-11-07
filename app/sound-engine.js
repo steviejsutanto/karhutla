@@ -359,6 +359,9 @@ export const PHONE_MIXER_FADE_SECONDS = .12;
 export const MAIN_LEVEL_FADE_SECONDS = .16;
 export const PHONE_SCENE_EXIT_SECONDS = .35;
 const MAIN_MIX_KEYS = Object.freeze(['mainHaze', 'mainForest', 'mainRain', 'mainDrone', 'mainChimes', 'mainOutDrone', 'mainOther', 'mainCrickets']);
+const RECORDING_RETRY_DELAYS_MS = [1000, 3000, 8000];
+const RECORDING_LOAD_TIMEOUT_MS = 12000;
+const recordingLoadError = (message, retryable) => Object.assign(new Error(message), { retryable });
 
 export class WildfireSound {
   constructor({ mode = 'phone', onStatus = () => {}, onBell = () => {}, maxVoices = 32, level = .55, sampleUrls = {}, contextFactory, fetchImpl, document: documentObject, areaClock = () => Date.now() / 1000 } = {}) {
@@ -395,7 +398,7 @@ export class WildfireSound {
     this.rainAreaTracker = createRainAreaTracker(); this.pendingRainAreas = []; this.lastRainAreaAt = -Infinity; this.rainAreaEvents = 0;
     this.participants = new Map(); this.participantActivity = new Map(); this.localParticipant = null; this.participantAssignments = new Map(); this.localPitchIndex = null; this.localAutoPitchIndex = null;
     this.loadedSamples = new Set(); this.failedSamples = new Set(); this.pendingSamples = new Set();
-    this.sourceRequests = new Map(); this.sourceErrors = new Map();
+    this.sourceRequests = new Map(); this.sourceErrors = new Map(); this.sampleRetryTimer = null;
     this.variations = new Map(); this.cricketLayers = null; this.manualSources = new Set(); this.bufferCache = new Map();
     this.touchedKey = null; this.lastVisitedKey = null; this.timer = null; this.suspendTimer = null; this.fetchController = null; this.generation = 0; this.epoch = null;
     this.mainOutputGate = null; this.mainOutputRamp = null; this.mainStopClock = null; this.mainFadeOutPending = false;
@@ -492,6 +495,10 @@ export class WildfireSound {
   /** Call directly in a click/pointer handler. resume precedes every await. */
   enable() {
     if (this.destroyed) return Promise.resolve(false);
+    // An explicit Sound on gesture can recover a failed download without
+    // reloading the page. Broken/unsupported files need a new selection.
+    for (const error of this.sourceErrors.values()) if (error.retryable) { error.attempts = 0; error.retryAt = 0; }
+    this._stopSampleRetry();
     const wasRunning = this.context?.state === 'running';
     this._cancelMainOutputStop();
     this.enabled = true; this.muted = false;
@@ -880,6 +887,7 @@ export class WildfireSound {
     this._report();
   }
   _pause() {
+    this._stopSampleRetry();
     if (this.mode === 'operator') { this._pauseMainOutput(); return; }
     this._discardPhoneSceneExit();
     this.pendingRainAreas = [];
@@ -914,7 +922,7 @@ export class WildfireSound {
       Promise.resolve(resumed).then(() => {
         if (context !== this.context || this.destroyed || !this.enabled || this.muted || this.hidden) return;
         this._applySceneGain();
-        this._startSources(); this._ensureTouchedVoice(); this._startScheduler(); this._report();
+        this._startSources(); this._loadSamples(); this._ensureTouchedVoice(); this._startScheduler(); this._report();
       }).catch(() => this._report());
     } catch { this._report(); }
   }
@@ -1101,8 +1109,84 @@ export class WildfireSound {
   _usesVariations(id) { return this.variations.has(id) && !this.manualSources.has(id); }
   _playingVariations(layer) { return this.variations.has(layer.id) && (this._usesVariations(layer.id) || !layer.buffer) && [...layer.variationSlots.values()].some(slot => slot.buffer); }
   _clearLayerErrors(id) {
-    this.failedSamples.delete(id);
     for (const key of this.sourceErrors.keys()) if (key === id || key.startsWith(`${id}:`)) this.sourceErrors.delete(key);
+    if (![...this.sourceErrors.values()].some(error => error.id === id)) this.failedSamples.delete(id);
+    this._scheduleSampleRetry();
+  }
+  _stopSampleRetry() { clearTimeout(this.sampleRetryTimer); this.sampleRetryTimer = null; }
+  _canLoadSample(key) {
+    const error = this.sourceErrors.get(key);
+    return !error || error.retryable && !this.muted && !this.hidden && error.retryAt <= Date.now();
+  }
+  _sampleStillSelected(key, error) {
+    const { id, url } = error;
+    const variations = this.variations.get(id) ?? [];
+    if (key.startsWith('residue:')) return this.residueSources.get(id)?.some(entry => entry.url === url && !entry.buffer)
+      && !variations.some(entry => entry.url === url);
+    if (key === id) return this.urls[id] === url && !this._usesVariations(id)
+      && !(this.variations.has('forest') && ['roar', 'charcoal'].includes(id));
+    return this._usesVariations(id) && variations.some(entry => entry.url === url);
+  }
+  _scheduleSampleRetry() {
+    this._stopSampleRetry();
+    if (!this.enabled || this.destroyed || this.muted || this.hidden) return;
+    let next = Infinity;
+    for (const [key, error] of this.sourceErrors) {
+      // Catalog adoption can supersede defaults or make a residue URL an
+      // endpoint. Obsolete failures must not keep a zero-delay timer alive.
+      if (!this._sampleStillSelected(key, error)) {
+        this.sourceErrors.delete(key);
+        if (![...this.sourceErrors.values()].some(other => other.id === error.id)) this.failedSamples.delete(error.id);
+        continue;
+      }
+      if (!error.retryable || !Number.isFinite(error.retryAt) || this.sourceRequests.has(key) || this.residueRequests.has(key)) continue;
+      if (error.id === 'crickets' && !this._cricketsWanted()) continue;
+      next = Math.min(next, error.retryAt);
+    }
+    if (!Number.isFinite(next)) return;
+    const generation = this.generation;
+    this.sampleRetryTimer = setTimeout(() => {
+      this.sampleRetryTimer = null;
+      if (generation !== this.generation || !this.enabled || this.destroyed || this.muted || this.hidden) return;
+      this._loadSamples();
+    }, Math.max(0, next - Date.now()));
+  }
+  _sampleFailed(key, id, url, error) {
+    const attempts = (this.sourceErrors.get(key)?.attempts ?? 0) + 1;
+    const retryable = error?.retryable === true;
+    this.sourceErrors.set(key, { id, url, message: error?.message ?? 'Recording could not load.', retryable, attempts,
+      retryAt: retryable && attempts <= RECORDING_RETRY_DELAYS_MS.length ? Date.now() + RECORDING_RETRY_DELAYS_MS[attempts - 1] : Infinity });
+    this.failedSamples.add(id); this._scheduleSampleRetry();
+  }
+  _sampleLoaded(key, id) {
+    this.sourceErrors.delete(key);
+    if (![...this.sourceErrors.values()].some(error => error.id === id)) this.failedSamples.delete(id);
+    this._scheduleSampleRetry();
+  }
+  async _recordingBytes(url, request, current, maxBytes = Infinity) {
+    const signal = request.controller.signal;
+    let rejectAbort;
+    const aborted = new Promise((_, reject) => { rejectAbort = reject; });
+    const abort = () => rejectAbort(recordingLoadError(request.timedOut ? 'Recording took too long to load.' : 'Recording loading cancelled.', true));
+    signal.addEventListener('abort', abort, { once: true });
+    const timer = setTimeout(() => { request.timedOut = true; request.controller.abort(); }, RECORDING_LOAD_TIMEOUT_MS);
+    try {
+      if (signal.aborted) abort();
+      const response = await Promise.race([Promise.resolve().then(() => current() ? this.fetchImpl(url, { signal, cache: 'force-cache' }) : null), aborted]);
+      if (!response || !current()) return null;
+      if (!response.ok) throw recordingLoadError(`Recording unavailable (${response.status}).`, response.status === 408 || response.status === 429 || response.status >= 500);
+      const bytes = await Promise.race([Promise.resolve().then(() => response.arrayBuffer()), aborted]);
+      if (!current()) return null;
+      if (!bytes?.byteLength || bytes.byteLength > maxBytes) throw recordingLoadError('Recording is empty or too large.', false);
+      return bytes;
+    } catch (error) {
+      if (typeof error?.retryable === 'boolean') throw error;
+      throw recordingLoadError(error?.message ?? 'Recording could not load.', true);
+    } finally { clearTimeout(timer); signal.removeEventListener('abort', abort); }
+  }
+  async _decodeRecording(context, bytes) {
+    try { return await context.decodeAudioData(bytes); }
+    catch (error) { throw recordingLoadError(error?.message ?? 'Recording could not be decoded.', false); }
   }
   _variationWeights(id) {
     const entries = this.variations.get(id);
@@ -1390,6 +1474,7 @@ export class WildfireSound {
     }
     for (const request of this.residueRequests.values()) request.controller.abort();
     this.residueRequests.clear(); this.residueSignature = signature; this.residueSources = next;
+    for (const [key, error] of this.sourceErrors) if (key.startsWith('residue:')) this._sampleLoaded(key, error.id);
     return this._loadResidueSources();
   }
   _loadResidueSources() {
@@ -1398,28 +1483,31 @@ export class WildfireSound {
     for (const [id, entries] of this.residueSources) for (const entry of entries) {
       if (entry.buffer) continue;
       if ((this.variations.get(id) ?? []).some(endpoint => endpoint.url === entry.url)) continue;
-      if (entry.failedGeneration === generation) continue;
       const key = `residue:${id}:${entry.url}`;
       if (this.residueRequests.has(key)) { pending.push(this.residueRequests.get(key).promise); continue; }
+      if (!this._canLoadSample(key)) continue;
       const controller = new AbortController(), request = { controller };
-      const current = () => !this.destroyed && this.enabled && this.generation === generation && this.context === context && !controller.signal.aborted && this.residueRequests.get(key) === request && this.residueSources.get(id)?.includes(entry);
+      const ownsRequest = () => !this.destroyed && this.enabled && this.generation === generation && this.context === context && this.residueRequests.get(key) === request && this.residueSources.get(id)?.includes(entry);
+      const current = () => ownsRequest() && !controller.signal.aborted;
       this.residueRequests.set(key, request);
-      const timer = setTimeout(() => controller.abort(), 12000);
-      request.promise = Promise.resolve().then(() => {
+      request.promise = Promise.resolve().then(async () => {
         if (!current()) return null;
         const cached = this.bufferCache.get(entry.url)?.buffer;
         if (cached) return cached;
-        return this.fetchImpl(entry.url, { signal: controller.signal, cache: 'force-cache' }).then(async response => {
-          if (!response.ok || !current()) return null;
-          const bytes = await response.arrayBuffer();
-          if (!current() || bytes.byteLength > 4000000) return null;
-          const buffer = await context.decodeAudioData(bytes);
-          return current() ? this._prepareBuffer(buffer, id) : null;
-        });
+        const bytes = await this._recordingBytes(entry.url, request, current, 4000000);
+        if (!bytes || !current()) return null;
+        const buffer = await this._decodeRecording(context, bytes);
+        if (!(buffer?.duration > .05)) throw recordingLoadError('Recording is empty.', false);
+        return current() ? this._prepareBuffer(buffer, id) : null;
       }).then(buffer => {
         if (!buffer || !current()) return false;
-        entry.buffer = buffer; this._cacheBuffer(entry.url, buffer); return true;
-      }).then(success => { if (!success) entry.failedGeneration = generation; return success; }).catch(() => { entry.failedGeneration = generation; return false; }).finally(() => { clearTimeout(timer); if (this.residueRequests.get(key) === request) this.residueRequests.delete(key); });
+        entry.buffer = buffer; this._cacheBuffer(entry.url, buffer); this._sampleLoaded(key, id); this._report(); return true;
+      }).catch(error => {
+        if (ownsRequest()) { this._sampleFailed(key, id, entry.url, error); this._report(); }
+        return false;
+      }).finally(() => {
+        if (this.residueRequests.get(key) === request) { this.residueRequests.delete(key); this._scheduleSampleRetry(); }
+      });
       pending.push(request.promise);
     }
     return Promise.all(pending).then(results => results.every(Boolean));
@@ -1544,6 +1632,7 @@ export class WildfireSound {
     this._applyParameters();
   }
   disable() {
+    this._stopSampleRetry();
     if (this.mode === 'operator' && !this.destroyed) {
       this.enabled = false; this.generation++; this.participantActivity.clear();
       this.pendingToneKey = null; this.touchedKey = null;
@@ -1810,44 +1899,39 @@ export class WildfireSound {
       if (this.variations.has('forest') && ['roar', 'charcoal'].includes(id)) continue;
       if (id === 'crickets' && !this._cricketsWanted()) continue;
       if (this._usesVariations(id)) { this._loadVariationLayer(id); continue; }
-      if (this.urls[id] && (!layer.buffer || layer.currentUrl !== this.urls[id]) && !this.pendingSamples.has(id) && !this.failedSamples.has(id)) this._requestLayer(id);
+      if (this.urls[id] && (!layer.buffer || layer.currentUrl !== this.urls[id]) && !this.pendingSamples.has(id) && this._canLoadSample(id)) this._requestLayer(id);
     }
+    this._scheduleSampleRetry();
   }
   _requestLayer(id) {
     const context = this.context, layer = this.layers.get(id), url = this.urls[id], generation = this.generation;
     if (!context || !layer || !this.enabled || this.destroyed) return Promise.resolve(false);
     const cached = this.bufferCache.get(url)?.buffer;
     if (cached) {
-      this._replaceLayerBuffer(layer, cached, url); this.loadedSamples.add(id); this.failedSamples.delete(id); this.sourceErrors.delete(id);
+      this._replaceLayerBuffer(layer, cached, url); this.loadedSamples.add(id); this._sampleLoaded(id, id);
       this._applyParameters(); this._tick(); this._report(); return Promise.resolve(true);
     }
     const controller = new AbortController(), signal = controller.signal, request = { controller, url, id };
     this.sourceRequests.get(id)?.controller.abort();
     this.sourceRequests.set(id, request); this.pendingSamples.add(id);
-    const isCurrent = () => !this.destroyed && this.enabled && generation === this.generation && context === this.context && !signal.aborted && this.sourceRequests.get(id) === request && this.urls[id] === url;
-    const result = Promise.resolve().then(() => {
-      if (!isCurrent()) return null;
-      return this.fetchImpl(url, { signal, cache: 'force-cache' });
-    }).then(response => {
-        if (!response || !isCurrent()) return null;
-        if (!response.ok) throw new Error(`Recording unavailable (${response.status}).`);
-        return response.arrayBuffer();
-      }).then(bytes => {
+    const ownsRequest = () => !this.destroyed && this.enabled && generation === this.generation && context === this.context && this.sourceRequests.get(id) === request && this.urls[id] === url;
+    const isCurrent = () => ownsRequest() && !signal.aborted;
+    const result = this._recordingBytes(url, request, isCurrent).then(bytes => {
         if (!bytes || !isCurrent()) return null;
-        return context.decodeAudioData(bytes);
+        return this._decodeRecording(context, bytes);
       }).then(buffer => {
         if (!buffer || !isCurrent()) return false;
-        if (!(buffer.duration > .05)) throw new Error('Recording is empty.');
+        if (!(buffer.duration > .05)) throw recordingLoadError('Recording is empty.', false);
         this._replaceLayerBuffer(layer, this._prepareBuffer(buffer, id), url);
         this._cacheBuffer(url, layer.buffer);
         this.loadedSamples.add(id); this.pendingSamples.delete(id);
-        this.failedSamples.delete(id); this.sourceErrors.delete(id); this.sourceRequests.delete(id);
+        this.sourceRequests.delete(id); this._sampleLoaded(id, id);
         this._applyParameters(); this._tick(); this._report();
         return true;
       }).catch(error => {
-        if (!isCurrent()) return false;
+        if (!ownsRequest()) return false;
         this.pendingSamples.delete(id); this.failedSamples.add(id);
-        this.sourceRequests.delete(id); this.sourceErrors.set(id, { url, message: error?.message ?? 'Recording could not load.' });
+        this.sourceRequests.delete(id); this._sampleFailed(id, id, url, error);
         this._report();
         return false;
       });
@@ -1943,7 +2027,7 @@ export class WildfireSound {
       const key = `${id}:${entry.url}`, slot = layer.variationSlots.get(entry.url);
       if (slot.buffer) continue;
       if (this.sourceRequests.has(key)) { requests.push(this.sourceRequests.get(key).promise); continue; }
-      if (this.sourceErrors.has(key)) continue;
+      if (!this._canLoadSample(key)) continue;
       requests.push(this._requestVariation(layer, slot, key));
     }
     return Promise.all(requests).then(results => results.every(Boolean));
@@ -1952,24 +2036,21 @@ export class WildfireSound {
     const context = this.context, generation = this.generation, controller = new AbortController();
     const request = { id: layer.id, url: slot.currentUrl, controller }, signal = controller.signal;
     this.sourceRequests.set(key, request); this.pendingSamples.add(key);
-    const isCurrent = () => !this.destroyed && this.enabled && generation === this.generation && context === this.context && !signal.aborted && this.sourceRequests.get(key) === request && this._usesVariations(layer.id) && layer.variationSlots.get(slot.currentUrl) === slot;
-    request.promise = Promise.resolve().then(() => isCurrent() ? this.fetchImpl(slot.currentUrl, { signal, cache: 'force-cache' }) : null).then(response => {
-      if (!response || !isCurrent()) return null;
-      if (!response.ok) throw new Error(`Recording unavailable (${response.status}).`);
-      return response.arrayBuffer();
-    }).then(bytes => bytes && isCurrent() ? context.decodeAudioData(bytes) : null).then(buffer => {
+    const ownsRequest = () => !this.destroyed && this.enabled && generation === this.generation && context === this.context && this.sourceRequests.get(key) === request && this._usesVariations(layer.id) && layer.variationSlots.get(slot.currentUrl) === slot;
+    const isCurrent = () => ownsRequest() && !signal.aborted;
+    request.promise = this._recordingBytes(slot.currentUrl, request, isCurrent)
+      .then(bytes => bytes && isCurrent() ? this._decodeRecording(context, bytes) : null).then(buffer => {
       if (!buffer || !isCurrent()) return false;
-      if (!(buffer.duration > .05)) throw new Error('Recording is empty.');
+      if (!(buffer.duration > .05)) throw recordingLoadError('Recording is empty.', false);
       slot.buffer = this._prepareBuffer(buffer, layer.id); slot.nextAt = context.currentTime + .035; this._cacheBuffer(slot.currentUrl, slot.buffer);
-      this.loadedSamples.add(layer.id); this.pendingSamples.delete(key); this.sourceRequests.delete(key); this.sourceErrors.delete(key);
-      if (![...this.sourceErrors].some(([name]) => name.startsWith(`${layer.id}:`))) this.failedSamples.delete(layer.id);
+      this.loadedSamples.add(layer.id); this.pendingSamples.delete(key); this.sourceRequests.delete(key); this._sampleLoaded(key, layer.id);
       this._activateVariations(layer);
       if (layer.fallbackGain) { target(layer.fallbackGain.gain, 0, context.currentTime, .4); stop(layer.fallbackSource, context.currentTime + 1.2); }
       this._applyParameters(); this._tick(); this._report(); return true;
     }).catch(error => {
-      if (!isCurrent()) return false;
+      if (!ownsRequest()) return false;
       this.pendingSamples.delete(key); this.sourceRequests.delete(key); this.failedSamples.add(layer.id);
-      this.sourceErrors.set(key, { url: slot.currentUrl, message: error?.message ?? 'Recording could not load.' }); this._applyParameters(); this._report(); return false;
+      this._sampleFailed(key, layer.id, slot.currentUrl, error); this._applyParameters(); this._report(); return false;
     });
     return request.promise;
   }

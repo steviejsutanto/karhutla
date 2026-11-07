@@ -227,11 +227,13 @@ test('a live final-rain timing edit changes only future rainfall and remains ind
   for (const source of records) for (const field of ['heat', 'moisture', 'surfaceWetness']) assert.ok(Math.abs(sparse.room.simulation.sample(source.longitude, source.latitude)[field] - frequent.room.simulation.sample(source.longitude, source.latitude)[field]) < .0001);
 });
 
-test('empty snapshots cannot manufacture all-out or start an automatic fade', async () => {
+test('empty snapshots finish the rain timeline without inventing extinguished fires', async () => {
   const { room, advance } = await fixture({ records: [] });
-  await room.setScene({ scene: 'final-rain' }); advance(100_000);
-  assert.equal(room.sceneState().id, 'final-rain'); assert.equal(room.sceneState().allOutAt, null);
   await assert.rejects(room.setScene({ scene: 'afterglow' }), /every source fire/);
+  await room.setScene({ scene: 'final-rain' }); advance(100_000);
+  assert.equal(room.sceneState().id, 'afterglow');
+  assert.deepEqual(room.globalSound().fireProgress, { sourceCount: 0, outCount: 0 });
+  assert.equal(room.simulation.totalWater, 0);
   await room.setScene({ action: 'finish' }); assert.equal(room.sceneState().id, 'ended');
 });
 

@@ -4,12 +4,13 @@ import { mountSoundControls } from '../app/sound-controls.js';
 import { SOUND_MACRO_DEFAULTS, SOUND_MIXER_DEFAULTS, PHONE_MIXER_DEFAULTS } from '../app/sound-engine.js';
 
 function element(dataset = {}) {
-  const listeners = new Map();
-  return { dataset, checked: true, value: '', hidden: false, disabled: false,
-    setAttribute() {}, addEventListener(name, handler) { listeners.set(name, handler); },
+  const listeners = new Map(), attributes = new Map();
+  return { dataset, checked: true, value: '', hidden: false, disabled: false, replaceChildren() {},
+    setAttribute(name, value) { attributes.set(name, value); }, getAttribute(name) { return attributes.get(name); },
+    addEventListener(name, handler) { listeners.set(name, handler); },
     async dispatch(name) { await listeners.get(name)?.({ target: this }); } };
 }
-function remoteControls(t, mode = 'operator') {
+function remoteControls(t, mode = 'operator', { mainSoundControl = null, remoteControl = true } = {}) {
   const selectors = new Map();
   const get = selector => {
     if (!selectors.has(selector)) selectors.set(selector, element());
@@ -30,10 +31,10 @@ function remoteControls(t, mode = 'operator') {
   const previous = { window: globalThis.window, document: globalThis.document, localStorage: globalThis.localStorage, fetch: globalThis.fetch };
   globalThis.fetch = async () => { loads++; throw new Error('Remote controls must not fetch audio assets.'); };
   globalThis.window = { addEventListener() {} };
-  globalThis.document = { addEventListener() {}, hidden: false };
+  globalThis.document = { addEventListener() {}, hidden: false, createElement: () => element() };
   globalThis.localStorage = { getItem: () => null, setItem() {} };
   t.after(() => { for (const [key, value] of Object.entries(previous)) { if (value === undefined) delete globalThis[key]; else globalThis[key] = value; } });
-  mountSoundControls(host, { mode, engine, shared: true, remoteControl: true, onSettings: patch => patches.push(patch) });
+  mountSoundControls(host, { mode, engine, shared: true, remoteControl, mainSoundControl, onSettings: patch => patches.push(patch) });
   return { host, get, groups, engine, patches, enables: () => enables, loads: () => loads };
 }
 
@@ -51,6 +52,69 @@ test('remote operator can publish Main and phone mix changes without enabling lo
   assert.deepEqual(controls.patches, [{ mixer: { bells: .85 } }, { phoneMixer: { rain: .45 } }]);
   assert.equal(controls.enables(), 0);
   assert.equal(controls.loads(), 0);
+});
+
+function playbackControl(initial = {}) {
+  let state = { remoteControl: true, connected: true, enabled: false, requestedEnabled: false,
+    requestId: 0, status: { state: 'off', activated: false }, pending: false, ...initial };
+  const listeners = new Set(), statuses = [];
+  let toggles = 0;
+  const update = patch => { state = { ...state, ...patch }; for (const listener of listeners) listener(state); };
+  return { getState: () => state, subscribe(listener) { listeners.add(listener); listener(state); return () => listeners.delete(listener); },
+    async toggle() { toggles++; update({ enabled: !state.enabled, pending: true }); },
+    onStatus(metrics) { statuses.push(metrics); }, update, statuses, toggles: () => toggles };
+}
+
+test('remote Main sound button controls the host and follows its status without activating the remote engine', async t => {
+  const mainSoundControl = playbackControl();
+  const controls = remoteControls(t, 'operator', { mainSoundControl }), button = controls.get('.sound-enable');
+  assert.equal(button.hidden, false); assert.equal(button.disabled, false);
+  assert.equal(button.getAttribute('aria-label'), 'Enable main sound');
+  assert.match(controls.host.innerHTML, /Use the sound button to control it/);
+  await button.dispatch('click');
+  assert.equal(mainSoundControl.toggles(), 1); assert.equal(button.disabled, true);
+  assert.equal(button.getAttribute('aria-label'), 'Disable main sound');
+  assert.equal(controls.get('.sound-status').textContent, 'Enabling Main sound…');
+  mainSoundControl.update({ pending: false, status: { state: 'ready', activated: true } });
+  assert.equal(button.disabled, false); assert.equal(controls.host.dataset.soundState, 'ready');
+  assert.equal(controls.get('.sound-status').textContent, 'Main sound enabled on host computer');
+  controls.engine.onStatus({ state: 'off' });
+  assert.equal(controls.host.dataset.soundState, 'ready', 'The silent preview cannot overwrite the host status.');
+  assert.deepEqual(mainSoundControl.statuses, []);
+  await button.dispatch('click');
+  assert.equal(mainSoundControl.toggles(), 2);
+  assert.equal(controls.get('.sound-status').textContent, 'Disabling Main sound…');
+  mainSoundControl.update({ pending: false, status: { state: 'muted', activated: true } });
+  assert.equal(button.getAttribute('aria-label'), 'Enable main sound');
+  assert.equal(controls.get('.sound-status').textContent, 'Main sound disabled');
+  assert.equal(controls.enables(), 0); assert.equal(controls.loads(), 0);
+});
+
+test('remote sound status explains first host activation and a disconnected host without claiming playback', async t => {
+  const mainSoundControl = playbackControl({ enabled: true, requestedEnabled: true, status: { state: 'needs-gesture', activated: false } });
+  const controls = remoteControls(t, 'operator', { mainSoundControl });
+  assert.equal(controls.get('.sound-status').textContent, 'Enable Main sound once on the host computer.');
+  assert.equal(controls.host.dataset.soundState, 'off');
+  assert.equal(controls.get('.sound-enable').getAttribute('aria-pressed'), 'true');
+  mainSoundControl.update({ enabled: false, status: { state: 'unavailable', activated: false } });
+  assert.match(controls.get('.sound-status').textContent, /Keep the host Operator page open/);
+  mainSoundControl.update({ connected: false });
+  assert.equal(controls.get('.sound-enable').disabled, true);
+  assert.equal(controls.get('.sound-status').textContent, 'Connecting to Main sound…');
+  assert.equal(controls.enables(), 0); assert.equal(controls.loads(), 0);
+});
+
+test('host controls report engine status through the shared controller and delegate the local gesture', async t => {
+  const mainSoundControl = playbackControl({ remoteControl: false });
+  const controls = remoteControls(t, 'operator', { mainSoundControl, remoteControl: false });
+  controls.engine.onStatus({ state: 'ready', degraded: true });
+  assert.deepEqual(mainSoundControl.statuses.at(-1), { state: 'ready', degraded: true });
+  mainSoundControl.update({ enabled: true, status: { state: 'ready', activated: true } });
+  assert.match(controls.get('.sound-status').textContent, /recording unavailable/);
+  await controls.get('.sound-enable').dispatch('click');
+  assert.equal(mainSoundControl.toggles(), 1);
+  assert.equal(controls.enables(), 0, 'The controller owns the synchronous activation, so UI cannot start a second engine.');
+  await new Promise(resolve => setImmediate(resolve));
 });
 
 test('remote preview sound stays disabled after state reports and synthetic button activation', async t => {

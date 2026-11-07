@@ -11,6 +11,7 @@ import { ExtinctionFeedback } from '../visual-assets/extinction-feedback.js';
 import { audienceRainStrength, DEFAULT_RAIN_STRENGTH } from './scene-score.js';
 import { mountAudienceInstructions } from './audience-instructions.js';
 import { PhoneMagnifier } from './phone-magnifier.js';
+import { phoneSoundRecoveryState, retryPhoneAssets } from './phone-recovery.js';
 export { nationalPhoneSoundPatchAt, nationalPhoneInteraction } from './sound-participants.js';
 
 const unit = value => typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 1;
@@ -87,6 +88,26 @@ function initializePeatPhone() {
   const sound = mountSoundControls($('phone-sound'), { mode: 'phone' });
   $('phone-sound').querySelector('button').disabled = true;
   let currentScene = null, notesOpen = false;
+  const soundRecovery = $('phone-sound-recovery');
+  function renderSoundRecovery() {
+    const state = phoneSoundRecoveryState(currentScene, $('phone-sound').dataset.soundState, sound.getMetrics());
+    soundRecovery.hidden = !state.visible;
+    soundRecovery.disabled = state.busy;
+    soundRecovery.setAttribute('aria-busy', String(state.busy));
+    soundRecovery.textContent = state.label;
+  }
+  new MutationObserver(renderSoundRecovery).observe($('phone-sound'), { attributes: true, attributeFilter: ['data-sound-state'] });
+  soundRecovery.addEventListener('click', () => {
+    if (phoneSoundRecoveryState(currentScene, $('phone-sound').dataset.soundState, sound.getMetrics()).retryRecording) {
+      // A running context with failed cricket downloads needs a fresh bounded
+      // load cycle. Its ordinary Sound button would mute it instead.
+      void sound.enable().finally(renderSoundRecovery);
+      return;
+    }
+    // Forward synchronously so AudioContext.resume stays inside this genuine
+    // user activation, using the same permission and busy handling as Sound.
+    $('phone-sound').querySelector('button').click();
+  });
   function renderScene(scene) {
     if (!scene) return;
     const sceneChanged = currentScene?.id !== scene.id;
@@ -102,6 +123,7 @@ function initializePeatPhone() {
     document.documentElement.style.setProperty('--phone-visual-gain', String(view.gain));
     sound.setSceneState?.(scene);
     $('phone-sound').querySelector('button').disabled = $('phone-sound').dataset.soundState === 'starting';
+    renderSoundRecovery();
     const entrance = view.landscapeEntranceGain;
     const welcomeGain = view.openingOverlayGain;
     document.body.dataset.opening = String(view.opening || welcomeGain > 0);
@@ -128,9 +150,10 @@ function initializePeatPhone() {
   $('phone-about').addEventListener('click', () => { notesOpen = !notesOpen; if (notesOpen) stop({ tail: false }); renderScene(currentScene); });
   $('phone-notes-close').addEventListener('click', () => { notesOpen = false; renderScene(currentScene); });
   const overlay = $('phone-contact'), rainContext = overlay.getContext('2d'), toggle = $('rain-toggle');
-  const loading = $('phone-map-loading'), reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
-  const map = new PeatSurface(material, { reducedMotion: reducedMotion.matches, maxPixels: 1280 * 720, maxPixelRatio: 1.5,
+  const loading = $('phone-map-loading'), mapRetry = $('phone-map-retry'), reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+  const createMap = () => new PeatSurface(material, { reducedMotion: reducedMotion.matches, maxPixels: 1280 * 720, maxPixelRatio: 1.5,
     materialUrl: new URL('../visual-assets/peat-material-phone.webp', import.meta.url).href, contactOverlay: false });
+  let map = createMap();
   const magnifier = new PhoneMagnifier({ element: $('phone-magnifier'), canvas: $('phone-magnifier-view'), source: material, pixelRatio: window.devicePixelRatio || 1 });
   const rain = new RainFeedback();
   const extinctionFeedback = new ExtinctionFeedback({ maxEvents: 4 });
@@ -461,7 +484,8 @@ function initializePeatPhone() {
   });
   $('phone-fullscreen').addEventListener('click', async () => {
     stop({ tail: false });
-    try { if (document.fullscreenElement) await document.exitFullscreen(); else await instrument.requestFullscreen(); }
+    // Include the sibling sound-recovery control in the fullscreen top layer.
+    try { if (document.fullscreenElement) await document.exitFullscreen(); else await document.documentElement.requestFullscreen(); }
     catch { inputError = 'Fullscreen unavailable.'; gestureError = false; renderStatus(); }
   });
   document.addEventListener('fullscreenchange', () => {
@@ -471,11 +495,34 @@ function initializePeatPhone() {
     stop({ tail: false }); resize();
   });
   new ResizeObserver(resize).observe(stage);
-  Promise.all([map.ready(), rain.ready(), fetch('/data/indonesia-overview.geojson').then(response => {
-    if (!response.ok) throw new Error('The Indonesia map could not load.');
-    return response.json();
-  })]).then(([, , geography]) => {
-    map.setGeography(geography); ready = true; resize(); loading.hidden = true; renderStatus(); requestScene();
-  }).catch(error => { assetError = error.message; loading.classList.add('error'); loading.textContent = assetError; stop({ tail: false }); });
+  let assetsTask = null;
+  function prepareAssets() {
+    if (assetsTask || ready) return assetsTask;
+    stop({ tail: false });
+    assetError = ''; loading.hidden = false; loading.classList.remove('error'); mapRetry.hidden = true;
+    assetsTask = retryPhoneAssets(async ({ signal }) => {
+      if (map.destroyed) map = createMap();
+      const [, , geography] = await Promise.all([map.ready(), rain.ready(), fetch('/data/indonesia-overview.geojson', { signal }).then(response => {
+        if (!response.ok) throw new Error('The Indonesia map could not load.');
+        return response.json();
+      })]);
+      return geography;
+    }, {
+      onAttempt: (attempt, attempts) => { text('phone-map-message', attempt === 1 ? 'Preparing…' : `Retrying the map… ${attempt} of ${attempts}`); },
+      onFailedAttempt: () => map.destroy(),
+    }).then(geography => {
+      map.setGeography(geography); map.setPatches(patches.map(patch => ({ ...patch, x: patch.left, y: patch.top })));
+      map.setSelection(lastPosition); ready = true; assetError = ''; loading.hidden = true; mapRetry.hidden = true;
+      stop({ tail: false }); resize(); renderStatus(); requestScene();
+    }).catch(error => {
+      assetError = error.message.replace(/\s*Reload the study\./, '').replace('peat study textures', 'map textures').replace('peat material', 'map texture');
+      loading.classList.add('error');
+      text('phone-map-message', `${assetError} Check your Wi-Fi, then retry.`); mapRetry.hidden = false;
+      stop({ tail: false });
+    }).finally(() => { assetsTask = null; });
+    return assetsTask;
+  }
+  mapRetry.addEventListener('click', () => void prepareAssets());
+  void prepareAssets();
   resize();
 }

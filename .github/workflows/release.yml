@@ -20,7 +20,7 @@ jobs:
             build: npm run package:windows
             smoke: node scripts/smoke-windows-package.mjs dist
           - name: Mac Apple Silicon
-            os: macos-15
+            os: macos-26
             platform: darwin
             arch: arm64
             artifact: macos-arm64

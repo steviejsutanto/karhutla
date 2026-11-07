@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
+import { createMainSoundControl } from '../app/main-sound-control.js';
 
 class Element {
   constructor(id = '') {
@@ -44,7 +45,7 @@ async function desk({ pathname = '/operator-remote', localOperator = false, auth
   let allowed = authorized, clockNow = 1000, pauseSession = false, releaseSession = null;
   class ClockDate extends Date { static now() { return clockNow; } }
   const context = {
-    URL, URLSearchParams, Blob, Date: ClockDate,
+    URL, URLSearchParams, Blob, Date: ClockDate, createMainSoundControl,
     DEFAULT_PARAMETERS: {}, PARAMETER_LIMITS: {}, DEFAULT_PROGRAM_NOTES: '', DEFAULT_SCORE_SETTINGS: {}, SCENE_DURATION_LIMITS: {},
     sceneClock: () => '00:00', sceneRemaining: () => 0, scenePresentation: () => ({}), scenePhaseReadout: () => '',
     location, history: { replaceState(_state, _unused, address) { location.href = new URL(address, location).href; } },

@@ -1,6 +1,18 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { SharedConnection } from '../app/shared-client.js';
+import { SharedConnection, operatorRequest } from '../app/shared-client.js';
+
+test('a stalled remote playback request aborts and leaves a usable connection error', async t => {
+  const previous = globalThis.fetch;
+  t.after(() => { globalThis.fetch = previous; });
+  let signal;
+  globalThis.fetch = (_url, options) => {
+    signal = options.signal;
+    return new Promise((_resolve, reject) => signal.addEventListener('abort', () => reject(new Error('Aborted'))));
+  };
+  await assert.rejects(operatorRequest('/api/main-sound', { enabled: true }, { timeoutMs: 10 }), /venue did not respond/);
+  assert.equal(signal.aborted, true);
+});
 
 function storage(initial = []) {
   const values = new Map(initial);

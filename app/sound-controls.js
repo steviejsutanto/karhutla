@@ -43,8 +43,9 @@ const SPEAKER_ICON = `<svg class="sound-speaker" viewBox="0 0 24 24" aria-hidden
 
 // Audio permission stays local. The dedicated operator publishes shared sound
 // settings through its supplied callback; no sound control sends water.
-export function mountSoundControls(host, { mode = 'phone', engine: suppliedEngine, shared = false, remoteControl = false, onSettings = () => {} } = {}) {
+export function mountSoundControls(host, { mode = 'phone', engine: suppliedEngine, shared = false, remoteControl = false, mainSoundControl = null, onSettings = () => {} } = {}) {
   const operator = mode === 'operator', projection = mode === 'projection', fullAudio = operator || projection, storageKey = `wildfire-sound-${mode}-v1`;
+  const playbackControl = operator ? mainSoundControl : null;
   const statusId = `wildfire-sound-status-${++soundStatusSequence}`;
   const soundName = operator ? 'main sound' : projection ? 'projection sound' : 'sound';
   const enableButton = `<button class="sound-enable" type="button" aria-label="Enable ${soundName}" title="Enable ${soundName}" aria-describedby="${statusId}">${SPEAKER_ICON}</button>`;
@@ -72,7 +73,7 @@ export function mountSoundControls(host, { mode = 'phone', engine: suppliedEngin
     <section class="sound-main-controls" aria-label="Main sound">
       <h2>Main sound</h2>
       <div class="sound-top">${enableButton}<span id="${statusId}" class="sound-status" role="status" aria-live="polite" aria-atomic="true">Main sound disabled</span></div>
-      <p class="sound-local-hint">${remoteControl ? 'Main audio plays on the host computer. Mixer changes apply there.' : 'Audio from this computer.'}</p>
+      <p class="sound-local-hint">${remoteControl ? playbackControl ? 'Main audio plays on the host computer. Use the sound button to control it.' : 'Main audio plays on the host computer. Mixer changes apply there.' : 'Audio from this computer.'}</p>
       <label class="sound-level">${shared ? 'Main output' : 'Output'} <input class="sound-volume" type="range" min="0" max="100" step="1" aria-label="${shared ? 'Main output' : 'Sound output'}"><output class="sound-volume-value"></output></label>
     </section>
     <div class="sound-mixer-details" data-mixer-details>
@@ -106,13 +107,18 @@ export function mountSoundControls(host, { mode = 'phone', engine: suppliedEngin
     ${enableButton}
     <span id="${statusId}" class="sound-status" role="status" aria-live="polite" aria-atomic="true">Sound disabled</span>`;
   const button = host.querySelector('.sound-enable');
-  button.hidden = remoteControl;
+  button.hidden = remoteControl && !playbackControl;
   let lastStatus = engine.getMetrics?.() || { state: 'off' }, busy = false;
 
   function renderStatus(next) {
     // An engine may announce its initial state inside its constructor.
     if (!host?.querySelector('.sound-enable')) return;
     lastStatus = next;
+    if (playbackControl) {
+      if (!remoteControl) playbackControl.onStatus(next);
+      renderMainPlayback(playbackControl.getState());
+      return;
+    }
     if (remoteControl) {
       host.dataset.soundState = 'remote';
       const control = host.querySelector('.sound-enable');
@@ -143,6 +149,36 @@ export function mountSoundControls(host, { mode = 'phone', engine: suppliedEngin
     const testHint = host.querySelector('.sound-test-hint');
     if (testHint) testHint.hidden = !active;
   }
+  function renderMainPlayback(state) {
+    const status = state.status?.state ?? 'unavailable', pending = Boolean(state.pending);
+    const starting = pending || status === 'starting', enabled = Boolean(state.enabled);
+    const control = host.querySelector('.sound-enable');
+    control.hidden = false;
+    control.disabled = starting || remoteControl && !state.connected;
+    control.setAttribute('aria-label', `${enabled ? 'Disable' : 'Enable'} main sound`);
+    control.setAttribute('aria-pressed', String(enabled));
+    control.setAttribute('aria-busy', String(starting));
+    control.title = `${enabled ? 'Disable' : 'Enable'} main sound`;
+    host.dataset.soundState = starting ? 'starting' : status === 'needs-gesture' || status === 'unavailable' ? 'off' : status;
+    let text = !state.connected && remoteControl ? 'Connecting to Main sound…'
+      : pending ? `${enabled ? 'Enabling' : 'Disabling'} Main sound…`
+      : status === 'needs-gesture' ? 'Enable Main sound once on the host computer.'
+      : status === 'unavailable' ? 'Host sound is unavailable. Keep the host Operator page open.'
+      : status === 'ready' ? remoteControl ? 'Main sound enabled on host computer' : 'Main sound enabled'
+      : status === 'starting' ? 'Starting Main sound…'
+      : status === 'muted' ? 'Main sound disabled'
+      : status === 'suspended' ? 'Main sound paused on host computer'
+      : status === 'error' ? 'Main sound could not start. Enable it on the host computer.'
+      : 'Main sound disabled';
+    if (!remoteControl && status === 'ready') {
+      if (lastStatus.degraded || lastStatus.failedSamples?.length) text += ' · recording unavailable';
+      else if (lastStatus.samplePending?.length) text += ' · loading recordings';
+    }
+    host.querySelector('.sound-status').textContent = text;
+    renderAutomationState();
+    const testHint = host.querySelector('.sound-test-hint');
+    if (testHint) testHint.hidden = remoteControl || status !== 'ready';
+  }
   function renderAutomationState() {
     const stateLabel = host.querySelector('.sound-summary-state');
     if (stateLabel) {
@@ -159,7 +195,13 @@ export function mountSoundControls(host, { mode = 'phone', engine: suppliedEngin
   engine.setLevel(level);
   if (projection) { host.dataset.projection = 'true'; host.hidden = true; }
   renderStatus(lastStatus);
+  playbackControl?.subscribe(renderMainPlayback);
   button.addEventListener('click', async () => {
+    if (playbackControl) {
+      try { await playbackControl.toggle(); }
+      catch { renderMainPlayback({ ...playbackControl.getState(), pending: false, status: { state: 'error' } }); }
+      return;
+    }
     if (busy || remoteControl) return;
     if (lastStatus.state === 'ready') { engine.setMuted(true); return; }
     busy = true;

@@ -6,6 +6,13 @@ the separate visual output and no visible sound button; switching tabs does
 not mute Main. Audience members enable their own sound at `/audience`.
 `/study` and `/study/phone` remain compatible aliases.
 
+The speaker button on `/operator-remote` controls Main sound on the host.
+Click Enable once on the host to grant browser audio permission; subsequent
+remote disable/enable actions use the same smooth output fades. Its status
+shows when that first host click is needed. Keep the host Operator page open.
+The remote controller stays silent and audience phones retain their own sound
+buttons. Playback commands are temporary and are never saved in a preset.
+
 The operator opens in Performance. Mixer keeps all 13 layer levels and the
 five texture-shaping controls beside the same preview; texture shaping starts
 collapsed and shows Automatic or Manual mode. Setup contains timing, ground
@@ -992,3 +999,24 @@ Evidence: `output/audio-refinements-nov7-audio-tests.txt`,
 `output/playwright/phone-drone-v37-mixer-results.json`,
 `output/playwright/rain-loop-audit/summary.json` and
 `output/orangutan-reverb-fade/native-summary.json`.
+
+## Recovery during a performance
+
+A phone that joins, reloads or needs to resume audio during the dark ending
+shows a small sound-recovery button. Tap it to enable or resume sound; the
+control disappears once playback works. This also works in fullscreen.
+Working phones and the completed performance remain black.
+
+Transient recording-download failures retry automatically after 1, 3 and
+8 seconds, with a 12-second download timeout. Sound on can start another
+attempt after those retries are exhausted. During the cricket ending, a
+phone whose current cricket download still needs recovery exposes the same
+button. Missing or invalid recordings do not download repeatedly.
+
+Phone map assets retry automatically up to three times. If they still cannot
+load, check the Wi-Fi connection and use **Retry map**. A successful retry
+restores participation without a page reload.
+
+Ground strength and timing prepared before the first Start now survive a
+restart. If the source snapshot is empty, Final rain still runs its full
+configured rise and then completes the ending; no fire counts are invented.

@@ -103,7 +103,10 @@ export class PerformanceScenes {
     const settings = body.settings === undefined ? this.settings : sceneSettingsPatch(this.settings, body.settings);
     if (body.scene !== undefined && !SCENE_IDS.includes(body.scene)) throw error('Unknown performance scene.');
     if (body.action !== undefined && !['pause', 'resume', 'restart', 'finish'].includes(body.action)) throw error('Unknown scene action.');
-    if (body.scene === 'afterglow' && !(sourceCount > 0 && outCount === sourceCount)) throw error('Afterglow begins only after every source fire is out.', 409);
+    // An empty snapshot still completes the full rain cue. It cannot skip
+    // directly from an uninitialized opening into the ending.
+    const emptyFinalRain = this.id === 'final-rain' && sourceCount === 0 && outCount === 0;
+    if (body.scene === 'afterglow' && !(sourceCount > 0 && outCount === sourceCount) && !emptyFinalRain) throw error('Afterglow begins only after every source fire is out.', 409);
     if (body.scene === 'afterglow' && this.id === 'final-rain' && this.elapsedAt(now) < scoreDurations(settings).finalRainRiseMs - CLOCK_EPSILON_MS) throw error('Afterglow begins only after the final rain has fully risen.', 409);
     if (body.scene !== undefined) this.enter(body.scene, now, wallNow);
     else if (body.action === 'restart') this.enter('arrival', now, wallNow, true);
@@ -137,7 +140,7 @@ export class PerformanceScenes {
       this.enter(timed[1], now - overrun, wallNow - overrun);
     }
     const durations = scoreDurations(this.settings);
-    if (this.id === 'final-rain' && this.elapsedAt(now) >= durations.finalRainRiseMs - CLOCK_EPSILON_MS && sourceCount > 0 && outCount === sourceCount) {
+    if (this.id === 'final-rain' && this.elapsedAt(now) >= durations.finalRainRiseMs - CLOCK_EPSILON_MS && sourceCount >= 0 && outCount === sourceCount) {
       const overrun = Math.max(0, this.elapsedAt(now) - durations.finalRainRiseMs);
       this.enter('afterglow', now - overrun, wallNow - overrun);
     }

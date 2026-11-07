@@ -167,6 +167,15 @@ LAN mode binds this one prototype to `0.0.0.0`; it does not configure a tunnel, 
 
 Start with the launcher or `npm run start:lan`. Scan the audience QR code on the controller, replace `/audience` with `/operator-remote`, and enter the six-digit PIN shown on the host in **Operator → Setup → Remote control**. Both `/operator-remote` and `/operator-remote/` open the PIN entry page or the remembered controller. Scene transport, shared mixer settings, timings and landscape state continue to come from the one host server, so both operator pages receive the same live updates. This route always uses a silent remote preview, including when opened on the host. Keep the host Operator page open with Main sound enabled and keep the host awake; it remains the Main audio owner.
 
+The remote page also has the Main sound speaker button. Enable Main sound once
+on the host computer to grant its browser audio permission; the remote button
+then disables and re-enables that host output using its normal smooth fades.
+The button shows the host's reported state and prompts for that initial click
+when needed. It never enables audio on the remote device or audience phones.
+Playback commands and acknowledgements are live session state, excluded from
+saves and settings presets. A newly opened host page does not replay an old
+enable command. Keep the host Operator page open while controlling sound.
+
 The server saves the PIN and random pairing secret in the private, ignored local file `data/remote-operator.json`. Existing secret-only installations gain a PIN without replacing their secret or remembered browser access. A same-origin POST exchanges the PIN for a one-year HttpOnly, SameSite=Strict cookie, which authorizes remote operator HTTP requests and WebSocket connections across browser and server restarts. Five unsuccessful attempts temporarily block PIN entry from that device's address. Previously saved long private links remain supported; their valid token fragment remains bookmarkable. Unpaired remote browsers retain audience/display access only. Audience and projection requests cannot pair or write performance settings. The PIN and pairing secret are absent from public session data, performance saves, exported settings and release packages.
 
 Bookmark the simple `/operator-remote` address to return later. **Reset PIN & devices** rotates the saved PIN and secret, closes paired operator connections and invalidates previous private links and remembered access. A normal server restart retains them. The address still depends on the host's LAN address: if the router changes it, choose **Refresh address** and update the bookmark. Remote control remains on the same local network, without internet hosting. The audience QR code contains only the audience address and never the PIN.

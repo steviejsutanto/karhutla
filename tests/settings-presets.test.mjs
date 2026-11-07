@@ -142,8 +142,14 @@ test('a failed persistence write leaves every imported setting unapplied', async
   assert.deepEqual(room.exportSettingsPreset(), before);
   assert.deepEqual(landscape(room), beforeLandscape);
   assert.equal(room.settingsImportInProgress, false);
+  // Ordinary pre-show edits now persist too. Repair the simulated storage
+  // failure before checking that the failed import released its edit lock.
+  await rm(blockingFile);
   await room.setStrength(.25);
   assert.equal(room.strength, .25, 'A failed pre-show import releases ordinary configuration edits.');
+  const restored = await new SharedRoom({ ...roomOptions, persistencePath: room.persistencePath }).initialize();
+  assert.deepEqual(restored.exportSettingsPreset(), { ...before, strength: .25 });
+  assert.equal(restored.bootstrapAvailable, true);
 });
 
 test('a pending import rejects concurrent configuration edits, reset, bootstrap and another import', async t => {

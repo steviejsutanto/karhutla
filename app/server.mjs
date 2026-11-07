@@ -45,6 +45,8 @@ const staticFiles = new Map([
   ['/visual-assets/participant-identity.js', ['visual-assets/participant-identity.js', 'text/javascript; charset=utf-8']],
   ['/visual-assets/extinction-feedback.js', ['visual-assets/extinction-feedback.js', 'text/javascript; charset=utf-8']],
   ['/sound-controls.js', ['app/sound-controls.js', 'text/javascript; charset=utf-8']],
+  ['/main-sound-control.js', ['app/main-sound-control.js', 'text/javascript; charset=utf-8']],
+  ['/app/main-sound-control.js', ['app/main-sound-control.js', 'text/javascript; charset=utf-8']],
   ['/sound-controls.css', ['app/sound-controls.css', 'text/css; charset=utf-8']],
   ['/sound-library.js', ['app/sound-library.js', 'text/javascript; charset=utf-8']],
   ['/sound-participants.js', ['app/sound-participants.js', 'text/javascript; charset=utf-8']],
@@ -75,6 +77,7 @@ const staticFiles = new Map([
   ['/peat-study.css', ['app/peat-study.css', 'text/css; charset=utf-8']],
   ['/peat-phone.js', ['app/peat-phone.js', 'text/javascript; charset=utf-8']],
   ['/phone-magnifier.js', ['app/phone-magnifier.js', 'text/javascript; charset=utf-8']],
+  ['/phone-recovery.js', ['app/phone-recovery.js', 'text/javascript; charset=utf-8']],
   ['/peat-phone.css', ['app/peat-phone.css', 'text/css; charset=utf-8']],
   ['/study-state.mjs', ['app/study-state.mjs', 'text/javascript; charset=utf-8']],
   ['/visual-assets/surface-heat.js', ['visual-assets/surface-heat.js', 'text/javascript; charset=utf-8']],
@@ -293,7 +296,8 @@ export async function createPerformanceServer(options = {}) {
     const currentNetwork = refreshNetwork();
     const joinUrls = lanEnabled && currentNetwork.addresses.length ? currentNetwork.addresses.map(address => `http://${address}:${port()}/join`) : [`http://127.0.0.1:${port()}/join`];
     const audienceUrls = joinUrls.map(value => { const url = new URL(value); url.pathname = '/audience'; return url.href; });
-    return { joinUrl: joinUrls[0], joinUrls, audienceUrl: audienceUrls[0], audienceUrls, scene: room.sceneState(), soundSettings: room.soundSettingsState(), lanEnabled, bootstrapAvailable: room.bootstrapAvailable, strength: room.strength, operatorAllowed: operatorAllowed(request, currentNetwork), localOperator: localOperator(request, currentNetwork), networkAvailable: !lanEnabled || currentNetwork.addresses.length > 0 };
+    const allowed = operatorAllowed(request, currentNetwork);
+    return { joinUrl: joinUrls[0], joinUrls, audienceUrl: audienceUrls[0], audienceUrls, scene: room.sceneState(), soundSettings: room.soundSettingsState(), ...(allowed ? { mainSound: room.mainSoundState() } : {}), lanEnabled, bootstrapAvailable: room.bootstrapAvailable, strength: room.strength, operatorAllowed: allowed, localOperator: localOperator(request, currentNetwork), networkAvailable: !lanEnabled || currentNetwork.addresses.length > 0 };
   };
   let revision = 0, lastPhoneBroadcast = -Infinity;
   const ACTOR_INTERVAL_MS = 1000 / 30;
@@ -460,6 +464,19 @@ export async function createPerformanceServer(options = {}) {
       }
       if (url.pathname === '/api/scene' && request.method === 'GET') return sendJSON(response, 200, room.sceneState());
       if (url.pathname === '/api/sound-settings' && request.method === 'GET') return sendJSON(response, 200, room.soundSettingsState());
+      if (url.pathname === '/api/main-sound' || url.pathname === '/api/main-sound/status') {
+        const report = url.pathname.endsWith('/status');
+        const methods = report ? ['POST'] : ['GET', 'POST'];
+        if (!methods.includes(request.method)) { response.setHeader('Allow', methods.join(', ')); return sendJSON(response, 405, { error: `Use ${methods.join(' or ')}.` }); }
+        if (!operatorAllowed(request) || readOnlyRequest(request) || !sameOrigin(request) || report && !localOperator(request))
+          return sendJSON(response, 403, { error: report ? 'Only the host Operator can report Main sound status.' : 'Open Operator on the host computer or connect with its PIN to control Main sound.' });
+        if (request.method === 'GET') return sendJSON(response, 200, room.mainSoundState());
+        if (!(request.headers['content-type'] || '').startsWith('application/json')) return sendJSON(response, 415, { error: 'Expected application/json.' });
+        const body = await jsonBody(request, 1024);
+        const state = report ? room.reportMainSound(body) : room.requestMainSound(body);
+        broadcast();
+        return sendJSON(response, 200, state);
+      }
       if (url.pathname === '/api/settings/export') {
         if (request.method !== 'GET') { response.setHeader('Allow', 'GET'); return sendJSON(response, 405, { error: 'Use GET.' }); }
         if (!operatorAllowed(request) || readOnlyRequest(request)) return sendJSON(response, 403, { error: 'Open Operator on the host computer or use its private control link to export settings.' });

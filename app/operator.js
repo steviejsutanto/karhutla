@@ -1,6 +1,7 @@
 import { operatorRequest } from '/shared-client.js';
 import { DEFAULT_PARAMETERS, PARAMETER_LIMITS } from '/simulation.js';
 import { mountSoundControls } from '/sound-controls.js';
+import { createMainSoundControl } from '/main-sound-control.js';
 import { DEFAULT_PROGRAM_NOTES, sceneClock, sceneRemaining, scenePresentation, scenePhaseReadout } from '/performance-view.js';
 import { DEFAULT_SCORE_SETTINGS, SCENE_DURATION_LIMITS } from '/scene-score.js';
 
@@ -42,7 +43,8 @@ $('scene-restart-shortcut').addEventListener('click', () => {
   selectWorkspace('setup');
   $('scene-restart').focus();
 });
-const metrics = window.__performanceOperator = { allowed: false, localOperator: false, remoteControl: false, connected: false, lastState: null, scene: null, soundSettings: null, actions: [], errors: [] };
+const metrics = window.__performanceOperator = { allowed: false, localOperator: false, remoteControl: false, connected: false, lastState: null, scene: null, soundSettings: null, mainSound: null, actions: [], errors: [] };
+let mainSoundControl = null;
 let latestState = null, sound = null, scene = null, pending = 0, soundTimer = null, soundPatch = {}, soundWaiters = [], strengthTimer = null, timingTimer = null, settingsDirty = false, scoreSettingsDirty = false, lastSoundSettings = '', connectionNotice = true;
 const parameterLabels = { fireReturnSeconds: ['Fire return', 'How quickly unfinished fire returns after rain leaves.'], rainResponseSeconds: ['Surface response', 'How quickly held rain damps the surface flames.'], deepCoolingSeconds: ['Ground cooling', 'How long rain takes to cool the deeper fire.'], extinctionHoldSeconds: ['Extinction hold', 'How long cooled ground must stay wet to settle out.'] };
 $('ground-timing').innerHTML = Object.entries(PARAMETER_LIMITS).map(([key, limits]) => `<label class="slider-label">${parameterLabels[key][0]} <output data-parameter-value="${key}">${DEFAULT_PARAMETERS[key]} s</output><input type="range" data-parameter="${key}" min="${limits.min}" max="${limits.max}" step="${limits.step}" value="${DEFAULT_PARAMETERS[key]}"><span class="slider-hint">${parameterLabels[key][1]}</span></label>`).join('');
@@ -107,8 +109,11 @@ function renderScene(next) {
 }
 function receiveState(message) {
   if (!metrics.allowed) return;
-  if (sound) $('operator-sound').querySelector('.sound-enable').disabled = metrics.remoteControl || $('operator-sound').dataset.soundState === 'starting';
   latestState = message; metrics.lastState = message; metrics.connected = true;
+  if (message.mainSound) {
+    metrics.mainSound = message.mainSound;
+    mainSoundControl?.applyState(message.mainSound, message.epoch);
+  }
   renderScene(message.scene);
   const condition = message.soundCondition;
   if (condition) { text('operator-heat', `${Math.round((condition.heat || 0) * 100)}%`); text('operator-wetness', `${Math.round((condition.surfaceWetness || 0) * 100)}%`); text('operator-out', `${condition.outCount || 0} / ${condition.sourceCount || 0}`); }
@@ -134,6 +139,7 @@ window.addEventListener('message', event => {
   if (event.data?.type === 'wildfire-preview-connection') {
     const status = event.data.status;
     metrics.connected = status === 'connected';
+    mainSoundControl?.setConnected(metrics.connected);
     if (status === 'disconnected') { notify('Preview disconnected. Waiting for the venue to reconnect.', false, true); void refreshSession(); }
     else if (status === 'connecting') notify('Connecting the preview to the venue…', false, true);
     else if (status === 'connected' && connectionNotice) notify('Connected. Operator controls are ready.');
@@ -141,7 +147,12 @@ window.addEventListener('message', event => {
 });
 function mountAudition() {
   if (!metrics.allowed || sound || !frame.contentWindow?.__wildfireSound) return;
+  mainSoundControl = createMainSoundControl({ engine: frame.contentWindow.__wildfireSound, remoteControl: metrics.remoteControl,
+    request: enabled => operatorRequest('/api/main-sound', { enabled }, { timeoutMs: 8000 }),
+    report: status => operatorRequest('/api/main-sound/status', status, { timeoutMs: 8000 }),
+    onError: message => notify(message, true) });
   sound = mountSoundControls($('operator-sound'), { mode: 'operator', engine: frame.contentWindow.__wildfireSound, shared: true, remoteControl: metrics.remoteControl,
+    mainSoundControl,
     onSettings(patch) {
       for (const [key, value] of Object.entries(patch)) soundPatch[key] = ['mixer', 'macros', 'phoneMixer'].includes(key) ? { ...soundPatch[key], ...value } : value;
       const saved = new Promise(resolve => soundWaiters.push(resolve));
@@ -155,7 +166,7 @@ function mountAudition() {
       }, 160);
       return saved;
     } });
-  $('operator-sound').querySelector('.sound-enable').disabled = metrics.remoteControl || !latestState || $('operator-sound').dataset.soundState === 'starting';
+  if (latestState?.mainSound) mainSoundControl.applyState(latestState.mainSound, latestState.epoch);
   if (latestState?.soundSettings) { sound.applySharedSettings(latestState.soundSettings); lastSoundSettings = JSON.stringify(latestState.soundSettings); }
 }
 frame.addEventListener('load', mountAudition);

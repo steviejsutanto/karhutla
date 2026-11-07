@@ -61,6 +61,6 @@ For an update, stop the old version with Ctrl+C, extract the new release into it
 
 ## Compatibility and development
 
-The bundled Node 24.22.2 runtime has a technical minimum of **macOS 13.5** for both architectures; use a macOS version still supported by Apple. See [Node's pinned platform requirements](https://github.com/nodejs/node/blob/v24.22.2/BUILDING.md#platform-list). Native package verification uses macOS 15 runners for Apple Silicon and Intel.
+The bundled Node 24.22.2 runtime has a technical minimum of **macOS 13.5** for both architectures; use a macOS version still supported by Apple. See [Node's pinned platform requirements](https://github.com/nodejs/node/blob/v24.22.2/BUILDING.md#platform-list). Native package verification uses macOS 26 for Apple Silicon and macOS 15 for Intel.
 
 The source checkout uses the same launcher with an installed Node 22 or newer. For a rehearsal with the exact bundled runtime, launch from Terminal with `KARHUTLA_USE_BUNDLED_NODE=1 ./Start-Karhutla.command`. See [the development guide](development.md) for source setup and packaging commands.

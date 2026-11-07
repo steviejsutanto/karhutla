@@ -50,6 +50,9 @@ export class SharedRoom extends EventEmitter {
     this.lastAdvance = clock();
     this.scenes = new PerformanceScenes({ now: this.lastAdvance, wallNow: wallClock() });
     this.soundSettings = soundSettingsPatch(DEFAULT_SOUND_SETTINGS, {});
+    // Playback belongs to the current host browser, never a saved performance
+    // or settings preset. Remote controllers request it; the host reports it.
+    this.mainSound = { revision: 0, requestId: 0, requestedEnabled: false, status: { requestId: 0, state: 'unavailable', activated: false } };
     this.epoch = randomUUID();
     this.bootstrapAvailable = true;
     this.bootstrapping = false;
@@ -325,13 +328,34 @@ export class SharedRoom extends EventEmitter {
       simulation: { wireFormat: 'compact-v1', parameters: { ...this.simulation.parameters }, totalWater: rounded(this.simulation.totalWater), cells: [...this.simulation.cells.values()].map(cell => [cell.longitude, cell.latitude, rounded(cell.surfaceWetness), rounded(cell.moisture), rounded(cell.heat), cell.extinguished, rounded(cell.settledFor), cell.hasFire]) },
       strength: this.strength,
       bootstrapAvailable: this.bootstrapAvailable, snapshotVersion: this.snapshotVersion,
-      ...this.globalSound(), scene: this.sceneState(), soundSettings: this.soundSettingsState(),
+      ...this.globalSound(), scene: this.sceneState(), soundSettings: this.soundSettingsState(), mainSound: this.mainSoundState(),
     };
   }
 
   sceneState() { return this.scenes.state(this.clock(), this.wallClock()); }
 
   soundSettingsState() { return { ...this.soundSettings, macros: { ...this.soundSettings.macros }, mixer: { ...this.soundSettings.mixer }, phoneMixer: { ...this.soundSettings.phoneMixer } }; }
+
+  mainSoundState() { return { ...this.mainSound, status: { ...this.mainSound.status } }; }
+
+  requestMainSound(body) {
+    if (!body || typeof body !== 'object' || Array.isArray(body) || Object.keys(body).some(key => key !== 'enabled') || typeof body.enabled !== 'boolean')
+      throw roomError('Main sound requires an enabled boolean.');
+    this.mainSound = { ...this.mainSound, revision: this.mainSound.revision + 1, requestId: this.mainSound.requestId + 1, requestedEnabled: body.enabled };
+    return this.mainSoundState();
+  }
+
+  reportMainSound(body) {
+    const states = ['unavailable', 'off', 'needs-gesture', 'starting', 'ready', 'muted', 'suspended', 'error'];
+    if (!body || typeof body !== 'object' || Array.isArray(body) || Object.keys(body).some(key => !['requestId', 'state', 'activated'].includes(key))
+      || !Number.isSafeInteger(body.requestId) || body.requestId < 0 || !states.includes(body.state) || typeof body.activated !== 'boolean')
+      throw roomError('Main sound status is invalid.');
+    if (body.requestId > this.mainSound.requestId) throw roomError('Main sound status refers to an unknown request.');
+    if (body.requestId < this.mainSound.requestId) return this.mainSoundState();
+    if (body.requestId !== this.mainSound.status.requestId || body.state !== this.mainSound.status.state || body.activated !== this.mainSound.status.activated)
+      this.mainSound = { ...this.mainSound, revision: this.mainSound.revision + 1, status: { requestId: body.requestId, state: body.state, activated: body.activated } };
+    return this.mainSoundState();
+  }
 
   globalSound() {
     let outCount = 0, heat = 0, moisture = 0, surfaceWetness = 0;
@@ -467,7 +491,8 @@ export class SharedRoom extends EventEmitter {
     if (!finite(strength) || strength < 0 || strength > 1) throw roomError('Rain strength must be between zero and one.');
     this.advance();
     this.strength = strength;
-    if (!this.bootstrapAvailable) await this.persist();
+    if (this.bootstrapAvailable) await this._writeSettings();
+    else await this.persist();
     return this.wireState();
   }
 
@@ -477,7 +502,8 @@ export class SharedRoom extends EventEmitter {
     if (!validator.setParameters(parameters)) throw roomError('Performance timing parameters are invalid.');
     this.advance();
     this.simulation.setParameters(parameters);
-    if (!this.bootstrapAvailable) await this.persist();
+    if (this.bootstrapAvailable) await this._writeSettings();
+    else await this.persist();
     return this.wireState();
   }
 
