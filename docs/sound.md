@@ -1093,3 +1093,51 @@ Evidence: `output/listening-operator-final-tests.txt`,
 `output/magnifier-first-drag/summary.json` and
 `output/operator-restart-layout/report.json` and
 `output/phone-drone-transposition/native-summary.json`.
+
+## Larger water supply and audio-led Participation entrance
+
+Rainwater capacity increases by 1.5× from the previous setting: 33.5→50.25
+seconds at defaults, with the same proportional increase for custom cooling
+timings. Capacities serialize at millisecond precision. Automatic idle refill
+still takes 12 seconds; a finger held down at empty cannot recharge or add
+water. Rain strength and the landscape's cooling physics are unchanged.
+
+For the initial Scene 2→3 entrance, the existing transition duration is now
+split into three parts. The low Main drone rises over 40% of the configured
+sound transition; the complete instruction panel, Wi-Fi and QR then remain
+fully visible for a fixed 4.8 seconds with the drone fully on; finally, the
+landscape and complete panel crossfade over another 40% of that setting.
+At the default 12-second sound setting, this is a 4.8-second drone rise,
+4.8-second full-instructions hold, then a 4.8-second map reveal: 14.4 seconds
+overall. Other sound ramps retain their timing, and
+later returns to Participation do not show the instructions again.
+
+Every display computes the same visual curve from the shared show clock,
+including after pause or a late join. A delayed cue on an already-running
+Main output catches the drone up over 850 ms rather than stretching its old
+zero level across the entire remaining visual transition. Mixer trims and
+Main volume remain downstream and live. No extra scene or preset fields
+are serialized.
+
+Following listening feedback, the highest bell pair (C5/G5) is reduced by
+3 dB from the preceding calibration. Current note trims relative to the
+0.026 base are C3 0, G3 −2, C4 0, G4 +2, C5 +3 and G5 +3 dB. This is an
+intentional register balance correction; the earlier K-weighted equal-body
+measurements describe the prior +6 dB upper pair. Natural decay, partials,
+placement and the lower four note trims are retained.
+
+Validation: 832 checks pass; the native Windows launch check is skipped on
+macOS. Native three-view verification confirms the full drone beneath fully
+opaque instructions throughout the fixed hold, followed by map reveal on
+projection and phones. Existing 350 ms CSS opacity smoothing settles the
+14.4-second nominal reveal by about 14.9 seconds in that browser. Main output
+and drone mixer trims stay unchanged. Late cue catch-up, pause, late join and
+manual return also pass. Native bell output confirms a 3.000 dB reduction for
+both upper notes; lower control notes and natural decays are unchanged, with
+finite, unclipped overlapping bursts.
+
+Evidence: `output/water-entry-bells-final-4p8-tests.txt`,
+`output/rain-supply-1point5/focused-tests.txt`,
+`output/drone-before-landscape/fixed-hold-summary.json`,
+`output/drone-before-landscape/summary.json` and
+`output/bell-register-listening/native-summary.json`.

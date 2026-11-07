@@ -4,10 +4,10 @@
 // whose peaks were almost 10 dB lower, so equal completion events varied widely.
 const BELL_MIDI = Object.freeze([48, 55, 60, 67, 72, 79]); // C3/G3 through C5/G5.
 const BELL_BASE_PEAK = .026;
-// Fixed note calibration through Main's HRTF/output path, measured by the
-// active strike/body rather than source peaks or differing tail lengths.
+// Fixed note balance through Main's HRTF/output path. Listening trims keep
+// the brighter upper register from dominating even when body energy matches.
 // Retain the note's colour and position: no real-time gain riding is added.
-export const BELL_NOTE_TRIM_DB = Object.freeze({ 48: 0, 55: -2, 60: 0, 67: 2, 72: 6, 79: 6 });
+export const BELL_NOTE_TRIM_DB = Object.freeze({ 48: 0, 55: -2, 60: 0, 67: 2, 72: 3, 79: 3 });
 const bellPeak = midi => BELL_BASE_PEAK * 10 ** (BELL_NOTE_TRIM_DB[midi] / 20);
 const BELL_OCTAVES = Object.freeze([
   // Peak is the register's maximum for headroom inspection; each selected

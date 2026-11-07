@@ -162,12 +162,16 @@ test('only an authoritative opening entrance reveals the QR and phone welcome du
     const opening = { id: 'participation', participationOpening: true, elapsedMs: 0 };
     assert.equal(scenePresentation(opening, { phone }).landscapeEntranceGain, 0);
     assert.equal(scenePresentation(opening, { phone }).openingOverlayGain, 1);
-    const midpoint = scenePresentation({ ...opening, elapsedMs: 6_000 }, { phone });
+    const settled = scenePresentation({ ...opening, elapsedMs: 6_000 }, { phone });
+    assert.equal(settled.mix.mainDrone, 1);
+    assert.equal(settled.landscapeEntranceGain, 0); assert.equal(settled.openingOverlayGain, 1);
+    const midpoint = scenePresentation({ ...opening, elapsedMs: 12_000 }, { phone });
     assert.equal(midpoint.landscapeEntranceGain, .5); assert.equal(midpoint.openingOverlayGain, .5);
+    assert.ok(midpoint.mix.phoneField > midpoint.landscapeEntranceGain, 'The landscape entrance is separate from the unchanged phone sound ramp.');
     assert.equal(midpoint.showJoinCode, true); assert.equal(midpoint.showWifiJoin, true); assert.equal(midpoint.showOpeningInstructions, true);
-    assert.equal(scenePresentation({ ...opening, elapsedMs: 12_000 }, { phone }).openingOverlayGain, 0);
-    assert.equal(scenePresentation({ ...opening, elapsedMs: 12_000 }, { phone }).showOpeningInstructions, false);
-    assert.equal(scenePresentation({ ...opening, elapsedMs: 12_000 }, { phone }).showWifiJoin, false);
+    assert.equal(scenePresentation({ ...opening, elapsedMs: 14_400 }, { phone }).openingOverlayGain, 0);
+    assert.equal(scenePresentation({ ...opening, elapsedMs: 14_400 }, { phone }).showOpeningInstructions, false);
+    assert.equal(scenePresentation({ ...opening, elapsedMs: 14_400 }, { phone }).showWifiJoin, false);
     for (const elapsedMs of [0, 100, 6_000, 12_000]) {
       const returned = { id: 'participation', participationOpening: false, elapsedMs };
       const current = scenePresentation(returned, { phone });
@@ -176,6 +180,28 @@ test('only an authoritative opening entrance reveals the QR and phone welcome du
       assert.equal(current.showJoinCode, false); assert.equal(current.showWifiJoin, false); assert.equal(current.showOpeningInstructions, false);
       assert.deepEqual(current, scenePresentation(JSON.parse(JSON.stringify(returned)), { phone }), 'A fresh browser with the same authority packet makes the same choice.');
     }
+  }
+});
+
+test('complete opening instructions stay opaque until after the drone hold on Main and phones', () => {
+  const settings = { soundTransitionSeconds: 8 };
+  for (const elapsedMs of [0, 1600, 3200, 4000, 4800, 7200, 8000]) {
+    const scene = { id: 'participation', participationOpening: true, elapsedMs, paused: true, settings };
+    const main = scenePresentation(scene), phone = scenePresentation(scene, { phone: true });
+    for (const view of [main, phone]) {
+      assert.equal(view.openingOverlayGain, 1); assert.equal(view.landscapeEntranceGain, 0);
+      assert.equal(view.showJoinCode, true); assert.equal(view.showWifiJoin, true); assert.equal(view.showOpeningInstructions, true);
+      if (elapsedMs >= 3200) assert.equal(view.mix.mainDrone, 1);
+    }
+    assert.deepEqual(main, scenePresentation({ ...scene, serverNow: Date.now() + 90000 }), 'Only the supplied show clock advances a paused entrance.');
+    assert.deepEqual(main, scenePresentation(JSON.parse(JSON.stringify(scene))), 'A late joining display derives the same complete panel.');
+  }
+  for (const phone of [false, true]) {
+    const fade = scenePresentation({ id: 'participation', participationOpening: true, elapsedMs: 9600, settings }, { phone });
+    assert.equal(fade.landscapeEntranceGain, .5); assert.equal(fade.openingOverlayGain, .5);
+    const finished = scenePresentation({ id: 'participation', participationOpening: true, elapsedMs: 11200, settings }, { phone });
+    assert.equal(finished.landscapeEntranceGain, 1); assert.equal(finished.openingOverlayGain, 0);
+    assert.equal(finished.showOpeningInstructions, false); assert.equal(finished.showJoinCode, false); assert.equal(finished.showWifiJoin, false);
   }
 });
 

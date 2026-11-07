@@ -386,7 +386,7 @@ test('instruction crossfade and participation transfer use one pauseable authori
   assert.equal(room.sceneState().mix.mainHaze, 0); assert.equal(room.sceneState().mix.mainForest, 1);
   await room.setScene({ scene: 'participation' }); advance(6000);
   const scene = room.sceneState();
-  assert.equal(scene.mix.mainForest, .5); assert.equal(scene.mix.mainDrone, .5);
+  assert.equal(scene.mix.mainForest, .5); assert.equal(scene.mix.mainDrone, 1);
   assert.equal(scene.mix.phoneField, .5); assert.equal(scene.mix.mainChimes, .5);
   assert.equal(scene.mix.mainCrickets, 0); assert.equal(scene.mix.phoneCrickets, .5);
   assert.deepEqual(room.phoneState(phone.connectionId).scene, room.wireState().scene);

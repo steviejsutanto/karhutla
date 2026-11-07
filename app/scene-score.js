@@ -3,6 +3,7 @@
 export const FINAL_RAIN_RAMP_MS = 52_000;
 export const DEFAULT_RAIN_STRENGTH = .54;
 export const FOREST_RAIN_STRENGTH_MULTIPLIER = .6;
+export const PARTICIPATION_DRONE_HOLD_MS = 4800;
 // Keep real rain delivery and its visual strength on the same scene rule.
 export function audienceRainStrength(scene, strength = 0) {
   const value = Number.isFinite(strength) ? Math.max(0, Math.min(1, strength)) : 0;
@@ -85,6 +86,17 @@ export function scoreDurations(settings = {}) {
     afterglowDurationMs: Math.max(milliseconds.projectionFadeSeconds, milliseconds.rainCricketOverlapSeconds) + milliseconds.paCricketOnlySeconds + milliseconds.cricketHandoffSeconds + milliseconds.phoneOnlySeconds + milliseconds.phoneFadeSeconds };
 }
 
+// Initial Participation reveals its map only after the Main drone has risen
+// and settled under the complete instruction panel. This is recomputed from
+// the same show clock on every display, without another serialized score field.
+export function participationVisualProgress(scene = {}, elapsedMs = scene?.elapsedMs) {
+  if (scene?.id !== 'participation') return 0;
+  if (scene.participationOpening === false) return 1;
+  const { soundTransitionMs } = scoreDurations(scene?.settings);
+  const fadeMs = soundTransitionMs * .4, startMs = fadeMs + PARTICIPATION_DRONE_HOLD_MS;
+  return smooth((elapsed(elapsedMs) - startMs) / fadeMs);
+}
+
 // Match the natural retreat of the cricket field: distance first, with a short
 // final tail. This is the phone master, not an additional layer attenuation.
 export function phoneRetreatGain(elapsedMs = 0, durationMs = 60_000) {
@@ -120,9 +132,14 @@ export function computeSceneScore(scene = {}, elapsedMs = scene?.elapsedMs) {
     mix.mainHaze = 1 - transfer; mix.mainForest = transfer;
   } else if (id === 'participation') {
     Object.assign(score, { cue: 3, phase: 'participation', phaseDurationMs: soundTransitionMs, phoneGain: 1 });
+    const opening = scene.participationOpening !== false;
+    // Establish the low Main drone under fully visible instructions first.
+    // Keep a settled interval before the complete opening panel reveals the
+    // landscape. Other sound ramps keep their original total duration.
     mix.mainForest = 1 - transfer;
     mix.mainHaze = .18 * transfer;
-    mix.mainDrone = mix.mainOutDrone = mix.mainChimes = mix.phoneField = mix.phoneCrickets = transfer;
+    mix.mainDrone = opening ? smooth(time / (soundTransitionMs * .4)) : transfer;
+    mix.mainOutDrone = mix.mainChimes = mix.phoneField = mix.phoneCrickets = transfer;
   } else if (id === 'forest-takeover') {
     const progress = smooth(time / forestRiseMs), remainingMain = .08 + .92 * (1 - progress);
     Object.assign(score, { cue: 4, phase: 'forest-rise', phaseDurationMs: forestRiseMs,

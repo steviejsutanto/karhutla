@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { computeSceneScore, computeScore, phoneRetreatGain, scoreDurations, finalRainProgressAt, finalCricketProgressAt, FINAL_RAIN_RAMP_MS } from '../app/scene-score.js';
+import { computeSceneScore, computeScore, phoneRetreatGain, scoreDurations, finalRainProgressAt, finalCricketProgressAt, participationVisualProgress, PARTICIPATION_DRONE_HOLD_MS, FINAL_RAIN_RAMP_MS } from '../app/scene-score.js';
 
 test('participation defaults to ten minutes while a saved custom duration remains valid', () => {
   assert.equal(scoreDurations().participationMs, 600000);
@@ -19,12 +19,54 @@ test('phones enter throughout the PA handoff without a second slow ease-in', () 
   assert.ok(computeSceneScore({ id: 'afterglow', elapsedMs: start + 1000 }).mix.phoneCrickets > .13);
 });
 
-test('participation retains a thin haze under the drone, on the same gradual sound transition', () => {
+test('participation retains the original gradual haze and phone field while its opening drone settles first', () => {
   for (const elapsedMs of [0, 1000, 6000, 12000, 60000]) {
     const score = computeSceneScore({ id: 'participation', elapsedMs });
-    assert.equal(score.mix.mainHaze, .18 * score.mix.mainDrone);
+    assert.equal(score.mix.mainHaze, .18 * score.mix.phoneField);
   }
   assert.equal(computeSceneScore({ id: 'participation', elapsedMs: 12000 }).mix.mainHaze, .18);
+});
+
+test('the opening Main drone reaches full level and holds for 4.8 seconds before the landscape reveal', () => {
+  assert.equal(PARTICIPATION_DRONE_HOLD_MS, 4800);
+  for (const soundTransitionSeconds of [1, 12, 75]) for (const participationOpening of [undefined, true]) {
+    const scene = { id: 'participation', participationOpening, settings: { soundTransitionSeconds } };
+    const rise = soundTransitionSeconds * 1000 * .4, revealStart = rise + 4800, finish = revealStart + rise;
+    const at = time => computeSceneScore(scene, time);
+    const visual = time => participationVisualProgress(scene, time);
+    assert.equal(at(0).mix.mainDrone, 0); assert.equal(visual(0), 0);
+    assert.ok(Math.abs(at(rise / 2).mix.mainDrone - .5) < 1e-12);
+    for (const time of [rise, rise + 2400, revealStart - .001, revealStart]) {
+      assert.equal(at(time).mix.mainDrone, 1); assert.equal(visual(time), 0);
+    }
+    assert.ok(visual(revealStart + .001) > 0, 'The reveal follows the full fixed hold even with a custom sound transition.');
+    assert.equal(at(revealStart + rise / 2).mix.mainDrone, 1);
+    assert.ok(Math.abs(visual(revealStart + rise / 2) - .5) < 1e-12);
+    assert.equal(visual(finish), 1); assert.equal(visual(finish * 2), 1);
+    let previous = 0;
+    for (let step = 0; step <= 100; step++) {
+      const time = finish * step / 100, value = visual(time);
+      assert.ok(value >= previous && value <= 1);
+      if (value > 0) assert.equal(at(time).mix.mainDrone, 1, 'The map cannot appear before the Main drone is fully established.');
+      previous = value;
+    }
+    assert.equal(Object.hasOwn(at(rise), 'participationVisualProgress'), false, 'Visual timing adds no field to shared scene packets.');
+  }
+});
+
+test('the separated opening retains existing other audio ramps and authoritative reentries', () => {
+  for (const elapsedMs of [0, 1000, 4800, 6000, 7200, 9600, 12000, 60000]) {
+    const opening = { id: 'participation', participationOpening: true, elapsedMs };
+    const returning = { ...opening, participationOpening: false };
+    const first = computeSceneScore(opening), repeat = computeSceneScore(returning);
+    for (const key of Object.keys(first.mix).filter(key => key !== 'mainDrone')) assert.equal(first.mix[key], repeat.mix[key]);
+    assert.equal(participationVisualProgress(returning), 1, 'A restarted or reverse-cued Participation never restores the instructions.');
+    assert.equal(repeat.mix.mainDrone, repeat.mix.phoneField, 'Reentries retain their established gradual audio transfer.');
+  }
+  const paused = { id: 'participation', participationOpening: true, elapsedMs: 6000, paused: true };
+  assert.equal(participationVisualProgress(paused), 0);
+  assert.equal(participationVisualProgress({ ...paused, serverNow: Date.now() + 60000 }), 0);
+  assert.equal(participationVisualProgress(paused, 12000), participationVisualProgress({ ...paused, elapsedMs: 12000 }));
 });
 
 test('the five cues open phone sound at participation and reserve main crickets for the finale', () => {
@@ -41,7 +83,7 @@ test('the five cues open phone sound at participation and reserve main crickets 
   const instructions = computeScore({ id: 'instructions', elapsedMs: 6000 });
   assert.equal(instructions.mix.mainHaze, .5); assert.equal(instructions.mix.mainForest, .5);
   const participation = computeScore({ id: 'participation' }, 6000);
-  assert.equal(participation.mix.mainForest, .5); assert.equal(participation.mix.mainDrone, .5);
+  assert.equal(participation.mix.mainForest, .5); assert.equal(participation.mix.mainDrone, 1);
   assert.equal(participation.mix.mainChimes, .5); assert.equal(participation.mix.phoneField, .5);
   const rain = computeScore({ id: 'final-rain', elapsedMs: 9000 });
   assert.equal(rain.cue, 5); assert.equal(rain.phase, 'rain');

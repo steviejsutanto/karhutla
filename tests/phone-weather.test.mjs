@@ -163,7 +163,7 @@ test('fresh taps across fully extinguished brush footprints keep ringing outside
   assert.equal(weather.getMetrics().bellsTriggered, 100);
 });
 
-test('C3/G3 through C5/G5 keep equal C/G odds with fixed individual note calibration', t => {
+test('C3/G3 through C5/G5 keep equal C/G odds with register-aware fixed listening trims', t => {
   const { weather, context } = fixture(t), random = Math.random; weather.setActive(true);
   t.after(() => { Math.random = random; });
   const probabilities = [.17, .17, .22, .22, .11, .11];
@@ -179,8 +179,8 @@ test('C3/G3 through C5/G5 keep equal C/G odds with fixed individual note calibra
   }
   assert.deepEqual(heard, [48, 55, 60, 67, 72, 79]);
   assert.deepEqual(decays, [12, 12, 10, 10, 8, 8]);
-  assert.deepEqual(peaks, [0, -2, 0, 2, 6, 6].map(db => .026 * 10 ** (db / 20)));
-  assert.deepEqual(weather.getMetrics().bellNoteTrimsDb, { 48: 0, 55: -2, 60: 0, 67: 2, 72: 6, 79: 6 });
+  assert.deepEqual(peaks, [0, -2, 0, 2, 3, 3].map(db => .026 * 10 ** (db / 20)));
+  assert.deepEqual(weather.getMetrics().bellNoteTrimsDb, { 48: 0, 55: -2, 60: 0, 67: 2, 72: 3, 79: 3 });
   assert.deepEqual(weather.getMetrics().bellNoteTrimsDb, BELL_NOTE_TRIM_DB);
   assert.deepEqual(weather.getMetrics().bellOctaveWeights.map(value => value.weight), [.34, .44, .22]);
   assert.deepEqual(weather.getMetrics().bellPitchMidi, heard);
@@ -271,7 +271,7 @@ test('the upper middle-register bell retains its metallic partials within every 
   for (const sampleRate of [22050, 32000, 48000, 96000]) {
     const { weather, context } = fixture(t, sampleRate); weather.setActive(true); weather.update(out());
     const voice = audibleVoice(weather, context);
-    assert.equal(voice.midi, 79); assert.equal(voice.decaySeconds, 8); assert.equal(voice.peak, .026 * 10 ** (6 / 20));
+    assert.equal(voice.midi, 79); assert.equal(voice.decaySeconds, 8); assert.equal(voice.peak, .026 * 10 ** (3 / 20));
     assert.ok(voice.oscillators.every(oscillator => oscillator.frequency.value < sampleRate * .45));
     assert.equal(voice.oscillators.length, 4);
     context.advance(10); assert.ok(context.nodes.every(node => node.disconnected));

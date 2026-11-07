@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { WildfireSound, SOUND_MACRO_DEFAULTS, SOUND_MIXER_DEFAULTS, automaticSoundMacros, landscapeBlend, macroParameters, variationWeights, dryFireTextureParameters, phoneBedParameters, fireProgression, participantMidi, participantMidiPair, participantFrequency, participantGrainParameters, participantGrainEnvelopeAt, patchMidiPair, patchHash, audibleMoisture, cricketRetreatParameters, participantToneParameters, participantPosition, PARTICIPANT_MIDI, PARTICIPANT_MIDI_PAIRS, PARTICIPANT_PITCH_LABELS, PARTICIPANT_PARTIALS, PARTICIPANT_GRAIN_AMPLITUDES, PARTICIPANT_ASH_RMS_RATIO, PHONE_CRACKLE_GAIN, TONE_REVERB_RETURN, MAIN_DRONE_MIDI, MAIN_DRONE_AMPLITUDES, MAIN_DRONE_LEVEL, sampleMakeupGain, circularLoopBuffer, PATCH_PENTATONIC_MIDI, patchMidi, patchResidueId, patchSoftToneParameters, patchResidueEnvelope } from '../app/sound-engine.js';
-import { computeSceneScore } from '../app/scene-score.js';
+import { computeSceneScore, participationVisualProgress } from '../app/scene-score.js';
 import { countryPoint } from '../app/country-view.mjs';
 import { patchTextureRecordingParameters, patchFrequencyForMidi, PATCH_SOFT_TONE_LEVEL, PATCH_TEXTURE_SOURCE_LIMIT, PATCH_TEXTURE_ADMISSION_SECONDS } from '../app/patch-soft-tones.js';
 import { phoneCricketParameters } from '../app/sound-engine.js';
@@ -1218,7 +1218,8 @@ test('participation replaces main burning with the two shared harmonic banks tha
   assert.equal(engine.mainDrone, null); assert.equal(engine.voices.size, 0);
   assert.ok(Math.abs(engine.layers.get('forest').gain.gain.value - .24) < 1e-12);
   context.advance(6); engine._tick();
-  assert.ok(Math.abs(engine.layers.get('forest').gain.gain.value - .12) < 1e-12); assert.equal(engine.getMetrics().mainDrone.gain, MAIN_DRONE_LEVEL / 2);
+  assert.ok(Math.abs(engine.layers.get('forest').gain.gain.value - .12) < 1e-12); assert.equal(engine.getMetrics().mainDrone.gain, MAIN_DRONE_LEVEL);
+  assert.equal(participationVisualProgress(engine.scene, engine._sceneElapsed()), 0, 'The drone is full while the instructions still cover the map.');
   assert.equal(engine.voices.size, 2); assert.ok(engine.toneGrains.size > 0);
   context.advance(6); engine._tick();
   const drone = engine.mainDrone, metrics = engine.getMetrics();
@@ -2889,4 +2890,23 @@ test('Main voice and remaining-tail trims stay live and phase-preserving during 
   assert.ok(Math.abs(engine.wildlife.gain.gain.value - base * 1.6 * .3) < 1e-12);
   assert.equal([...engine.wildlife.shots][0], shot, 'Fader changes preserve the existing call rather than replaying it.');
   context.advance(12); engine._tick(); assert.equal(engine.wildlife.shots.size, 0);
+});
+
+test('a delayed initial Participation cue establishes the drone before the map without jumping or changing its trim', async t => {
+  const { engine, context } = harness(t, { mode: 'operator' });
+  engine.setSceneState({ id: 'instructions', elapsedMs: 12000, startedAt: 1 });
+  await engine.enable(); engine.setMixer({ lowDrone: .37 });
+  engine.setSceneState({ id: 'participation', elapsedMs: 5500, startedAt: 2, participationOpening: true });
+  assert.equal(engine._sceneScore().mix.mainDrone, 0, 'The late packet does not create an immediate level jump.');
+  context.advance(MAIN_ENABLE_FADE_SECONDS / 2); engine._tick();
+  assert.ok(Math.abs(engine._sceneScore().mix.mainDrone - .5) < 1e-9);
+  context.advance(MAIN_ENABLE_FADE_SECONDS / 2 + .001); engine._tick();
+  assert.equal(engine._sceneScore().mix.mainDrone, 1);
+  assert.equal(participationVisualProgress(engine.scene, engine._sceneElapsed()), 0, 'The whole instruction panel is still fully visible.');
+  assert.equal(engine.mixerNodes.get('lowDrone').gain.value, .37);
+  const drone = engine.mainDrone;
+  engine.setSceneState({ ...engine.scene, elapsedMs: engine._sceneElapsed(), paused: true });
+  const mix = engine._sceneScore().mix.mainDrone;
+  context.advance(3); engine._tick();
+  assert.equal(engine._sceneScore().mix.mainDrone, mix); assert.equal(engine.mainDrone, drone);
 });

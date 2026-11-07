@@ -726,7 +726,14 @@ export class WildfireSound {
     score.mainFieldGain = transition.fromField + (1 - transition.fromField) * fieldProgress;
     for (const key of MAIN_MIX_KEYS) {
       const start = transition.startMix[key], end = transition.endMix[key];
-      const travelled = Math.abs(end - start) > 1e-8 ? clamp((score.mix[key] - start) / (end - start)) : progress;
+      let travelled = Math.abs(end - start) > 1e-8 ? clamp((score.mix[key] - start) / (end - start)) : progress;
+      // A delayed opening cue may arrive after the drone's faster score ramp
+      // has finished. Catch up gently, rather than stretching its old zero
+      // level across the whole remaining visual transition.
+      if (key === 'mainDrone' && this.scene.id === 'participation' && this.scene.participationOpening !== false
+          && Math.abs(end - start) <= 1e-8 && end > transition.fromMix[key]) {
+        travelled = smoothstep(0, 1, Math.max(0, this._sceneElapsed() - transition.elapsed) / (MAIN_ENABLE_FADE_SECONDS * 1000));
+      }
       const effective = travelled >= 1 ? end : travelled <= 0 ? transition.fromMix[key] : transition.fromMix[key] + (end - transition.fromMix[key]) * travelled;
       score.mix[key] = key === 'mainCrickets' ? effective : score.mainFieldGain > 1e-9 ? effective / score.mainFieldGain : 0;
     }
