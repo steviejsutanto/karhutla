@@ -97,13 +97,19 @@ export function participationVisualProgress(scene = {}, elapsedMs = scene?.elaps
   return smooth((elapsed(elapsedMs) - startMs) / fadeMs);
 }
 
-// Match the natural retreat of the cricket field: distance first, with a short
-// final tail. This is the phone master, not an additional layer attenuation.
+// Let the last fifth of the retreat dissolve, rather than retaining a distant
+// plateau until a fixed 2.2-second ending. Short configured retreats keep at
+// least that much soft tail, without moving the composed silence deadline.
+export function phoneRetreatTailGain(elapsedMs = 0, durationMs = 60_000) {
+  const duration = Math.max(1, durationMs), tailMs = Math.min(duration, Math.max(2200, duration * .2));
+  return 1 - smooth((elapsed(elapsedMs) - (duration - tailMs)) / tailMs);
+}
+
+// This is the phone master, not an additional cricket layer attenuation.
 export function phoneRetreatGain(elapsedMs = 0, durationMs = 60_000) {
   const duration = Math.max(1, durationMs), time = elapsed(elapsedMs);
-  const travel = smooth(time / duration), tailStart = Math.max(0, duration - 2200);
-  const tail = 1 - smooth((time - tailStart) / (duration - tailStart));
-  return 1 / (1 + 6.6 * travel) * tail;
+  const travel = smooth(time / duration);
+  return 1 / (1 + 6.6 * travel) * phoneRetreatTailGain(time, duration);
 }
 
 /** Compute the five-cue score from an authoritative scene and show-clock time.

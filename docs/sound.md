@@ -32,6 +32,10 @@ The work title is **karhutla**. Scene 1 shows program notes, Wi-Fi credentials
 and two numbered joining steps: 1 join the Wi-Fi, then 2 scan the QR below it.
 Scene 2 retains the Wi-Fi name, password and QR, and shows the same
 instructions as phones, rendered from one shared source.
+During the phone's Scene 2→3 entrance, the instruction and map opacities
+interpolate between venue packets. The instruction layout and sound button
+stay steady through the hold and fade; interpolation does not advance water,
+input eligibility, sound cues or scene boundaries.
 Ask listeners to tap the speaker button and set a comfortable media volume.
 Turning Silent Mode off is an optional last resort if sound is still inaudible. Supported recent iPhone browsers also receive a playback-session request
 when the speaker button is tapped; other browsers retain normal activation. This follows
@@ -69,18 +73,40 @@ performance without the operator.
 
 The mixer has independent **Bells**, **Woodfire quench**, **After-extinction
 textures**, **Extinction blobs**, Soft tones, Participation low drone, Haze, Burning forest, Ash,
-Rain, Moisture and Crickets channels. Each trim is0–200%; Main output is the
+Rain, Moisture, Ash grains · dragging and Crickets channels. Each trim is0–200%; Main output is the
 shared master. Bells default to160% and quench to100%. Existing stored
 balances remain intact; new channels receive their own defaults.
 
-Bells cover C2/G2 through C7/G7, weighted toward the lower registers.
-Decays are now 14/12/10/8/6/5 seconds from low to high. A softer 28 ms attack,
-more sustained inharmonic partials and independent slow partial pitch/amplitude
-movement retain bell material through the tail. The fundamental remains stable.
-The earlier short partial envelopes had left a mostly pure sine during most
-of the decay. Eight natural tails and eight short overflow fades are bounded;
-retiring voices are never disconnected abruptly to admit a new strike.
-The gentle 1.4-second bell room remains, including its cleanup-race fix.
+Ash and moisture have three separate Main uses. The Atmosphere **Ash** and
+**Moisture** sliders control continuous dry papery scattering and quiet water
+seeping through moss and soil. A newly extinguished area opens into one finite
+ash, moisture or haze material, controlled by **After-extinction textures**.
+Moving across already extinguished ground produces short ash grains under
+**Ash grains · dragging**; holding still does not sustain them. These controls
+are independent: lowering an atmosphere layer does not lower the same material
+in the other routes. The Moisture macro also darkens the fire's sound; its
+mixer slider changes only the recorded water layer.
+
+New bell strikes select from harmonics **2–11 of D♭2**, the shared
+69.295657744 Hz reference: approximately 138.59–762.25 Hz. Their pitches use
+exact frequency multiples, including the fractional pitches of the seventh
+and eleventh harmonics. Lower harmonics are favoured from the start, and new
+strikes descend further as the exact global fraction of confirmed-out fires
+rises. The lower weighting reaches its final shape by 45% out; every harmonic
+remains available. Existing strikes and tails keep their pitch. A fixed register contour
+runs from 0 dB at harmonic 2 to −4 dB at harmonic 11, replacing the former
+upper-register boosts.
+Saved mixer levels remain effective; participant counts do not duck a bell.
+
+An 8 ms strike excites six modes at 1, 1.43, 2.17, 3.61, 5.17 and 6.83
+times the selected pitch. The lower modes carry more of the body, with less
+energy in the upper resonances. The fundamental decays faster than the inharmonic
+body, avoiding a long clean-sine tail. Natural decay runs from 12 seconds
+at the low end to 8 seconds at the high end. Eight natural tails and eight
+short overflow fades remain bounded; retiring voices are never disconnected
+abruptly to admit a new strike. A dark 3.2-second room at 40% wet adds a more
+audible, finite reverberant tail without another convolver per bell.
+Actual loudspeaker and room response still affect perceived pitch balance.
 
 ## Once per extinguished rain area
 
@@ -113,19 +139,38 @@ of doubling its loudness. Six oscillators now use a subtly richer wave with seco
 the earlier two-pure-tone replacement has been removed. Returning heat brings
 the duplicate back toward the original register.
 
-Every source patch retains one fixed D♭ major pentatonic note across D♭1–D♭7
-and its geographic position. D♭ stays anchored; E♭/F/A♭/B♭ use9/8,5/4,3/2,5/3
-ratios. Offsets from equal tuning are0,+3.9,−13.7,+2.0,−15.6 cents and octaves
-remain exact. The note emerges with confirmed ground cooling rather than
-surface wetness alone, with0.3s tracking and0.012 peak. Several people on one
+Each new map tone selects one pitch from harmonics
+**2–30 of D♭2**, approximately 138.59–2078.87 Hz. Map tones and bells share
+the 69.295657744 Hz reference, without rounding harmonic frequencies to
+equal-tempered semitones. New tone admissions favour higher harmonics early,
+then move lower sooner: their weighting crosses the middle at about 21% of
+fires out, rather than 50%. The lower bound is one octave below the previous
+H4 floor. Every harmonic remains available.
+An admitted note keeps its pitch through dragging, cooling and its release.
+Scene 4 can reopen fires and move new selections higher again; this is not a
+one-way descent across the whole performance. The Main drone above retains
+its separate original banks and tuning.
+
+The airy tone is built from breath excitation through two pitch-centred
+noise resonators and a quieter, exactly pitched anchor. It remains airy for
+the first four seconds. As held motion begins at four seconds, the breath
+gradually settles around a clearer pitch over seconds 4–9, retaining some
+air. Cooling also narrows the resonances. Energy compensation balances the
+voice's estimated power as its character changes. The
+resonators reuse the bounded native voice graph without another recording
+download or per-voice convolver. Scene 4's diffuse-air endpoint, the finite
+tone-to-material transition and release cleanup remain intact.
+
+The note emerges with confirmed ground cooling rather than surface wetness
+alone, with 0.3 s tracking and a 0.012 peak envelope. Several people on one
 patch share its voice. Every admitted tone retains its calibrated level as
-more people join. Actual signal compression and the final ceiling manage peaks;
-participant and ringing-bell counts do not reduce tone or bell level.
+more people join. Actual signal compression and the final ceiling manage
+peaks; participant and ringing-bell counts do not reduce tone or bell level.
 
 ## Limited extinction material and stronger room
 
 Each completed area uses its representative patch’s stable ash, moisture or
-haze class, with four independent recordings per class. Nearby same-class
+haze class, with multiple independent recordings per class. Nearby same-class
 area events prefer different takes.
 Distinct stable start phases, playback rates0.965–1.035 and gentle filtering
 further separate reused recordings.
@@ -175,10 +220,19 @@ does not depend on simultaneous phone downloads. Phone media volume is local.
 ## Distant forest, smoke and continuous finale rain
 
 The same current distant burning-forest processing is used in Instructions
-and takeover:35Hz high-pass, broad+5dB low shelf at240Hz,1.5–2.4kHz low-pass
+and takeover:35Hz high-pass, flat low shelf at240Hz,1.5–2.4kHz low-pass
 with moisture damping, and−9dB high shelf at1.8kHz. It emphasizes low body and
 softens close crackles without sending the whole forest into the patch room.
+The former +5 dB shelf exaggerated bass movement already in the recordings.
+At the tested saved balance, isolated forest playback showed less than 0.001 dB
+of settled compressor reduction, so the shared dynamics remain unchanged.
 Ground-ember→wind-through-flame interpolation remains available.
+
+Main rain has fixed cuts at 1030 Hz (−2 dB, Q3) and 1900 Hz (−3.5 dB, Q0.8)
+to soften the sharper drop band while retaining low thunder. Main haze has
+cuts at 1050 Hz (−5 dB, Q0.7) and 2050 Hz (−3 dB, Q2.5), reducing the
+recordings' pitched midrange emphasis. These filters preserve the original
+recordings, level controls and scene envelopes; they do not alter phone assets.
 
 Map smoke is substantially broader, darker and denser, using the same three
 country-scale emitters per patch and bounded drawing work. Terrain/hit areas,
@@ -203,7 +257,7 @@ controlling sound, water and ground cooling. After every source is out:
 2. **PA crickets with a distant orangutan voice in complete darkness, 12 seconds.** This starts after
    both rain and image have reached zero. There is no second cricket attack.
 3. **PA→phones, 12 seconds.** Equal-power transfer continues in complete darkness.
-4. **Phone cricket field, 15 seconds**, then its **60-second retreat/fade** to silence. Sparse bird calls pass between phones; the orangutan remains faint on Main and fades with the retreat.
+4. **Phone cricket field, 15 seconds**, then its **60-second retreat/fade** to silence. The residual distant field dissolves over the final 12 seconds, replacing the former 2.2-second terminal tail without moving the silence deadline. Sparse bird calls pass between phones; the orangutan remains faint on Main and fades with the retreat.
 
 Phone crickets remain silent until the PA-to-phone handoff. Their recordings
 prewarm quietly during late cooling. Main’s non-cricket field has its own native

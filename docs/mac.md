@@ -29,6 +29,14 @@ Press **Ctrl+C in Terminal** to stop and save. Restarting opens a paused Arrival
 
 The included performance works offline. **Fetch latest fires** requires internet and replaces the source landscape.
 
+## Import fire data without internet on the Mac
+
+1. On another computer with internet, open **Operator → Setup → Fire data**, choose **Fetch latest fires**, then **Export fire data**.
+2. Send that JSON file to your controller phone, or copy it directly to the Mac.
+3. On the rehearsal Wi-Fi, open the Mac's Operator or paired remote page. Choose **Setup → Fire data → Import fire data**, select the file, review its dates and observation count, then choose **Import this fire data**.
+
+The Mac does not need internet for this transfer. Import replaces the landscape and returns to paused Arrival while retaining mixer settings, timings and audience information. Use the exported fire data JSON; raw NASA CSV and settings presets are different files. A valid snapshot with no observations can be imported and will show zero source fires.
+
 ## Control from a phone, tablet or another computer
 
 Connect the controller to the same Wi-Fi as the Mac and scan the audience QR code. In the browser address, change `/audience` to `/operator-remote`. On the host Mac, open **Operator → Setup → Remote control** and enter its six-digit PIN on the controller. The remote page controls the same scene cues, mixer and settings and receives live updates from the host.

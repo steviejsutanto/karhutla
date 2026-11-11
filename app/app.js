@@ -31,7 +31,7 @@ let sessionRefresh = null;
 let sharedState = null;
 const cellTransitions = new Map();
 let hasCellBaseline = false;
-let snapshotReload = null;
+let snapshotReload = null, snapshotEpoch = null;
 const formatDate = new Intl.DateTimeFormat('en-GB', { timeZone: 'UTC', day: '2-digit', month: 'short', year: 'numeric' });
 const formatTime = new Intl.DateTimeFormat('en-GB', { timeZone: 'UTC', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
 const localDateTime = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', timeZoneName: 'short' });
@@ -293,8 +293,9 @@ function receiveSharedState(packet, { reset }) {
   if (bootstrap) bootstrap.hidden = !packet.bootstrapAvailable;
   const restore = $('#restore-browser');
   if (restore) restore.hidden = !legacyPerformance;
-  if (packet.snapshotVersion && state.snapshot?.fetchedAt !== packet.snapshotVersion && !snapshotReload) {
-    snapshotReload = fetch('/api/snapshot', { cache: 'no-store' }).then(response => response.json()).then(showSnapshot).catch(error => notify(error.message, true)).finally(() => { snapshotReload = null; });
+  if ((reset || packet.epoch !== snapshotEpoch || packet.snapshotVersion && state.snapshot?.fetchedAt !== packet.snapshotVersion) && !snapshotReload) {
+    const epoch = packet.epoch;
+    snapshotReload = fetch('/api/snapshot', { cache: 'no-store' }).then(response => response.json()).then(snapshot => { showSnapshot(snapshot); snapshotEpoch = epoch; }).catch(error => notify(error.message, true)).finally(() => { snapshotReload = null; });
   }
   scheduleReadouts(); scheduleDraw();
 }

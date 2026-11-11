@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { computeSceneScore, computeScore, phoneRetreatGain, scoreDurations, finalRainProgressAt, finalCricketProgressAt, participationVisualProgress, PARTICIPATION_DRONE_HOLD_MS, FINAL_RAIN_RAMP_MS } from '../app/scene-score.js';
+import { computeSceneScore, computeScore, phoneRetreatGain, phoneRetreatTailGain, scoreDurations, finalRainProgressAt, finalCricketProgressAt, participationVisualProgress, PARTICIPATION_DRONE_HOLD_MS, FINAL_RAIN_RAMP_MS } from '../app/scene-score.js';
 
 test('participation defaults to ten minutes while a saved custom duration remains valid', () => {
   assert.equal(scoreDurations().participationMs, 600000);
@@ -182,6 +182,23 @@ test('forest rise and after-extinction texture timings share bounded settings wi
   assert.equal(configured.afterglowDurationMs, defaults.afterglowDurationMs);
   for (const invalid of [0, 181, NaN, Infinity, '30']) assert.equal(scoreDurations({ forestRiseSeconds: invalid }).forestRiseMs, 30000);
   for (const invalid of [9, 181, NaN, Infinity, '60']) assert.equal(scoreDurations({ finalRainRiseSeconds: invalid }).finalRainRiseMs, FINAL_RAIN_RAMP_MS);
+});
+
+test('the phone cricket retreat dissolves throughout its final fifth and still meets its exact composed ending', () => {
+  for (const duration of [1000, 4000, 10000, 60000, 300000]) {
+    const tailMs = Math.min(duration, Math.max(2200, duration * .2)), start = duration - tailMs;
+    assert.equal(phoneRetreatTailGain(start, duration), 1);
+    assert.equal(phoneRetreatTailGain(start + tailMs / 2, duration), .5);
+    assert.equal(phoneRetreatTailGain(duration, duration), 0);
+    assert.equal(phoneRetreatGain(duration + 1000, duration), 0);
+    const values = Array.from({ length: 201 }, (_, index) => phoneRetreatGain(duration * index / 200, duration));
+    assert.equal(values[0], 1); assert.equal(values.at(-1), 0);
+    assert.ok(values.every((value, index) => value >= 0 && (!index || value <= values[index - 1])));
+    assert.ok(phoneRetreatTailGain(duration - 1, duration) < 1e-5, 'The terminal slope approaches zero before the source gate closes.');
+  }
+  assert.equal(phoneRetreatTailGain(48000, 60000), 1);
+  assert.equal(phoneRetreatTailGain(54000, 60000), .5);
+  assert.ok(phoneRetreatGain(58000, 60000) < .011, 'The distant field is already very quiet two seconds before silence.');
 });
 
 test('the full forest hands off continuously to slowly rising rain over the shared default score', () => {

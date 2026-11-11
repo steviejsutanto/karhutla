@@ -17,6 +17,21 @@ export { nationalPhoneSoundPatchAt, nationalPhoneInteraction } from './sound-par
 const unit = value => typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 1;
 const clamp = value => Math.max(0, Math.min(1, value));
 
+// Interpolate only this visual entrance between venue packets. Water, input
+// eligibility, audio cues and every scene boundary still use received state.
+export function phoneOpeningPresentation(scene, sincePacketMs = 0) {
+  const advancing = scene?.id === 'participation' && scene.participationOpening !== false && !scene.paused;
+  const age = Number.isFinite(sincePacketMs) ? Math.max(0, sincePacketMs) : 0;
+  return scenePresentation(advancing ? {...scene, elapsedMs: (scene.elapsedMs || 0) + age} : scene, {phone:true});
+}
+
+export function phoneOpeningElapsed(scene, previousScene, previousVisualMs = 0) {
+  const elapsed = Math.max(0, scene?.elapsedMs || 0);
+  const continuing = scene?.id === 'participation' && previousScene?.id === 'participation' &&
+    scene.startedAt === previousScene.startedAt && scene.participationOpening !== false && previousScene.participationOpening !== false && elapsed >= previousScene.elapsedMs;
+  return continuing ? Math.max(elapsed, previousVisualMs) : elapsed;
+}
+
 // Persistent ember intensity follows received heat/out only. Local rain is
 // feedback about contact, never a prediction of shared cooling or extinction.
 export function peatPhoneAppearance(heat, extinguished = false) {
@@ -87,7 +102,7 @@ function initializePeatPhone() {
   const instrument = $('peat-instrument'), stage = $('phone-map-stage'), material = $('phone-material');
   const sound = mountSoundControls($('phone-sound'), { mode: 'phone' });
   $('phone-sound').querySelector('button').disabled = true;
-  let currentScene = null, notesOpen = false;
+  let currentScene = null, notesOpen = false, openingFrame = 0, sceneReceivedAt = 0, openingElapsed = 0;
   const soundRecovery = $('phone-sound-recovery');
   function renderSoundRecovery() {
     const state = phoneSoundRecoveryState(currentScene, $('phone-sound').dataset.soundState, sound.getMetrics());
@@ -110,11 +125,14 @@ function initializePeatPhone() {
   });
   function renderScene(scene) {
     if (!scene) return;
-    const sceneChanged = currentScene?.id !== scene.id;
+    const sceneChanged = currentScene?.id !== scene.id || currentScene?.startedAt !== scene.startedAt;
     if (sceneChanged) magnifier.hide();
     if (sceneChanged) notesOpen = false;
     if (gestureError && (sceneChanged || !sceneAllowsRain(scene))) { inputError = ''; gestureError = false; }
-    const view = scenePresentation(scene, { phone: true });
+    const receivedAt = performance.now();
+    openingElapsed = phoneOpeningElapsed(scene, currentScene, openingElapsed + (currentScene?.paused ? 0 : Math.max(0, receivedAt - sceneReceivedAt)));
+    const view = phoneOpeningPresentation({...scene, elapsedMs:openingElapsed});
+    sceneReceivedAt = receivedAt;
     currentScene = scene; document.body.dataset.scene = scene.id;
     document.body.dataset.paused = String(Boolean(scene.paused));
     document.body.dataset.phase = view.phase;
@@ -124,6 +142,14 @@ function initializePeatPhone() {
     sound.setSceneState?.(scene);
     $('phone-sound').querySelector('button').disabled = $('phone-sound').dataset.soundState === 'starting';
     renderSoundRecovery();
+    startOpeningAnimation();
+    text('phone-scene-caption', view.opening ? scene.id === 'instructions' ? 'Phone sound starts when the next scene begins.' : 'Phone sound starts after the instructions.' : sceneInstruction(scene));
+    if (!sceneAllowsRain(scene) && (connection?.holding || pointer !== null || toggleActive || keyboardHold || contact.active)) stop({ tail: false });
+    metrics.sceneScore = view;
+  }
+  function renderOpening(view) {
+    const scene = currentScene;
+    if (!scene) return;
     const entrance = view.landscapeEntranceGain;
     const welcomeGain = view.openingOverlayGain;
     document.body.dataset.opening = String(view.opening || welcomeGain > 0);
@@ -142,13 +168,26 @@ function initializePeatPhone() {
     $('phone-about').setAttribute('aria-expanded', String(notesOpen));
     text('phone-program-notes', scene.settings?.programNotes || DEFAULT_PROGRAM_NOTES);
     text('phone-scene-instruction', '');
-    text('phone-scene-caption', view.opening ? scene.id === 'instructions' ? 'Phone sound starts when the next scene begins.' : 'Phone sound starts after the instructions.' : sceneInstruction(scene));
-    $('phone-sound-guidance').hidden = !view.opening;
-    if (!sceneAllowsRain(scene) && (connection?.holding || pointer !== null || toggleActive || keyboardHold || contact.active)) stop({ tail: false });
-    metrics.sceneScore = view;
+    $('phone-sound-guidance').hidden = welcomeGain <= 0;
   }
-  $('phone-about').addEventListener('click', () => { notesOpen = !notesOpen; if (notesOpen) stop({ tail: false }); renderScene(currentScene); });
-  $('phone-notes-close').addEventListener('click', () => { notesOpen = false; renderScene(currentScene); });
+  function animateOpening(now) {
+    openingFrame = 0;
+    if (document.hidden || !currentScene) return;
+    const view = currentOpeningView(now);
+    renderOpening(view);
+    if (currentScene.id === 'participation' && !currentScene.paused && view.openingOverlayGain > 0) openingFrame = requestAnimationFrame(animateOpening);
+  }
+  function startOpeningAnimation() {
+    if (openingFrame) cancelAnimationFrame(openingFrame); openingFrame = 0;
+    const view = currentOpeningView();
+    renderOpening(view);
+    if (!document.hidden && currentScene?.id === 'participation' && !currentScene.paused && currentScene.participationOpening !== false && view.openingOverlayGain > 0) openingFrame = requestAnimationFrame(animateOpening);
+  }
+  function currentOpeningView(now = performance.now()) {
+    return phoneOpeningPresentation(currentScene ? {...currentScene, elapsedMs:openingElapsed} : null, now - sceneReceivedAt);
+  }
+  $('phone-about').addEventListener('click', () => { notesOpen = !notesOpen; if (notesOpen) stop({ tail: false }); renderOpening(currentOpeningView()); });
+  $('phone-notes-close').addEventListener('click', () => { notesOpen = false; renderOpening(currentOpeningView()); });
   const overlay = $('phone-contact'), rainContext = overlay.getContext('2d'), toggle = $('rain-toggle');
   const loading = $('phone-map-loading'), mapRetry = $('phone-map-retry'), reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
   const createMap = () => new PeatSurface(material, { reducedMotion: reducedMotion.matches, maxPixels: 1280 * 720, maxPixelRatio: 1.5,
@@ -468,10 +507,10 @@ function initializePeatPhone() {
   toggle.addEventListener('click', () => { if (connection.holding) stop(); else toggleActive = begin(lastPosition); });
   window.addEventListener('keydown', event => { if (event.key === 'Escape') { event.preventDefault(); stop({ tail: false }); } });
   window.addEventListener('blur', () => stop({ tail: false }));
-  window.addEventListener('pagehide', () => stop({ tail: false }));
+  window.addEventListener('pagehide', () => { stop({ tail: false }); if (openingFrame) cancelAnimationFrame(openingFrame); openingFrame = 0; });
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden) { stop({ tail: false }); if (sceneFrame) cancelAnimationFrame(sceneFrame); sceneFrame = 0; }
-    else requestScene();
+    if (document.hidden) { stop({ tail: false }); if (sceneFrame) cancelAnimationFrame(sceneFrame); sceneFrame = 0; if (openingFrame) cancelAnimationFrame(openingFrame); openingFrame = 0; }
+    else { requestScene(); startOpeningAnimation(); }
   });
   // Mobile browser chrome can resize the viewport during a sustained touch.
   // Resize its visual surfaces without cancelling the audience's held rain.

@@ -4,6 +4,42 @@ import { readFile } from 'node:fs/promises';
 import { AUDIENCE_INSTRUCTIONS_HTML, mountAudienceInstructions } from '../app/audience-instructions.js';
 import { DEFAULT_PROGRAM_NOTES, PERFORMANCE_SCENES, sceneAllowsRain, sceneClock, sceneRemaining, sceneInstruction, scenePresentation, scenePhaseReadout, applySharedSound } from '../app/performance-view.js';
 import { FINAL_RAIN_RAMP_MS } from '../app/scene-score.js';
+import { phoneOpeningPresentation, phoneOpeningElapsed } from '../app/peat-phone.js';
+
+test('phone entrance stays continuous between sparse venue packets and freezes on pause', () => {
+  const scene={id:'participation',participationOpening:true,elapsedMs:9600};
+  let previous=0;
+  for(let age=0;age<=4800;age+=16){
+    const view=phoneOpeningPresentation(scene,age);
+    assert.ok(view.landscapeEntranceGain>=previous);
+    assert.ok(view.landscapeEntranceGain-previous<.006);
+    assert.ok(Math.abs(view.landscapeEntranceGain+view.openingOverlayGain-1)<1e-12);
+    previous=view.landscapeEntranceGain;
+  }
+  assert.equal(phoneOpeningPresentation(scene,2400).landscapeEntranceGain,.5);
+  assert.equal(phoneOpeningPresentation(scene,4800).openingOverlayGain,0);
+  assert.equal(scene.elapsedMs,9600,'Visual interpolation does not mutate the received authority clock.');
+  const paused={...scene,paused:true,elapsedMs:12000};
+  assert.equal(phoneOpeningPresentation(paused,10000).landscapeEntranceGain,.5);
+  assert.equal(phoneOpeningPresentation({id:'instructions',elapsedMs:59000},20000).openingOverlayGain,1);
+  assert.equal(phoneOpeningPresentation({...scene,participationOpening:false},2400).landscapeEntranceGain,1);
+  const ending={id:'afterglow',elapsedMs:10000};
+  assert.deepEqual(phoneOpeningPresentation(ending,60000),scenePresentation(ending,{phone:true}));
+});
+
+test('late phone packets cannot reverse the entrance, while an explicit cue restart resets it', () => {
+  const previous={id:'participation',participationOpening:true,elapsedMs:11000};
+  const delayed={...previous,elapsedMs:11300};
+  const anchored=phoneOpeningElapsed(delayed,previous,11400);
+  assert.equal(anchored,11400);
+  assert.equal(phoneOpeningPresentation({...delayed,elapsedMs:anchored}).landscapeEntranceGain,phoneOpeningPresentation(previous,400).landscapeEntranceGain);
+  assert.equal(phoneOpeningElapsed({...delayed,paused:true},previous,11400),11400);
+  assert.equal(phoneOpeningElapsed({...delayed,elapsedMs:0},previous,11400),0);
+  assert.equal(phoneOpeningElapsed({id:'instructions',elapsedMs:0},previous,11400),0);
+  assert.equal(phoneOpeningElapsed({...delayed,elapsedMs:2000,startedAt:20000},{...previous,elapsedMs:1000,startedAt:10000},100000),2000,'A new scene entrance after an offline restart cannot inherit the old completed fade.');
+  assert.equal(phoneOpeningElapsed({...delayed,startedAt:10000,paused:true},{...previous,startedAt:10000},11400),11400,'Pause retains the same scene identity.');
+  assert.equal(phoneOpeningPresentation({...delayed,elapsedMs:phoneOpeningElapsed(delayed,previous,15000)}).openingOverlayGain,0,'A resumed page can render its terminal view without scheduling another frame.');
+});
 
 test('audience water remains open during running participation and forest takeover', () => {
   for (const id of PERFORMANCE_SCENES) {
@@ -143,7 +179,7 @@ test('final rain reports the configured slow forest-to-heavy-rain transition fro
   assert.equal(sceneRemaining(configured), 45);
   assert.match(scenePhaseReadout(configured), /50%.*45 s remaining/);
   assert.doesNotMatch(scenePhaseReadout({ id: 'participation' }), /phone rain/i);
-  assert.match(sceneInstruction({ id: 'participation' }), /C or G bell/);
+  assert.match(sceneInstruction({ id: 'participation' }), /A bell in the room/);
 });
 
 

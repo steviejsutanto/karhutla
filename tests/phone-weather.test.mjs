@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { PhoneWeatherAudio, BELL_NOTE_TRIM_DB } from '../app/phone-weather.js';
+import { PhoneWeatherAudio, BELL_NOTE_TRIM_DB, BELL_PARTIALS, bellPitchParameters } from '../app/phone-weather.js';
+import {BELL_HARMONICS, OVERTONE_ROOT_HZ, overtonePitch} from '../app/overtone-scale.js';
 import { nationalPhoneInteraction, peatPhonePatches } from '../app/peat-phone.js';
 import { COUNTRY_BOUNDS, countryPoint } from '../app/country-view.mjs';
 
@@ -72,7 +73,7 @@ const out = (patchKey = 'a') => ({ holding: true, patchKey, extinguished: true }
 const released = () => ({ holding: false, patchKey: null, extinguished: false });
 function fixture(t, sampleRate = 48000) {
   const context = new Context(sampleRate), requests = [];
-  const weather = new PhoneWeatherAudio({ context, destination: context.destination,
+  const weather = new PhoneWeatherAudio({ context, destination: context.destination, random:()=>Math.random(),
     fetchImpl: async url => { requests.push(url); throw new Error('Phones must never request rain.'); } });
   t.after(() => weather.destroy());
   return { context, weather, requests };
@@ -163,85 +164,108 @@ test('fresh taps across fully extinguished brush footprints keep ringing outside
   assert.equal(weather.getMetrics().bellsTriggered, 100);
 });
 
-test('C3/G3 through C5/G5 keep equal C/G odds with register-aware fixed listening trims', t => {
-  const { weather, context } = fixture(t), random = Math.random; weather.setActive(true);
-  t.after(() => { Math.random = random; });
-  const probabilities = [.17, .17, .22, .22, .11, .11];
-  const heard = [], decays = [], peaks = []; let cursor = 0;
-  for (const probability of probabilities) {
-    Math.random = () => cursor + probability / 2;
-    weather.update(released()); weather.update(out());
-    const voice = audibleVoice(weather, context); heard.push(voice.midi); decays.push(voice.decaySeconds); peaks.push(voice.peak);
-    assert.ok(voice.envelope.gain.events.some(event => event[0] === 'linear' && event[1] === voice.peak && event[2] === voice.at + .028));
-    assert.ok(voice.envelope.gain.events.some(event => event[0] === 'exponential' && event[2] === voice.at + voice.decaySeconds));
-    assert.equal(voice.oscillators[0].frequency.value, 440 * 2 ** ((voice.midi - 69) / 12));
-    cursor += probability; context.advance(.03);
-  }
-  assert.deepEqual(heard, [48, 55, 60, 67, 72, 79]);
-  assert.deepEqual(decays, [12, 12, 10, 10, 8, 8]);
-  assert.deepEqual(peaks, [0, -2, 0, 2, 3, 3].map(db => .026 * 10 ** (db / 20)));
-  assert.deepEqual(weather.getMetrics().bellNoteTrimsDb, { 48: 0, 55: -2, 60: 0, 67: 2, 72: 3, 79: 3 });
-  assert.deepEqual(weather.getMetrics().bellNoteTrimsDb, BELL_NOTE_TRIM_DB);
-  assert.deepEqual(weather.getMetrics().bellOctaveWeights.map(value => value.weight), [.34, .44, .22]);
-  assert.deepEqual(weather.getMetrics().bellPitchMidi, heard);
-  assert.deepEqual(weather.getMetrics().bellDecayRangeSeconds, [8, 12]);
-  // A deterministic uniform grid also catches accidental uniform note selection.
-  const counts = new Map();
-  for (let index = 0; index < 2000; index++) {
+test('new bell strikes descend with extinction progress without changing a ringing bell', t => {
+  const {weather,context}=fixture(t); weather.random=()=>.5; weather.setActive(true);
+  weather.setExtinctionProgress(0); assert.equal(weather.ring({key:'early'}),true);
+  const early=[...weather.bells][0], frequency=early.frequency;
+  context.advance(.2); weather.setExtinctionProgress(1); assert.equal(weather.ring({key:'late'}),true);
+  const late=[...weather.bells].at(-1);
+  assert.ok(early.harmonic<=6 && late.harmonic<=3 && early.harmonic>late.harmonic);
+  assert.equal(early.frequency,frequency); assert.equal(early.oscillators[0].frequency.value,frequency);
+  const weights=weather.getMetrics().bellHarmonicWeights;
+  assert.ok(weights[0].weight>weights.at(-1).weight*40);
+  assert.ok(weights.every(value=>value.weight>0));
+});
+
+test('bells begin lower and finish their descent early while every harmonic remains possible', t => {
+  const {weather}=fixture(t);
+  const stages=[0,.1,.25,.45,1].map(fraction=>{
+    weather.setExtinctionProgress(fraction);
+    const metrics=weather.getMetrics(),weights=metrics.bellHarmonicWeights;
+    assert.ok(weights.every(value=>value.weight>0));
+    assert.ok(Math.abs(weights.reduce((sum,value)=>sum+value.weight,0)-1)<1e-12);
+    return {profile:metrics.bellRegisterProgress,mean:weights.reduce((sum,value)=>sum+value.harmonic*value.weight,0)};
+  });
+  assert.ok(stages[0].mean<6,'The performance no longer starts with high-register bell choices.');
+  assert.ok(stages[1].mean<stages[0].mean && stages[2].mean<stages[1].mean);
+  assert.ok(stages[2].profile>.9,'A substantial lower-register bias is reached before a third of the fire is out.');
+  assert.deepEqual(stages[3],stages[4],'The lower bell profile is reached by 45% global extinction.');
+  weather.setExtinctionProgress(null);
+  assert.equal(weather.getMetrics().bellRegisterProgress,.5,'Direct isolated auditions retain neutral access to all ten pitches.');
+});
+
+test('each exact harmonic from 2 through 11 has equal random odds in neutral auditions and a restrained register contour', t => {
+  const {weather,context}=fixture(t), random=Math.random; weather.setActive(true);
+  t.after(()=>{Math.random=random;});
+  const heard=[],peaks=[],decays=[];
+  for(let index=0;index<BELL_HARMONICS.length;index++){
+    const harmonic=BELL_HARMONICS[index],pitch=overtonePitch(harmonic);
+    Math.random=()=>(index+.5)/BELL_HARMONICS.length;
+    weather.update(released());weather.update(out());
+    const voice=audibleVoice(weather,context);heard.push(voice.harmonic);peaks.push(voice.peak);decays.push(voice.decaySeconds);
+    assert.equal(voice.frequency,OVERTONE_ROOT_HZ*harmonic);
+    assert.equal(voice.midi,pitch.midi);
+    assert.equal(voice.oscillators[0].frequency.value,pitch.frequency);
+    assert.ok(voice.envelope.gain.events.some(event=>event[0]==='linear'&&event[1]===voice.peak&&event[2]===voice.at+.008));
+    assert.ok(voice.envelope.gain.events.some(event=>event[0]==='exponential'&&event[2]===voice.at+voice.decaySeconds));
     context.advance(16);
-    Math.random = () => (index + .5) / 2000;
-    weather.update(released()); weather.update(out());
-    const midi = weather.getMetrics().lastBellMidi; counts.set(midi, (counts.get(midi) ?? 0) + 1);
   }
-  assert.deepEqual([...counts.values()], [340, 340, 440, 440, 220, 220]);
+  assert.deepEqual(heard,[2,3,4,5,6,7,8,9,10,11]);
+  assert.equal(decays[0],12);assert.equal(decays.at(-1),8);
+  assert.ok(decays.every((value,index)=>index===0||value<decays[index-1]));
+  assert.ok(peaks.every((value,index)=>index===0||value<peaks[index-1]),'Higher modal bells are never boosted solely to equalize body energy.');
+  assert.deepEqual(weather.getMetrics().bellHarmonics,heard);
+  assert.deepEqual(weather.getMetrics().bellNoteTrimsDb,BELL_NOTE_TRIM_DB);
+  assert.deepEqual(weather.getMetrics().bellPitchMidi,heard.map(h=>overtonePitch(h).midi));
+  assert.deepEqual(weather.getMetrics().bellDecayRangeSeconds,[8,12]);
+  assert.ok(!Number.isInteger(overtonePitch(7).midi)&&!Number.isInteger(overtonePitch(11).midi));
+  const counts=new Map();
+  for(let index=0;index<2000;index++){
+    context.advance(16);Math.random=()=>(index+.5)/2000;
+    weather.update(released());weather.update(out());
+    const harmonic=weather.getMetrics().lastBellHarmonic;counts.set(harmonic,(counts.get(harmonic)??0)+1);
+  }
+  assert.deepEqual([...counts.values()],[200,200,200,200,200,200,200,200,200,200]);
+  for(const invalid of [1,12,2.5,NaN])assert.throws(()=>bellPitchParameters(invalid),/2 to 11/);
 });
 
-test('low fundamentals have metallic phone-audible partials and full tails survive finger release', t => {
-  const { weather, context } = fixture(t), random = Math.random; Math.random = () => 0; t.after(() => { Math.random = random; });
-  weather.setActive(true); weather.update(out());
-  const voice = audibleVoice(weather, context), envelope = voice.envelope.gain;
-  assert.ok(voice.oscillators[0].frequency.value > 130 && voice.oscillators[0].frequency.value < 131);
-  assert.deepEqual(voice.oscillators.map(node => node.frequency.value / voice.oscillators[0].frequency.value), [1, 2.71, 4.13, 6.4]);
-  assert.equal(envelope.at(0), 0); assert.equal(envelope.at(.014), .013);
-  assert.ok(envelope.at(.9) > .012, 'The low bell retains its body beyond the strike.');
-  assert.ok(envelope.at(2.5) > .005); assert.ok(envelope.at(4) > .0015); assert.ok(envelope.at(5) > .0001);
-  weather.update(released()); assert.equal(weather.getMetrics().currentBellVoices, 1);
-  assert.equal(voice.oscillators[0].stoppedAt, 12.08, 'Release never truncates the scheduled natural decay.');
-  assert.ok(voice.levels[1].gain.at(6) > .1, 'The second partial still contributes strongly halfway through the natural decay.');
-  assert.ok(voice.levels[2].gain.at(6) > .03); assert.ok(voice.levels[3].gain.at(6) > .013);
-  assert.equal(envelope.at(12.07), 0);
-  context.advance(12.1); assert.equal(weather.getMetrics().currentBellVoices, 0);
-  assert.equal(weather.getMetrics().bellReverb.active, true);
-  assert.ok(weather.getMetrics().bellReverb.tailRemainingSeconds > 1);
-  context.advance(1.5); assert.equal(weather.getMetrics().bellReverb.graphCount, 0);
-  assert.ok(context.nodes.every(node => node.disconnected));
+test('a fast modal strike retains an inharmonic body instead of a long clean fundamental', t => {
+  const {weather,context}=fixture(t),random=Math.random;Math.random=()=>0;t.after(()=>{Math.random=random;});
+  weather.setActive(true);weather.update(out());
+  const voice=audibleVoice(weather,context),envelope=voice.envelope.gain;
+  assert.equal(voice.frequency,OVERTONE_ROOT_HZ*2);
+  for(let index=0;index<BELL_PARTIALS.length;index++)assert.ok(Math.abs(voice.oscillators[index].frequency.value/voice.frequency-BELL_PARTIALS[index][0])<1e-12);
+  assert.equal(envelope.at(0),0);assert.equal(envelope.at(.004),voice.peak/2);assert.equal(envelope.at(.008),voice.peak);
+  assert.ok(Math.abs(envelope.at(.10)-voice.peak*.84)<1e-12);
+  assert.ok(Math.abs(envelope.at(.55)-voice.peak*.42)<1e-12);
+  assert.ok(envelope.at(2.5)>.005);assert.ok(envelope.at(5)>.0001);
+  const fundamentalFraction=voice.levels[0].gain.at(6)/BELL_PARTIALS[0][1];
+  for(const index of [1,2])assert.ok(voice.levels[index].gain.at(6)/BELL_PARTIALS[index][1]>fundamentalFraction*2,'Inharmonic resonances outlast the clean root.');
+  weather.update(released());assert.equal(weather.getMetrics().currentBellVoices,1);
+  assert.equal(voice.oscillators[0].stoppedAt,12.08,'Release preserves the finite natural tail.');
+  assert.equal(envelope.at(12.07),0);context.advance(12.1);
+  assert.equal(weather.getMetrics().currentBellVoices,0);assert.equal(weather.getMetrics().bellReverb.active,true);
+  context.advance(3.3);assert.equal(weather.getMetrics().bellReverb.graphCount,0);assert.ok(context.nodes.every(node=>node.disconnected));
 });
 
-test('each retained inharmonic partial has slow native pitch and amplitude movement through mid-decay', t => {
-  const { weather, context } = fixture(t), random = Math.random; Math.random = () => 0; t.after(() => { Math.random = random; });
-  weather.setActive(true); weather.update(out()); const voice = audibleVoice(weather, context);
-  assert.equal(voice.modulators.length, 3); assert.equal(voice.modulationNodes.length, 9);
-  assert.equal(context.nodes.some(node => node.connections.includes(voice.oscillators[0].detune)), false, 'The fundamental pitch stays stable.');
-  const rates = [];
-  for (const partial of voice.partials.slice(1)) {
-    const { modulator, pitchDepth, amplitudeDepth, motion, oscillator, level } = partial;
-    assert.equal(modulator.type, 'sine'); rates.push(modulator.frequency.value);
-    assert.ok(modulator.frequency.value > .1 && modulator.frequency.value < .4, 'A several-second native cycle moves the partial gently.');
-    assert.deepEqual(modulator.connections, [pitchDepth, amplitudeDepth]);
-    assert.deepEqual(pitchDepth.connections, [oscillator.detune]);
-    assert.deepEqual(amplitudeDepth.connections, [motion.gain]);
-    assert.ok(pitchDepth.gain.value > 0 && pitchDepth.gain.value < 3, 'Pitch motion remains only a few cents.');
-    assert.ok(amplitudeDepth.gain.value > 0 && amplitudeDepth.gain.value < .1, 'Gentle amplitude motion cannot reverse or chop the partial.');
-    assert.equal(motion.gain.value, 1); assert.deepEqual(level.connections, [motion]);
-    assert.equal(modulator.startedAt, voice.at); assert.equal(modulator.stoppedAt, voice.at + voice.stopSeconds);
-    assert.ok(level.gain.at(voice.decaySeconds / 2) > partial.amplitude * .24, 'Metallic partials retain useful energy halfway through the long decay.');
-  }
-  assert.equal(new Set(rates).size, 3, 'Independent rates prevent a single obvious vibrato or tremolo.');
-  const nodes = context.nodes.length; context.advance(7);
-  assert.equal(context.nodes.length, nodes, 'Native modulation continues without recurring JS node creation.');
-  assert.ok(voice.modulators.every(node => !node.disconnected));
-  weather.stop(); context.advance(.041);
-  assert.ok([...voice.oscillators, ...voice.modulators, ...voice.modulationNodes].every(node => node.disconnected));
+test('six static independently decaying modes replace the old audio-plus-LFO graph with fewer oscillators', t => {
+  const {weather,context}=fixture(t);weather.setActive(true);weather.update(out());const voice=audibleVoice(weather,context);
+  assert.equal(voice.oscillators.length,6);assert.equal(voice.modulators.length,0);assert.equal(voice.modulationNodes.length,0);
+  assert.ok(context.nodes.every(node=>!voice.oscillators.some(oscillator=>node.connections.includes(oscillator.detune))),'No clean vibrato masks the strike.');
+  assert.ok(BELL_PARTIALS.slice(1).filter(([ratio])=>Math.abs(ratio-Math.round(ratio))>.1).length>=4);
+  const nodes=context.nodes.length;context.advance(7);assert.equal(context.nodes.length,nodes);
+  weather.stop();context.advance(.041);assert.ok(voice.oscillators.every(node=>node.disconnected));
+});
+
+test('the darker modal spectrum keeps an inharmonic body with restrained upper energy and room headroom', () => {
+  const strikeEnergy=BELL_PARTIALS.reduce((sum,[,amplitude])=>sum+amplitude**2,0);
+  const upperEnergy=BELL_PARTIALS.filter(([ratio])=>ratio>3).reduce((sum,[,amplitude])=>sum+amplitude**2,0);
+  const centroid=BELL_PARTIALS.reduce((sum,[ratio,amplitude])=>sum+ratio*amplitude**2,0)/strikeEnergy;
+  assert.ok(upperEnergy/strikeEnergy>.08 && upperEnergy/strikeEnergy<.14,'Upper modes colour the sound without the previous bright edge.');
+  assert.ok(centroid<1.9,'The body is darker than the former upper-partial-heavy spectrum.');
+  assert.ok(BELL_PARTIALS.at(-1)[0]<7,'The final resonance stays below the previous very high mode.');
+  assert.ok(BELL_PARTIALS.reduce((sum,[,amplitude])=>sum+amplitude,0)<=1.76+Number.EPSILON*4,
+    'The darker dry spectrum leaves headroom for the increased room return.');
 });
 
 test('long low bell tails survive other strikes and bounded overflow always finishes its fade', t => {
@@ -271,31 +295,34 @@ test('the upper middle-register bell retains its metallic partials within every 
   for (const sampleRate of [22050, 32000, 48000, 96000]) {
     const { weather, context } = fixture(t, sampleRate); weather.setActive(true); weather.update(out());
     const voice = audibleVoice(weather, context);
-    assert.equal(voice.midi, 79); assert.equal(voice.decaySeconds, 8); assert.equal(voice.peak, .026 * 10 ** (3 / 20));
+    assert.equal(voice.harmonic, 11); assert.equal(voice.midi, overtonePitch(11).midi); assert.equal(voice.decaySeconds, 8); assert.equal(voice.peak, bellPitchParameters(11).peak);
     assert.ok(voice.oscillators.every(oscillator => oscillator.frequency.value < sampleRate * .45));
-    assert.equal(voice.oscillators.length, 4);
-    context.advance(10); assert.ok(context.nodes.every(node => node.disconnected));
+    assert.equal(voice.oscillators.length, 6);
+    context.advance(12); assert.ok(context.nodes.every(node => node.disconnected));
   }
 });
 
-test('one fixed low-cost room has delayed reflections, bounded wet output and parent-master routing', t => {
+test('one static dark room has a longer useful late tail, bounded wet output and parent-master routing', t => {
   const { weather, context } = fixture(t); weather.setActive(true); weather.update(out());
   const room = weather.reverb, impulse = room.convolver.buffer, data = impulse.getChannelData(0);
   assert.equal(impulse.numberOfChannels, 1); assert.equal(impulse.sampleRate, context.sampleRate);
-  assert.equal(impulse.length, 67200); assert.equal(room.convolver.normalize, false);
-  assert.equal(room.send.gain.value, .18); assert.deepEqual(room.send.connections, [room.convolver]);
+  assert.equal(impulse.length, 153600); assert.equal(room.convolver.normalize, false);
+  assert.equal(room.send.gain.value, .40); assert.deepEqual(room.send.connections, [room.convolver]);
   assert.deepEqual(room.convolver.connections, [room.output]); assert.deepEqual(room.output.connections, [context.destination]);
   assert.deepEqual(room.clock.connections, [], 'The cleanup clock cannot produce audible sound.');
-  assert.ok(data.slice(0, Math.floor(.016 * impulse.sampleRate)).every(value => value === 0), 'The dry attack stays clear.');
-  assert.ok(data[Math.round(.017 * impulse.sampleRate)] > .27, 'Early reflections give the room an audible contribution.');
-  assert.ok(data.slice(Math.floor(.2 * impulse.sampleRate), Math.floor(.4 * impulse.sampleRate)).some(value => value !== 0), 'A diffuse tail follows the early reflections.');
+  assert.ok(data.slice(0, Math.floor(.028 * impulse.sampleRate)).every(value => value === 0), 'The dry attack stays clear.');
+  assert.ok(data[Math.round(.029 * impulse.sampleRate)] > .01, 'Dark early reflections follow the strike.');
   const absoluteSum = data.reduce((sum, value) => sum + Math.abs(value), 0);
   assert.ok(absoluteSum > .99 && absoluteSum < 1.001);
-  const highestPeak = Math.max(...weather.getMetrics().bellOctaveWeights.map(value => value.peak));
-  const worstCasePeak = 16 * highestPeak * (1 + .24 * 1.053 + .11 * 1.071 + .055 * 1.089) * (1 + .18 * absoluteSum);
+  const lateAbsoluteSum=data.slice(Math.floor(.2*impulse.sampleRate)).reduce((sum,value)=>sum+Math.abs(value),0);
+  assert.ok(lateAbsoluteSum>.4,'Late reflections retain useful energy instead of an almost inaudible normalized noise tail.');
+  assert.ok(data.slice(Math.floor(2.5*impulse.sampleRate)).some(value=>value!==0),'The dark room extends beyond the old 1.4-second tail.');
+  assert.ok(data.slice(Math.floor(3.1*impulse.sampleRate)).every(value=>value===0),'The room finishes smoothly before its finite cleanup clock.');
+  const highestPeak = Math.max(...weather.getMetrics().bellHarmonicWeights.map(value => value.peak));
+  const worstCasePeak = 16 * highestPeak * BELL_PARTIALS.reduce((sum, partial) => sum + partial[1], 0) * (1 + .40 * absoluteSum);
   assert.ok(worstCasePeak < 1.5, 'The calibrated coherent burst stays bounded in the float graph before Main protection; native output is checked separately.');
   assert.ok(weather.getMetrics().bellDecaySeconds >= 5 && weather.getMetrics().bellDecaySeconds <= 14);
-  assert.equal(weather.getMetrics().bellReverb.durationSeconds, 1.4);
+  assert.equal(weather.getMetrics().bellReverb.durationSeconds, 3.2);
   context.advance(8); weather.update(released()); weather.update(out());
   assert.equal(weather.reverb.convolver.buffer, impulse, 'The static impulse is reused instead of regenerated for each gesture.');
 });
@@ -308,8 +335,8 @@ test('native-style convolution accepts only matching context rates and stays bou
     weather.setActive(true); weather.update(out()); audibleVoice(weather, context);
     const impulse = weather.reverb.convolver.buffer, metrics = weather.getMetrics().bellReverb;
     assert.equal(impulse.sampleRate, sampleRate); assert.equal(metrics.impulseSampleRate, sampleRate);
-    assert.equal(impulse.length, Math.ceil(1.4 * sampleRate));
-    assert.ok(impulse.length * Float32Array.BYTES_PER_ELEMENT <= 537600, 'One mono native-rate impulse stays below 526 KiB even at 96 kHz.');
+    assert.equal(impulse.length, Math.ceil(3.2 * sampleRate));
+    assert.ok(impulse.length * Float32Array.BYTES_PER_ELEMENT <= 1228800, 'One reused mono impulse stays below 1.18 MiB even at 96 kHz.');
     assert.equal(metrics.graphCount, 1); assert.equal(weather.getMetrics().bellsTriggered, 1);
     context.advance(16); assert.ok(context.nodes.every(node => node.disconnected));
   }
@@ -392,7 +419,7 @@ test('a short high bell never shortens a preceding low bell room tail', t => {
   const { weather, context } = fixture(t), random = Math.random; t.after(() => { Math.random = random; });
   weather.setActive(true); Math.random = () => 0; weather.update(out()); const tail = weather.reverb.tailUntil;
   context.advance(.1); Math.random = () => .999; weather.update(released()); weather.update(out());
-  assert.equal(weather.getMetrics().lastBellMidi, 79); assert.equal(weather.getMetrics().bellDecaySeconds, 8);
+  assert.equal(weather.getMetrics().lastBellHarmonic, 11); assert.equal(weather.getMetrics().bellDecaySeconds, 8);
   assert.equal(weather.reverb.tailUntil, tail); context.advance(3); assert.equal(weather.getMetrics().bellReverb.active, true);
 });
 

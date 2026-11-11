@@ -22,6 +22,7 @@ const finite = value => typeof value === 'number' && Number.isFinite(value);
 const positionValid = position => Array.isArray(position) && position.length === 2 && position.every(finite) && position[0] >= 94 && position[0] < 142 && position[1] >= -12 && position[1] < 7;
 const rounded = number => Math.round(number * 10000) / 10000;
 const identityKey = clientId => createHash('sha256').update(clientId).digest('hex');
+const snapshotFingerprint = records => createHash('sha256').update(JSON.stringify(records.map(({ longitude, latitude }) => [longitude, latitude]))).digest('hex');
 
 function roomError(message, status = 400) {
   return Object.assign(new Error(message), { status });
@@ -57,6 +58,7 @@ export class SharedRoom extends EventEmitter {
     this.bootstrapAvailable = true;
     this.bootstrapping = false;
     this.settingsImportInProgress = false;
+    this.snapshotImportInProgress = false;
     this.connections = new Map();
     this.actorRevision = 0;
     this.clientConnections = new Map();
@@ -85,8 +87,8 @@ export class SharedRoom extends EventEmitter {
       const restored = new RainSimulation();
       if (payload.schemaVersion !== 1 || !finite(payload.savedAt) || !finite(payload.strength) || payload.strength < 0 || payload.strength > 1 || !restored.restore(payload.simulation)) throw new Error('Saved shared state is invalid.');
       restored.advanceDry(Math.max(0, (this.wallClock() - payload.savedAt) / 1000));
-      restored.seed(this.records);
-      this.simulation = restored;
+      const changedSnapshot = payload.snapshotFingerprint && payload.snapshotFingerprint !== snapshotFingerprint(this.records);
+      this.simulation = changedSnapshot ? new RainSimulation(restored.parameters).seed(this.records) : restored.seed(this.records);
       this.strength = payload.strength;
       // Settings may return, but the show itself always opens in paused Arrival.
       try { if (payload.sceneSettings) this.scenes.settings = restoreSceneSettings(this.scenes.settings, payload.sceneSettings); } catch { /* Ignore invalid optional settings. */ }
@@ -593,6 +595,7 @@ export class SharedRoom extends EventEmitter {
   }
 
   _assertSettingsEditable() {
+    if (this.snapshotImportInProgress) throw roomError('A fire snapshot is still being saved. Try this change again when it finishes.', 409);
     if (this.settingsImportInProgress) throw roomError('A settings import is still being saved. Try this change again when it finishes.', 409);
     if (this.bootstrapping) throw roomError('The performance is being initialized. Try this change again when it finishes.', 409);
   }
@@ -638,8 +641,39 @@ export class SharedRoom extends EventEmitter {
     this._clearHolds({ requireFreshPress: true, resetSequence: false });
   }
 
+  async importSnapshot(records, snapshotVersion, save) {
+    this._assertSettingsEditable();
+    const simulation = new RainSimulation(this.simulation.parameters).seed(records);
+    const regions = new RegionCatalog(records), national = new NationalSpace(regions);
+    const scenes = new PerformanceScenes({ now: this.clock(), wallNow: this.wallClock(), settings: this.scenes.settings });
+    scenes.revision = this.scenes.revision + 1;
+    this.snapshotImportInProgress = true;
+    const transaction = this.writeChain.catch(() => {}).then(async () => {
+      const envelope = { ...this._envelope(simulation), snapshotFingerprint: snapshotFingerprint(records) };
+      await save(envelope);
+      this.records = records;
+      this.snapshotVersion = snapshotVersion;
+      this.simulation = simulation;
+      this.regions = regions;
+      this.national = national;
+      this.scenes = scenes;
+      this.scenes.anchor = this.clock();
+      this.scenes.startedAt = this.wallClock();
+      this.bootstrapAvailable = false;
+      this.epoch = randomUUID();
+      this.phoneProgressCaches = new WeakMap();
+      this.wildlifeRoster = null;
+      this._clearHolds({ requireFreshPress: true });
+      this.lastAdvance = this.clock();
+    });
+    this.writeChain = transaction;
+    try { await transaction; }
+    finally { this.snapshotImportInProgress = false; }
+    return this.wireState();
+  }
+
   _envelope(simulation = this.simulation, strength = this.strength) {
-    return { schemaVersion: 1, savedAt: this.wallClock(), strength, simulation: simulation.serialize(), sceneSettings: { ...this.scenes.settings }, soundSettings: this.soundSettingsState(), identities: [...this.participantNumbers].map(([key, number]) => [key, number, this.participantRegions.get(key)]) };
+    return { schemaVersion: 1, savedAt: this.wallClock(), strength, snapshotFingerprint: snapshotFingerprint(this.records), simulation: simulation.serialize(), sceneSettings: { ...this.scenes.settings }, soundSettings: this.soundSettingsState(), identities: [...this.participantNumbers].map(([key, number]) => [key, number, this.participantRegions.get(key)]) };
   }
 
   _writeSettings() {
@@ -667,7 +701,7 @@ export class SharedRoom extends EventEmitter {
   }
 
   persist() {
-    if (this.bootstrapAvailable || this.bootstrapping) return Promise.resolve();
+    if (this.bootstrapAvailable || this.bootstrapping || this.snapshotImportInProgress) return Promise.resolve();
     this.advance();
     return this._writeEnvelope(() => this._envelope());
   }

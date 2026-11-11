@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { WildfireSound, SOUND_MACRO_DEFAULTS, SOUND_MIXER_DEFAULTS, automaticSoundMacros, landscapeBlend, macroParameters, variationWeights, dryFireTextureParameters, phoneBedParameters, fireProgression, participantMidi, participantMidiPair, participantFrequency, participantGrainParameters, participantGrainEnvelopeAt, patchMidiPair, patchHash, audibleMoisture, cricketRetreatParameters, participantToneParameters, participantPosition, PARTICIPANT_MIDI, PARTICIPANT_MIDI_PAIRS, PARTICIPANT_PITCH_LABELS, PARTICIPANT_PARTIALS, PARTICIPANT_GRAIN_AMPLITUDES, PARTICIPANT_ASH_RMS_RATIO, PHONE_CRACKLE_GAIN, TONE_REVERB_RETURN, MAIN_DRONE_MIDI, MAIN_DRONE_AMPLITUDES, MAIN_DRONE_LEVEL, sampleMakeupGain, circularLoopBuffer, PATCH_PENTATONIC_MIDI, patchMidi, patchResidueId, patchSoftToneParameters, patchResidueEnvelope } from '../app/sound-engine.js';
 import { computeSceneScore, participationVisualProgress } from '../app/scene-score.js';
 import { countryPoint } from '../app/country-view.mjs';
+import { OVERTONE_ROOT_HZ, TONE_HARMONICS, overtonePitchForKey } from '../app/overtone-scale.js';
 import { patchTextureRecordingParameters, patchFrequencyForMidi, PATCH_SOFT_TONE_LEVEL, PATCH_TEXTURE_SOURCE_LIMIT, PATCH_TEXTURE_ADMISSION_SECONDS } from '../app/patch-soft-tones.js';
 import { phoneCricketParameters } from '../app/sound-engine.js';
 import { createParticipantSoundField, patchSoundVoices } from '../app/sound-participants.js';
@@ -659,7 +660,7 @@ test('generated haze and ash stay clear, water has soft attacks, and moisture ge
   const dryForestCutoff = engine.layers.get('forest').filter.frequency.value;
   assert.ok(dryForestCutoff >= 1500 && dryForestCutoff <= 2400); assert.ok(engine.layers.get('haze').highpass.frequency.value >= 200);
   assert.equal(engine.layers.get('forest').highpass.frequency.value, 35);
-  assert.equal(engine.layers.get('forest').distantBody.gain.value, 5); assert.equal(engine.layers.get('forest').distantAir.gain.value, -9);
+  assert.equal(engine.layers.get('forest').distantBody.gain.value, 0); assert.equal(engine.layers.get('forest').distantAir.gain.value, -9);
   assert.ok(engine.layers.get('haze').filter.frequency.value >= 8000); assert.ok(engine.layers.get('ash').filter.frequency.value >= 10000);
   for (const id of ['rain', 'moisture']) for (const record of engine.layers.get(id).sources) {
     if (id === 'rain') assert.ok(Math.abs(record.source.playbackRate.value - 1) < .025);
@@ -675,6 +676,36 @@ test('generated haze and ash stay clear, water has soft attacks, and moisture ge
   assert.equal(engine.layers.get('rain').sampleGate.gain.value, 1);
   assert.ok(engine.layers.get('moisture').filter.frequency.value >= 4000);
   assert.equal(engine.delayReturn.gain.value, 0);
+});
+
+test('Main ambience cuts both source endpoints before the independent mixer without riding scene gains', async t => {
+  const { engine, context } = harness(t, { mode: 'operator', fetchImpl: successfulFetch });
+  for (const id of ['haze', 'rain']) await engine.setLayerVariations(id, endpoints(id));
+  await engine.enable(); await flush();
+  engine.setMixer({ haze: .45, rain: 1, forest: .5 });
+  const originalSources = new Map();
+  for (const id of ['haze', 'rain']) {
+    const layer = engine.layers.get(id), [first, second] = layer.toneEq;
+    assert.equal(layer.toneEq.length, 2);
+    assert.ok(layer.toneEq.every(node => node.type === 'peaking' && node.gain.value < 0));
+    assert.ok(layer.toneEq.every(node => node.frequency.value >= 1000 && node.frequency.value <= 2100), 'Keep the corrective cuts above the thunder/body range.');
+    assert.deepEqual(layer.filter.connections, [first]); assert.deepEqual(first.connections, [second]);
+    assert.deepEqual(second.connections, [layer.shaper]); assert.deepEqual(layer.gain.connections, [engine.mixerNodes.get(id)]);
+    assert.ok([...layer.variationSlots.values()].every(slot => slot.mixGain.connections.includes(layer.sampleGate)), 'Both existing recordings share the same fixed treatment.');
+    originalSources.set(id, [...layer.variationSlots.values()].map(slot => ({ url: slot.currentUrl, buffer: slot.buffer })));
+  }
+  for (const scene of [{ id: 'arrival' }, { id: 'instructions' }, { id: 'participation' }, { id: 'final-rain', rainIntensity: 1 }]) {
+    engine.setSceneState({ ...scene, elapsedMs: 20000 }); context.advance(.3); engine._tick();
+    for (const id of ['haze', 'rain']) {
+      const layer = engine.layers.get(id);
+      assert.ok(layer.toneEq.every(node => node.gain.events.length === 0), 'A scene/mixer change cannot turn these cuts into dynamic gain riding.');
+      assert.deepEqual([...layer.variationSlots.values()].map(slot => ({ url: slot.currentUrl, buffer: slot.buffer })), originalSources.get(id));
+    }
+  }
+  assert.equal(engine.mixer.haze, .45); assert.equal(engine.mixer.rain, 1); assert.equal(engine.mixer.forest, .5);
+  const { engine: phone } = harness(t, { mode: 'phone', fetchImpl: successfulFetch });
+  await phone.enable(); await flush();
+  assert.ok([...phone.layers.values()].every(layer => layer.toneEq.length === 0), 'Phone asset balance and processing stay separate.');
 });
 
 test('a failed endpoint keeps the other at full power and explicit reconfiguration retries the failure', async t => {
@@ -1306,6 +1337,34 @@ test('the native rain and insect overlap ends at thirty seconds while Main carri
   assert.equal(phone.engine.getMetrics().sceneScore.phase, 'ended');
 });
 
+test('the longer final cricket tail stays on the native master clock and never closes the recording gate early', async t => {
+  const { engine, context } = harness(t, { fetchImpl: successfulFetch });
+  await engine.setLayerSource('crickets', '/cricket-retreat-fixture.mp3');
+  engine.setProgression({ sourceCount: 100, outCount: 100, heat: 0, moisture: 1 });
+  engine.setSceneState({ id: 'afterglow', elapsedMs: 114000 }); await engine.enable(); await flush();
+  const layer = engine.layers.get('crickets'), sources = [...layer.sources];
+  assert.ok(sources.length > 0 && sources.every(record => record.source.loop));
+  const curve = engine.master.gain.events.filter(event => event[0] === 'curve').at(-1);
+  assert.ok(Math.abs(curve[2] + curve[3] - 15) < 1 / context.sampleRate);
+  assert.equal(curve[1].at(-1), 0);
+  const events = engine.master.gain.events.length;
+  context.advance(9); engine._tick();
+  assert.equal(engine.master.gain.events.length, events, 'A delayed scheduler does not approximate or restart the ending curve.');
+  assert.equal(engine.phoneCricketPhrases.active, true, 'The quiet final field keeps its continuous recording.');
+  assert.equal(engine._cricketGain(), PHONE_CRICKET_LEVEL, 'Retreat is applied only once at the master.');
+  assert.ok(Math.abs(engine.getMetrics().outputGains.phone - .55 * cricketRetreatParameters(54000).gain * .5) < 1e-12);
+  assert.deepEqual([...layer.sources], sources);
+  engine.setSceneState({ id: 'afterglow', elapsedMs: 123000, paused: true });
+  const frozen = engine.getMetrics().outputGains.phone;
+  context.advance(3); engine._tick(); assert.equal(engine.getMetrics().outputGains.phone, frozen);
+  engine.setSceneState({ id: 'afterglow', elapsedMs: 123000, paused: false });
+  const resumed = engine.master.gain.events.filter(event => event[0] === 'curve').at(-1);
+  assert.ok(Math.abs(resumed[2] + resumed[3] - (context.currentTime + 6)) < 1 / context.sampleRate);
+  context.advance(6); engine._tick();
+  assert.equal(engine.getMetrics().outputGains.phone, 0); assert.equal(engine.phoneCricketPhrases.active, false);
+  assert.equal(layer.sampleGate.gain.value, 0, 'The recording gate closes only after the master has reached exact silence.');
+});
+
 test('paused, resumed and reloaded scene envelopes preserve configured phase boundaries and exact final silence', async t => {
   for (const mode of ['phone', 'operator']) {
     const { engine, context } = harness(t, { mode });
@@ -1825,16 +1884,17 @@ test('blob loading and interrupted audio consume old edges instead of replaying 
   assert.ok(engine.pendingBlobs.length > 0); await context.suspend(); assert.equal(engine.pendingBlobs.length, 0);
 });
 
-test('production patches have one stable D-flat major pentatonic note and a ground-driven soft emergence', async t => {
-  assert.deepEqual(PATCH_PENTATONIC_MIDI, [25,27,29,32,34,37,39,41,44,46,49,51,53,56,58,61,63,65,68,70,73,75,77,80,82,85,87,89,92,94,97]);
+test('production patches have one stable D-flat overtone note and a ground-driven airy emergence', async t => {
+  assert.deepEqual(PATCH_PENTATONIC_MIDI, TONE_HARMONICS.map(harmonic => 37 + 12 * Math.log2(harmonic)));
   const assigned = new Set();
   for (let key = 0; key < 1000; key++) {
     const midi = patchMidi(String(key)); assert.ok(PATCH_PENTATONIC_MIDI.includes(midi)); assigned.add(midi);
     assert.equal(patchMidi({ key: String(key), heat: 0, pitchIndex: 34 }), midi);
     assert.deepEqual(patchMidiPair({ key: String(key) }), [midi]);
-    assert.equal(midi, PATCH_PENTATONIC_MIDI[patchHash(String(key)) % 31]);
+    assert.equal(midi, PATCH_PENTATONIC_MIDI[patchHash(String(key)) % 29]);
+    assert.equal(patchFrequencyForMidi(midi), OVERTONE_ROOT_HZ * overtonePitchForKey(String(key)).harmonic);
   }
-  assert.deepEqual([...assigned].sort((a,b) => a-b), PATCH_PENTATONIC_MIDI, 'Fixed keys span every note from Db1 through Db7.');
+  assert.deepEqual([...assigned].sort((a,b) => a-b), PATCH_PENTATONIC_MIDI, 'Fixed keys span each harmonic from 2 through 30.');
   const dry = patchSoftToneParameters({ heat: 1, moisture: 0, surfaceWetness: 0 });
   const skin = patchSoftToneParameters({ heat: 1, moisture: 0, surfaceWetness: 1 });
   const middle = patchSoftToneParameters({ heat: .5, moisture: .6, surfaceWetness: 1 });
@@ -1848,10 +1908,10 @@ test('production patches have one stable D-flat major pentatonic note and a grou
   context.advance(3); engine._tick(); assert.equal(voice.targetGain, 0, 'Elapsed touch time alone cannot reveal a note.');
   engine.setPatchVoices([sourceVoice('west', { holding: true, heat: .04, moisture: .95, surfaceWetness: 1, position: [.99,.01], pitchIndex: 0 })]);
   assert.equal(engine.patchSoftTones.voices.get('west'), voice);
-  assert.equal(voice.midi, patchMidi('west')); assert.deepEqual(voice.position, [.1,.8]);
+  assert.equal(voice.midi, patchMidi('west',0)); assert.deepEqual(voice.position, [.1,.8]);
   assert.ok(voice.targetGain > .95 * PATCH_SOFT_TONE_LEVEL && voice.targetGain <= PATCH_SOFT_TONE_LEVEL); assert.ok(voice.gain.gain.events.some(event => event[0] === 'target' && event[1] > 0 && event[3] === .3), 'The rounded attack follows confirmed cooling within the brief live cooling window.');
   assert.equal(voice.space.input.channelCount, 1); assert.equal(voice.space.panner.pan.value, participantPosition([.1,.8]).pan);
-  assert.equal(engine.getMetrics().softTones.singlePitch, true); assert.equal(engine.getMetrics().patchVoices.patches[0].midi, patchMidi('west'));
+  assert.equal(engine.getMetrics().softTones.singlePitch, true); assert.equal(engine.getMetrics().patchVoices.patches[0].midi, patchMidi('west',0));
   assert.ok(!context.nodes.some(node => node.nodeType === 'source' && engine.toneGrains.has(node)), 'Production never schedules struck pitch grains.');
 });
 
@@ -2132,6 +2192,25 @@ test('residue makeup matches mono filtered class energy while preserving linear 
   assert.ok([...engine.patchSoftTones.textureSources].every(source => source.mixer.gain.value === 1.5 && source.space.input.connections.length > 0));
 });
 
+test('Main forwards confirmed global extinction to new tone and bell register choices', async t => {
+  const {engine,context}=harness(t,{mode:'operator',fetchImpl:successfulFetch});
+  engine.setSceneState({id:'participation',elapsedMs:12000});
+  engine.setProgression({sourceCount:100,outCount:0,heat:.2});
+  engine.setPatchVoices([sourceVoice('register-main',{holding:true,heat:.01,moisture:1})]);
+  await engine.enable(); await flush();
+  assert.equal(engine.patchSoftTones.extinctionProgress,0); assert.equal(engine.localBells.extinctionProgress,0);
+  const voice=engine.patchSoftTones.voices.get('register-main'); assert.ok(voice);
+  assert.equal(voice.frequency,overtonePitchForKey('register-main',0).frequency);
+  engine.localBells.random=()=>.5; engine.localBells.ring({key:'early'});
+  const early=[...engine.localBells.bells].at(-1);
+  context.advance(.2); engine.setProgression({sourceCount:100,outCount:90,heat:.2});
+  engine.setPatchVoices([sourceVoice('register-main',{holding:true,heat:.01,moisture:1})]);
+  assert.equal(engine.patchSoftTones.extinctionProgress,.9); assert.equal(engine.localBells.extinctionProgress,.9);
+  assert.equal(engine.patchSoftTones.voices.get('register-main'),voice);
+  assert.equal(voice.frequency,overtonePitchForKey('register-main',0).frequency);
+  engine.localBells.ring({key:'late'}); assert.ok([...engine.localBells.bells].at(-1).harmonic<early.harmonic);
+});
+
 test('after-extinction pitch choices snapshot real macro heat and never retune an already playing texture', async t => {
   const { engine, context } = harness(t, { mode: 'operator', fetchImpl: successfulFetch });
   await prepareResidueLibrary(engine, context);
@@ -2256,7 +2335,7 @@ test('a quick local tap preserves the full dry bell and room decay after pointer
   assert.equal(bells.reverb, room); assert.ok(bells.getMetrics().bellReverb.tailRemainingSeconds > 1.4);
   context.advance(voice.stopSeconds * .61); engine._tick();
   assert.equal(bells.bells.size, 0); assert.equal(bells.reverb, room, 'The room finishes after the dry voice.');
-  context.advance(1.4); engine._tick(); assert.equal(bells.getMetrics().bellReverb.graphCount, 0);
+  context.advance(bells.getMetrics().bellReverb.durationSeconds); engine._tick(); assert.equal(bells.getMetrics().bellReverb.graphCount, 0);
   engine.setLocalInteraction(out); engine.setLocalInteraction(released); engine.setMuted(true); context.advance(MAIN_DISABLE_FADE_SECONDS + .03); context.advance(.08);
   assert.equal(bells.active, false); assert.equal(bells.bells.size + bells.retiringBells.size, 0);
   assert.equal(bells.getMetrics().bellReverb.graphCount, 0, 'Mute still flushes the complete tail.');

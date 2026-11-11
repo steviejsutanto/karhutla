@@ -121,6 +121,12 @@ summary { cursor: pointer; }
 .operator-join img { background: white; padding: 5px; }
 .operator-join a { font-size: 11px; overflow-wrap: anywhere; }
 .button-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 14px; }
+.fire-data-preview { border-top: 1px solid #5b4434; padding-top: 16px; margin-top: 18px; }
+.fire-data-preview h3 { font: normal 20px/1.3 Georgia,serif; margin: 0 0 12px; }
+.fire-data-preview p { margin: 10px 0; overflow-wrap: anywhere; }
+#fire-data-file-name { color: #e0bd96; }
+#fire-data-transfer-status:empty { display: none; }
+#fire-data-transfer-status[data-error='true'] { color: #ffb78f; }
 @media(max-width:1050px) {
   main { padding: 18px 20px 28px; }
   .operator-brand .eyebrow { display: none; }

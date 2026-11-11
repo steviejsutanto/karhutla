@@ -1,43 +1,44 @@
-// C/G extinction bells and their small room, owned by the main sound output.
-// Keep the C/G identity in a clearly audible middle register. The previous
-// C2–G7 lottery combined sub-bass-like fundamentals with very thin high notes
-// whose peaks were almost 10 dB lower, so equal completion events varied widely.
-const BELL_MIDI = Object.freeze([48, 55, 60, 67, 72, 79]); // C3/G3 through C5/G5.
-const BELL_BASE_PEAK = .026;
-// Fixed note balance through Main's HRTF/output path. Listening trims keep
-// the brighter upper register from dominating even when body energy matches.
-// Retain the note's colour and position: no real-time gain riding is added.
-export const BELL_NOTE_TRIM_DB = Object.freeze({ 48: 0, 55: -2, 60: 0, 67: 2, 72: 3, 79: 3 });
-const bellPeak = midi => BELL_BASE_PEAK * 10 ** (BELL_NOTE_TRIM_DB[midi] / 20);
-const BELL_OCTAVES = Object.freeze([
-  // Peak is the register's maximum for headroom inspection; each selected
-  // note receives its own fixed calibration below.
-  Object.freeze({ octave: 3, weight: .34, decaySeconds: 12, peak: bellPeak(48) }),
-  Object.freeze({ octave: 4, weight: .44, decaySeconds: 10, peak: bellPeak(67) }),
-  Object.freeze({ octave: 5, weight: .22, decaySeconds: 8, peak: bellPeak(72) }),
-]);
-// The final value is relative partial energy at the end of the whole bell.
-// Earlier short partial envelopes left only a clean fundamental after the strike.
-const BELL_PARTIALS = Object.freeze([[1, 1, 1], [2.71, .24, .18], [4.13, .11, .1], [6.4, .055, .06]].map(Object.freeze));
-const MAX_BELLS = 8, MAX_RETIRING_BELLS = 8, BELL_ATTACK = .028, BELL_RELEASE = .08;
-const REVERB_SECONDS = 1.4, REVERB_WET = .18;
+// Modal extinction bells and their dark room, owned by the Main output.
+import {BELL_HARMONICS, OVERTONE_BELL_PITCHES, overtonePitchAtProgress, overtoneRegisterWeights} from './overtone-scale.js';
+const BELL_BASE_PEAK = .038;
+const registerPosition = harmonic => Math.log(harmonic / BELL_HARMONICS[0]) / Math.log(BELL_HARMONICS.at(-1) / BELL_HARMONICS[0]);
+// A restrained downward register contour avoids the former upper-note boosts.
+// These fixed gains preserve the strike dynamics; no count-based ducking or
+// runtime loudness riding can make an individual bell disappear in a crowd.
+export const BELL_HARMONIC_TRIM_DB = Object.freeze(Object.fromEntries(BELL_HARMONICS.map(harmonic => [harmonic, -4 * registerPosition(harmonic)])));
+export const BELL_NOTE_TRIM_DB = BELL_HARMONIC_TRIM_DB; // Existing inspector key, now indexed by harmonic.
+// Ratio, attack strength, and relative remaining modal gain at the end. The
+// fundamental decays faster than the resonant inharmonic body instead of
+// leaving a long, clean sine. The lower three modes now carry the body, with
+// restrained upper resonances instead of the previous bright metallic edge.
+// Their summed strength leaves room for the stronger reverberant return.
+export const BELL_PARTIALS = Object.freeze([[1, .47, .004], [1.43, .47, .065], [2.17, .40, .035],
+  [3.61, .22, .012], [5.17, .13, .003], [6.83, .07, .0005]].map(Object.freeze));
+export function bellPitchParameters(harmonic) {
+  const pitch=OVERTONE_BELL_PITCHES[BELL_HARMONICS.indexOf(harmonic)];
+  if (!pitch) throw new RangeError('Bell harmonic must be an integer from 2 to 11.');
+  return {...pitch, decaySeconds: 12 - 4 * registerPosition(harmonic),
+    peak: BELL_BASE_PEAK * 10 ** (BELL_HARMONIC_TRIM_DB[harmonic] / 20)};
+}
+const MAX_BELLS = 8, MAX_RETIRING_BELLS = 8, BELL_ATTACK = .008, BELL_RELEASE = .08;
+const REVERB_SECONDS = 3.2, REVERB_WET = .40;
 const quietInteraction = () => ({ holding: false, patchKey: null, extinguished: false, eligible: true });
 const disconnect = node => { try { node?.disconnect(); } catch { /* Already detached. */ } };
 const stop = (node, at) => { try { node?.stop(at); } catch { /* Already stopped. */ } };
 
-function bellChoice() {
-  let draw = Math.max(0, Math.min(1 - Number.EPSILON, Math.random()));
-  for (let index = 0; index < BELL_OCTAVES.length; index++) {
-    const octave = BELL_OCTAVES[index];
-    if (draw < octave.weight || index === BELL_OCTAVES.length - 1) {
-      const midi = BELL_MIDI[index * 2 + Number(draw >= octave.weight / 2)];
-      return { ...octave, midi, peak: bellPeak(midi) };
-    }
-    draw -= octave.weight;
-  }
+function bellRegisterProgress(extinctionProgress) {
+  if (!Number.isFinite(extinctionProgress)) return .5; // Neutral isolated auditions.
+  const descent = Math.max(0, Math.min(1, extinctionProgress / .45));
+  // Begin below the former upper-register bias, then complete the descent
+  // within the first 45% of the global fire being extinguished.
+  return .6 + .4 * (1 - (1 - descent) ** 2);
+}
+function bellChoice(sample, extinctionProgress) {
+  return bellPitchParameters(overtonePitchAtProgress(OVERTONE_BELL_PITCHES, sample, bellRegisterProgress(extinctionProgress)).harmonic);
 }
 function bellEnvelope(voice) {
-  return [[BELL_ATTACK, voice.peak], [voice.decaySeconds * .15, voice.peak * .52], [voice.decaySeconds * .57, voice.peak * .13], [voice.decaySeconds, .00001]];
+  return [[BELL_ATTACK, voice.peak], [.10, voice.peak * .84], [.55, voice.peak * .42],
+    [voice.decaySeconds * .55, voice.peak * .075], [voice.decaySeconds, .00001]];
 }
 function bellEnvelopeAt(voice, age) {
   if (age <= 0) return 0;
@@ -53,31 +54,44 @@ function hold(parameter, at, value) {
   if (typeof parameter.cancelAndHoldAtTime === 'function') parameter.cancelAndHoldAtTime(at);
   else { parameter.cancelScheduledValues(at); parameter.setValueAtTime(value, at); }
 }
-function smallRoomImpulse(context) {
-  // Native convolution requires the context's sample rate. The absolute
-  // impulse sum is one, bounding the wet contribution at 18% of the dry peak.
+function bellRoomImpulse(context) {
+  // Darkened reflection clusters retain useful late energy. Normalizing a
+  // dense noise tail by its absolute sum made the former room almost dry.
+  // This static native-rate impulse keeps an absolute sum of one, so the
+  // stronger return is still bounded at 40% of the coherent dry-source peak.
   const rate = context.sampleRate, frames = Math.ceil(REVERB_SECONDS * rate);
   const buffer = context.createBuffer(1, frames, rate), data = buffer.getChannelData(0);
-  let seed = 19790603, filtered = 0, energy = 0;
-  for (let index = Math.floor(.02 * rate); index < frames; index++) {
+  const pole = Math.exp(-2 * Math.PI * 1800 / rate), kernelFrames = Math.ceil(.004 * rate);
+  const addReflection = (seconds, strength) => {
+    const start = Math.round(seconds * rate);
+    for (let index = 0; index < kernelFrames && start + index < frames; index++) {
+      data[start + index] += strength * (1 - pole) * pole ** index * (1 - index / kernelFrames);
+    }
+  };
+  for (const [seconds, strength] of [[.029, .20], [.053, -.15], [.089, .12], [.137, -.10], [.191, .08]]) addReflection(seconds, strength);
+  let seed = 19790603;
+  for (let cluster = 0; cluster < 29; cluster++) {
     seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
-    filtered += .28 * ((seed / 2147483648 - 1) - filtered);
-    data[index] = filtered * Math.exp(-5 * index / frames) * (1 - index / frames);
-    energy += Math.abs(data[index]);
+    const seconds = .245 + cluster * .098 + (seed / 4294967296 - .5) * .025;
+    const strength = .17 * Math.exp(-seconds / 1.1) * (1 - seconds / REVERB_SECONDS);
+    for (const [delay, level] of [[0, .49], [.0023, -.24], [.0059, .13], [.0097, -.07], [.0151, .04], [.0217, -.03]]) {
+      addReflection(seconds + delay, strength * level * (cluster % 2 ? -1 : 1));
+    }
   }
-  for (let index = 0; index < frames; index++) data[index] *= .16 / energy;
-  for (const [seconds, level] of [[.017, .28], [.031, .22], [.053, .16], [.079, .11], [.113, .07]]) data[Math.round(seconds * rate)] += level;
+  const absoluteSum = data.reduce((sum, value) => sum + Math.abs(value), 0);
+  for (let index = 0; index < frames; index++) data[index] /= absoluteSum;
   return buffer;
 }
 
 // Keep this module and controller name stable for existing phone integrations.
 export class PhoneWeatherAudio {
-  constructor({ context, destination, onBell, makeSpatialPath, positionPath }) {
+  constructor({ context, destination, onBell, makeSpatialPath, positionPath, random = Math.random }) {
     this.context = context; this.destination = destination;
     this.onBell = onBell;
     this.makeSpatialPath = makeSpatialPath; this.positionPath = positionPath;
-    this.active = false; this.destroyed = false; this.interaction = quietInteraction();
-    this.suppressedUntilRelease = false; this.bellsTriggered = 0; this.lastBellMidi = null; this.lastBellDecay = null;
+    this.random = random;
+    this.active = false; this.destroyed = false; this.interaction = quietInteraction(); this.extinctionProgress = null;
+    this.suppressedUntilRelease = false; this.bellsTriggered = 0; this.lastBellMidi = null; this.lastBellHarmonic = null; this.lastBellDecay = null;
     this.bells = new Set(); this.retiringBells = new Set();
     this.reverb = null; this.retiringReverb = null; this.reverbImpulse = null;
 
@@ -124,13 +138,16 @@ export class PhoneWeatherAudio {
     if (!this.active || this.destroyed) return false;
     return this._playBell(patch);
   }
+  setExtinctionProgress(value) {
+    this.extinctionProgress = Number.isFinite(value) ? Math.max(0, Math.min(1, value)) : null;
+  }
   _playBell(patch = {}) {
     const at = this.context.currentTime;
     // Eight overlapping natural tails plus eight short overflow releases remain
     // bounded even under pathological packet bursts. Never cut a fading voice.
     if (this.bells.size + this.retiringBells.size >= MAX_BELLS + MAX_RETIRING_BELLS) return false;
     if (this.bells.size >= MAX_BELLS) this._retireBell(this.bells.values().next().value, BELL_RELEASE);
-    const choice = bellChoice(), frequency = 440 * 2 ** ((choice.midi - 69) / 12);
+    const choice = bellChoice(this.random(), this.extinctionProgress), frequency = choice.frequency;
     const envelope = this.context.createGain(), oscillators = [], levels = [], partials = [], modulators = [], modulationNodes = [];
     const space = this.makeSpatialPath?.(this.destination);
     if (space) this.positionPath?.(space, patch.position ?? [.5, .5]);
@@ -143,7 +160,7 @@ export class PhoneWeatherAudio {
       envelope.connect(room.send); room.tailUntil = Math.max(room.tailUntil, at + voice.stopSeconds + REVERB_SECONDS);
       stop(room.clock, room.tailUntil);
     }
-    for (const [index, [ratio, amplitude, remaining]] of BELL_PARTIALS.entries()) {
+    for (const [ratio, amplitude, remaining] of BELL_PARTIALS) {
       if (frequency * ratio >= this.context.sampleRate * .45) continue;
       const oscillator = this.context.createOscillator(), level = this.context.createGain();
       oscillator.type = 'sine'; oscillator.frequency.value = frequency * ratio; level.gain.value = amplitude;
@@ -151,25 +168,12 @@ export class PhoneWeatherAudio {
       if (remaining < 1) level.gain.exponentialRampToValueAtTime(amplitude * remaining, at + voice.decaySeconds);
       oscillator.connect(level);
       const partial = { ratio, amplitude, remaining, oscillator, level };
-      if (index) {
-        // Slow native sine modulation gives each inharmonic partial its own
-        // breath and slight pitch motion while the fundamental stays anchored.
-        const motion = this.context.createGain(), modulator = this.context.createOscillator();
-        const pitchDepth = this.context.createGain(), amplitudeDepth = this.context.createGain();
-        motion.gain.value = 1; modulator.type = 'sine'; modulator.frequency.value = .09 + index * .067 + (voice.midi % 7) * .006;
-        pitchDepth.gain.value = .5 + index * .75; amplitudeDepth.gain.value = .035 + index * .018;
-        modulator.connect(pitchDepth); pitchDepth.connect(oscillator.detune);
-        modulator.connect(amplitudeDepth); amplitudeDepth.connect(motion.gain);
-        level.connect(motion); motion.connect(envelope);
-        modulator.start(at); modulator.stop(at + voice.stopSeconds);
-        Object.assign(partial, { motion, modulator, pitchDepth, amplitudeDepth });
-        modulators.push(modulator); modulationNodes.push(motion, pitchDepth, amplitudeDepth);
-      } else level.connect(envelope);
+      level.connect(envelope);
       oscillator.start(at); oscillator.stop(at + voice.stopSeconds); oscillators.push(oscillator); levels.push(level); partials.push(partial);
     }
     this.bells.add(voice); oscillators[0].onended = () => this._disposeBell(voice);
-    this.bellsTriggered++; this.lastBellMidi = voice.midi; this.lastBellDecay = voice.decaySeconds;
-    try { this.onBell?.({ at, midi: voice.midi, frequency, decaySeconds: voice.decaySeconds, peak: voice.peak, patchKey: voice.key }); } catch { /* Visual observers cannot interrupt audio. */ }
+    this.bellsTriggered++; this.lastBellMidi = voice.midi; this.lastBellHarmonic = voice.harmonic; this.lastBellDecay = voice.decaySeconds;
+    try { this.onBell?.({ at, harmonic: voice.harmonic, midi: voice.midi, frequency, decaySeconds: voice.decaySeconds, peak: voice.peak, patchKey: voice.key }); } catch { /* Visual observers cannot interrupt audio. */ }
     return true;
   }
 
@@ -194,7 +198,7 @@ export class PhoneWeatherAudio {
     // An audio-thread clock may already have ended before its queued JS event.
     // A stopped oscillator cannot be extended to own a newly struck room tail.
     this._disposeReverb(this.reverb);
-    this._disposeReverb(this.retiringReverb); this.reverbImpulse ??= smallRoomImpulse(this.context);
+    this._disposeReverb(this.retiringReverb); this.reverbImpulse ??= bellRoomImpulse(this.context);
     const send = this.context.createGain(), convolver = this.context.createConvolver(), output = this.context.createGain(), clock = this.context.createOscillator();
     send.gain.value = REVERB_WET; output.gain.value = 1; convolver.normalize = false; convolver.buffer = this.reverbImpulse;
     send.connect(convolver); convolver.connect(output); output.connect(this.destination);
@@ -230,10 +234,16 @@ export class PhoneWeatherAudio {
     this._disposeReverb(this.reverb); this._disposeReverb(this.retiringReverb); this.reverbImpulse = null;
   }
   getMetrics() {
+    const progress = bellRegisterProgress(this.extinctionProgress);
+    const weights = overtoneRegisterWeights(OVERTONE_BELL_PITCHES, progress);
     return { active: this.active, interaction: { ...this.interaction }, rainGain: 0, rainLoopCount: 0,
-      bellsTriggered: this.bellsTriggered, lastBellMidi: this.lastBellMidi, currentBellVoices: this.bells.size, bellVoices: this.bells.size,
-      retiringBellVoices: this.retiringBells.size, bellDecaySeconds: this.lastBellDecay ?? BELL_OCTAVES[0].decaySeconds,
-      bellDecayRangeSeconds: [8, 12], bellPitchMidi: [...BELL_MIDI], bellOctaveWeights: BELL_OCTAVES.map(value => ({ ...value })),
+      bellsTriggered: this.bellsTriggered, lastBellMidi: this.lastBellMidi, lastBellHarmonic: this.lastBellHarmonic,
+      currentBellVoices: this.bells.size, bellVoices: this.bells.size,
+      retiringBellVoices: this.retiringBells.size, bellDecaySeconds: this.lastBellDecay ?? 12,
+      bellAttackSeconds: BELL_ATTACK, bellDecayRangeSeconds: [8, 12], bellPitchMidi: OVERTONE_BELL_PITCHES.map(pitch => pitch.midi),
+      bellHarmonics: [...BELL_HARMONICS], bellFrequencies: OVERTONE_BELL_PITCHES.map(pitch => pitch.frequency),
+      extinctionProgress: this.extinctionProgress, bellRegisterProgress: progress,
+      bellHarmonicWeights: BELL_HARMONICS.map((harmonic, index) => ({...bellPitchParameters(harmonic), weight: weights[index]})),
       bellNoteTrimsDb: { ...BELL_NOTE_TRIM_DB },
       bellPartials: BELL_PARTIALS.map(([ratio, amplitude, remaining]) => ({ ratio, amplitude, remaining })),
       maxBellVoices: MAX_BELLS, maxRetiringBellVoices: MAX_RETIRING_BELLS,

@@ -4,6 +4,7 @@ import { mountSoundControls } from '/sound-controls.js';
 import { createMainSoundControl } from '/main-sound-control.js';
 import { DEFAULT_PROGRAM_NOTES, sceneClock, sceneRemaining, scenePresentation, scenePhaseReadout } from '/performance-view.js';
 import { DEFAULT_SCORE_SETTINGS, SCENE_DURATION_LIMITS } from '/scene-score.js';
+import { validateFireSnapshot, MAX_FIRE_SNAPSHOT_BYTES } from '/fire-snapshot.mjs';
 
 const $ = id => document.getElementById(id), frame = $('operator-preview');
 const remoteRoute = /^\/operator-remote\/?$/.test(location.pathname);
@@ -42,6 +43,7 @@ for (const [index, tab] of workspaceTabs.entries()) {
 const metrics = window.__performanceOperator = { allowed: false, localOperator: false, remoteControl: false, connected: false, lastState: null, scene: null, soundSettings: null, mainSound: null, actions: [], errors: [] };
 let mainSoundControl = null;
 let latestState = null, sound = null, scene = null, pending = 0, soundTimer = null, soundPatch = {}, soundWaiters = [], strengthTimer = null, timingTimer = null, settingsDirty = false, scoreSettingsDirty = false, lastSoundSettings = '', connectionNotice = true;
+let fireDataBusy = false, selectedFireData = null, snapshotReadTask = null, lastSnapshotIdentity;
 const parameterLabels = { fireReturnSeconds: ['Fire return', 'How quickly unfinished fire returns after rain leaves.'], rainResponseSeconds: ['Surface response', 'How quickly held rain damps the surface flames.'], deepCoolingSeconds: ['Ground cooling', 'How long rain takes to cool the deeper fire.'], extinctionHoldSeconds: ['Extinction hold', 'How long cooled ground must stay wet to settle out.'] };
 $('ground-timing').innerHTML = Object.entries(PARAMETER_LIMITS).map(([key, limits]) => `<label class="slider-label">${parameterLabels[key][0]} <output data-parameter-value="${key}">${DEFAULT_PARAMETERS[key]} s</output><input type="range" data-parameter="${key}" min="${limits.min}" max="${limits.max}" step="${limits.step}" value="${DEFAULT_PARAMETERS[key]}"><span class="slider-hint">${parameterLabels[key][1]}</span></label>`).join('');
 $('program-notes').value = DEFAULT_PROGRAM_NOTES;
@@ -105,6 +107,8 @@ function renderScene(next) {
 function receiveState(message) {
   if (!metrics.allowed) return;
   latestState = message; metrics.lastState = message; metrics.connected = true;
+  const snapshotIdentity = `${message.epoch || ''}:${message.snapshotVersion || ''}`;
+  if (snapshotIdentity !== lastSnapshotIdentity) { lastSnapshotIdentity = snapshotIdentity; void refreshSnapshotInfo(); }
   if (message.mainSound) {
     metrics.mainSound = message.mainSound;
     mainSoundControl?.applyState(message.mainSound, message.epoch);
@@ -186,11 +190,85 @@ for (const control of document.querySelectorAll('[data-parameter]')) control.add
   timingTimer = setTimeout(() => { timingTimer = null; const parameters = Object.fromEntries([...document.querySelectorAll('[data-parameter]')].map(node => [node.dataset.parameter, Number(node.value)])); action('/api/parameters', { parameters }).catch(() => {}); }, 160);
 });
 $('timing-defaults').addEventListener('click', () => action('/api/parameters', { parameters: DEFAULT_PARAMETERS }, 'Ground timing restored.').catch(() => {}));
-async function readSnapshot() {
-  try { const response = await fetch('/data/fire-snapshot.json', { cache: 'no-store' }); if (!response.ok) throw new Error(); const data = await response.json(); text('snapshot-status', data.observationStart && data.observationEnd ? `NASA FIRMS / NOAA-20 · ${data.observationStart.slice(0, 10)} to ${data.observationEnd.slice(0, 10)} · ${data.records?.length ?? data.hotspots?.length ?? 'Saved'} observations` : 'Saved NASA FIRMS observations.'); }
-  catch { text('snapshot-status', 'Saved source status unavailable. The received landscape remains visible.'); }
+function fireDataDate(value) {
+  const date = new Date(value);
+  return value && Number.isFinite(date.getTime()) ? `${date.toISOString().slice(0, 16).replace('T', ' ')} UTC` : 'Not recorded';
 }
-$('fetch-fires').addEventListener('click', async () => { $('fetch-fires').disabled = true; try { await action('/api/snapshot/refresh', {}, 'Latest fire observations fetched.'); await readSnapshot(); } catch {} finally { $('fetch-fires').disabled = false; } });
+function fireDataSummary(data) {
+  const count = data.records?.length ?? 0;
+  const observed = count ? `Observed ${fireDataDate(data.observationStart)} to ${fireDataDate(data.observationEnd)}` : 'No fire observations in this snapshot';
+  return `${count.toLocaleString()} observations · ${observed} · Fetched ${fireDataDate(data.fetchedAt)}`;
+}
+function readSnapshot() {
+  if (!snapshotReadTask) snapshotReadTask = (async () => {
+    try { const response = await fetch('/data/fire-snapshot.json', { cache: 'no-store' }); if (!response.ok) throw new Error(); const data = await response.json(); text('snapshot-status', `NASA FIRMS / NOAA-20 · ${fireDataSummary(data)}`); }
+    catch { text('snapshot-status', 'Saved source status unavailable. The received landscape remains visible.'); }
+  })().finally(() => { snapshotReadTask = null; });
+  return snapshotReadTask;
+}
+async function refreshSnapshotInfo() { await snapshotReadTask; await readSnapshot(); }
+async function transferFireData(callback, message) {
+  if (fireDataBusy || settingsTransferBusy || !metrics.allowed) return;
+  fireDataBusy = true; $('operator-controls').disabled = true;
+  $('fire-data-transfer-status').dataset.error = 'false'; text('fire-data-transfer-status', message);
+  try {
+    const deadline = Date.now() + 10000;
+    while (soundTimer || strengthTimer || timingTimer || pending) {
+      if (Date.now() > deadline) throw new Error('Settings are still saving. Check the connection and try again.');
+      await new Promise(resolve => setTimeout(resolve, 40));
+    }
+    await callback();
+  } catch (error) { $('fire-data-transfer-status').dataset.error = 'true'; text('fire-data-transfer-status', error.message); notify(error.message, true); }
+  finally { fireDataBusy = false; $('operator-controls').disabled = !metrics.allowed || settingsTransferBusy; }
+}
+function clearFireDataSelection() { selectedFireData = null; $('fire-data-preview').hidden = true; }
+$('fetch-fires').addEventListener('click', () => transferFireData(async () => {
+  await action('/api/snapshot/refresh', {}, 'Latest fire observations fetched.');
+  clearFireDataSelection(); await refreshSnapshotInfo();
+  text('fire-data-transfer-status', 'Latest fire data saved. You can export it to send to another computer or phone.');
+}, 'Fetching the latest fire observations…'));
+$('fire-data-export').addEventListener('click', () => transferFireData(async () => {
+  const response = await fetch('/api/snapshot/export', { cache: 'no-store', headers: { 'X-Wildfire-Role': 'operator' } });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.error || 'Fire data could not be exported.');
+  const snapshot = validateFireSnapshot(result);
+  const file = new Blob([`${JSON.stringify(snapshot)}\n`], { type: 'application/json' });
+  if (file.size > MAX_FIRE_SNAPSHOT_BYTES) throw new Error('This fire snapshot exceeds the 8 MB transfer limit.');
+  const url = URL.createObjectURL(file), link = document.createElement('a');
+  link.href = url; link.download = `karhutla-fire-data-${snapshot.fetchedAt.slice(0, 10)}.json`;
+  document.body.append(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+  text('fire-data-transfer-status', 'Fire data exported. Send this file to the phone or computer that will import it.');
+}, 'Preparing fire data…'));
+$('fire-data-import').addEventListener('click', () => { if (!fireDataBusy && !settingsTransferBusy && metrics.allowed) $('fire-data-file').click(); });
+$('fire-data-file').addEventListener('change', event => {
+  const file = event.target.files[0]; event.target.value = '';
+  if (!file || fireDataBusy || settingsTransferBusy || !metrics.allowed) return;
+  clearFireDataSelection();
+  void transferFireData(async () => {
+    if (file.size > MAX_FIRE_SNAPSHOT_BYTES) throw new Error('Choose an exported fire-data JSON file of 8 MB or smaller.');
+    let parsed;
+    try { parsed = JSON.parse(await file.text()); } catch { throw new Error('This is not a valid fire-data JSON file. Choose a file made with Export fire data.'); }
+    const snapshot = validateFireSnapshot(parsed);
+    if (!metrics.allowed) throw new Error('Reconnect with the operator PIN before importing fire data.');
+    selectedFireData = snapshot;
+    text('fire-data-file-name', file.name);
+    text('fire-data-summary', fireDataSummary(snapshot));
+    $('fire-data-preview').hidden = false;
+    text('fire-data-transfer-status', 'Review the observation dates and count, then choose Import this fire data.');
+  }, 'Reading fire data…');
+});
+$('fire-data-cancel').addEventListener('click', () => { clearFireDataSelection(); text('fire-data-transfer-status', 'Import cancelled. The current landscape is unchanged.'); });
+$('fire-data-confirm').addEventListener('click', () => {
+  if (!selectedFireData) return;
+  const snapshot = selectedFireData;
+  void transferFireData(async () => {
+    const result = await action('/api/snapshot/import', snapshot);
+    if (!result?.state) throw new Error('The host did not confirm the import. Check the connection and the current fire data before trying again.');
+    receiveState(result.state); clearFireDataSelection(); await refreshSnapshotInfo();
+    text('fire-data-transfer-status', 'Fire data imported and saved on the host. Arrival is paused with the new landscape. Mixer settings and timings are kept.');
+    notify('Fire data imported. Arrival is ready.');
+  }, 'Sending fire data to the host…');
+});
 $('arrival-settings').addEventListener('input', () => { settingsDirty = true; });
 $('arrival-settings').addEventListener('submit', async event => {
   event.preventDefault(); const settings = { wifiName: $('wifi-name').value.trim(), wifiPassword: $('wifi-password').value, programNotes: $('program-notes').value.trim() };
@@ -205,7 +283,7 @@ $('score-settings').addEventListener('submit', async event => {
 });
 let settingsTransferBusy = false;
 async function transferSettings(callback) {
-  if (settingsTransferBusy || !metrics.allowed) return;
+  if (settingsTransferBusy || fireDataBusy || !metrics.allowed) return;
   settingsTransferBusy = true;
   $('operator-controls').disabled = true;
   text('settings-transfer-status', 'Preparing settings…');
@@ -218,7 +296,7 @@ async function transferSettings(callback) {
     }
     await callback();
   } catch (error) { text('settings-transfer-status', error.message); notify(error.message, true); }
-  finally { settingsTransferBusy = false; $('operator-controls').disabled = !metrics.allowed; }
+  finally { settingsTransferBusy = false; $('operator-controls').disabled = !metrics.allowed || fireDataBusy; }
 }
 $('settings-export').addEventListener('click', () => transferSettings(async () => {
   if (settingsDirty || scoreSettingsDirty) throw new Error('Save your timing and audience edits before exporting settings.');
@@ -299,7 +377,7 @@ async function readSession() {
     metrics.allowed = session.operatorAllowed === true;
     metrics.localOperator = session.localOperator === true;
     metrics.remoteControl = remoteRoute || !metrics.localOperator;
-    $('operator-controls').disabled = !metrics.allowed || settingsTransferBusy;
+    $('operator-controls').disabled = !metrics.allowed || settingsTransferBusy || fireDataBusy;
     document.body.dataset.operatorAccess = metrics.allowed ? 'connected' : 'locked';
     $('operator-access-help').hidden = metrics.allowed;
     $('remote-controller-note').hidden = !metrics.allowed || !metrics.remoteControl;

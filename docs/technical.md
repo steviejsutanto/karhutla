@@ -139,6 +139,16 @@ npm start
 
 Open `http://127.0.0.1:4173/operator` and choose **Fetch latest fires** if a new snapshot is needed. The local server downloads the public NASA feed, filters it against the Indonesia boundary, saves the result, and returns it to the browser. Refreshes share a single in-progress request. Failed requests retain the previous successful snapshot. The original `/` map remains available as a legacy view.
 
+## Transfer a fire snapshot to an offline host
+
+1. On a computer with internet, use **Operator → Setup → Fire data → Fetch latest fires**, then **Export fire data**.
+2. Send the resulting JSON file to the controller phone, or copy it to the host.
+3. On the rehearsal LAN, open the host Operator or paired `/operator-remote` page and choose **Setup → Fire data → Import fire data**. Review the fetch time, observation dates and count, then choose **Import this fire data**.
+
+Import uploads the file to the host over the local network without contacting NASA. The host validates the same canonical schema used by the browser preview before replacing its saved snapshot. Invalid files leave the current data and performance intact. A successful import creates a fresh landscape in paused Arrival and retains the shared mixer, scene timings, ground response, rain strength and audience information. Valid no-fire snapshots have an empty records array and null observation start/end; they are not treated as download failures.
+
+Fire data is a separate schema-version-1 JSON snapshot, not a settings preset or raw NASA CSV. Its source metadata, fetch time, observation window and row counts travel with the observations; the original raw CSV is not included. Imports are limited to 8 MiB and 50,000 records. The shared validator checks Indonesia-filter metadata and coordinates and rejects duplicate IDs or duplicate satellite/time/coordinate observations, invalid numbers and inconsistent counts or date windows.
+
 To refresh without the browser:
 
 ```sh
@@ -274,6 +284,8 @@ Reusable drawing functions, transparent frames, GIF previews, a sprite sheet, an
 
 - `GET /api/snapshot`: current saved snapshot.
 - `POST /api/snapshot/refresh`: download, filter, save, and return a fresh snapshot. Send `Content-Type: application/json`.
+- `GET /api/snapshot/export`: authorized operator download of the canonical saved fire snapshot JSON, including its source metadata.
+- `POST /api/snapshot/import`: authorized operator upload of that JSON (up to 8 MiB); validates and saves a fresh landscape in paused Arrival while retaining settings. Returns the committed snapshot and room state. Invalid files leave the current performance intact; an overlapping fetch/import returns `409`.
 - `GET /api/health`: server and refresh status.
 - `GET /api/session`: current LAN join URL, room information, `operatorAllowed` and `localOperator` access flags; no pairing secret.
 - `GET /api/qr.svg`: QR code generated locally for that URL.

@@ -16,6 +16,14 @@ If the port is occupied, the launcher reports it and leaves the existing process
 
 The included snapshot, sounds, visuals, QR code and audience interaction work without internet. **Fetch latest fires** needs internet and changes the source landscape. Python, FFmpeg and audio-generation models are not required to run the performance.
 
+## Import fire data on an offline host
+
+1. On a computer with internet, open **Operator → Setup → Fire data**, choose **Fetch latest fires**, then **Export fire data**.
+2. Send the exported JSON file to your controller phone, or copy it directly to the Windows host.
+3. Connect to the rehearsal Wi-Fi and open the host's Operator or paired remote page. Choose **Setup → Fire data → Import fire data**, review the file's dates and observation count, then choose **Import this fire data**.
+
+Import needs no internet on the host. It replaces the landscape and returns to paused Arrival, retaining mixer settings, timings and audience information. Import the exported fire data JSON, not raw NASA CSV or a settings preset. A valid snapshot can contain zero observations.
+
 ## Control from another device
 
 Connect a phone, tablet or second computer to the same Wi-Fi as the host and scan the audience QR code. In its browser address, replace `/audience` with `/operator-remote`. Enter the six-digit PIN shown on the host in **Operator → Setup → Remote control**. Both operator pages show the live performance and can change scene cues, mixer levels and settings.

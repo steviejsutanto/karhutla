@@ -2,8 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { PatchSoftToneAudio, PATCH_PENTATONIC_MIDI, PATCH_PENTATONIC_RATIOS, PATCH_TUNING_CENTS, PATCH_SOFT_TONE_LEVEL, PATCH_TONE_EXIT_SECONDS, PATCH_TEXTURE_SOURCE_LIMIT, PATCH_TEXTURE_ADMISSION_SECONDS,
   patchMidi, patchFrequencyForMidi, patchLowRegisterBodyLevel, patchTuningCents, patchResidueId, patchResidueTreatment, patchResiduePitch, patchResidueTransposeProbability, patchResidueEnvelope, patchSoftToneParameters, patchTextureLevel, patchTextureRecordingParameters } from '../app/patch-soft-tones.js';
-import { patchHeldToneMotionDepth, PATCH_HELD_MOTION_DEPTH, PATCH_HELD_MOTION_START_SECONDS, PATCH_HELD_MOTION_RISE_SECONDS } from '../app/patch-soft-tones.js';
+import { patchHeldToneMotionDepth, patchHeldToneClarity, patchHeldToneCharacter, PATCH_HELD_MOTION_DEPTH, PATCH_HELD_MOTION_START_SECONDS, PATCH_HELD_MOTION_RISE_SECONDS } from '../app/patch-soft-tones.js';
 import { RainSimulation } from '../app/simulation.js';
+import { OVERTONE_ROOT_HZ, OVERTONE_TONE_PITCHES, overtonePitchForKey } from '../app/overtone-scale.js';
 import { SharedRoom } from '../app/shared-room.mjs';
 import { createParticipantSoundField, patchSoundVoices } from '../app/sound-participants.js';
 
@@ -164,78 +165,68 @@ test('long-held modulation follows the existing native voice budget through repl
 
 // Independently render a settled sine pair through the actual low-pass
 // equation. This catches the old coefficient match that hid a 20 dB RMS drop.
-function filteredToneRms(midi, withBody = true) {
-  const sampleRate = 48000, frequency = patchFrequencyForMidi(midi), omega = 2 * Math.PI * frequency * 2.2 / sampleRate;
-  const cosine = Math.cos(omega), alpha = Math.sin(omega) / (2 * 10 ** (-3 / 20)), denominator = 1 + alpha;
-  const b0 = (1 - cosine) / (2 * denominator), b1 = 2 * b0, b2 = b0, a1 = -2 * cosine / denominator, a2 = (1 - alpha) / denominator;
-  let x1 = 0, x2 = 0, y1 = 0, y2 = 0, power = 0;
-  for (let i = 0; i < sampleRate * 2; i++) {
-    const phase = 2 * Math.PI * frequency * i / sampleRate;
-    const input = PATCH_SOFT_TONE_LEVEL * (Math.sin(phase) + .04 * Math.sin(2 * phase));
-    const output = b0 * input + b1 * x1 + b2 * x2 - a1 * y1 - a2 * y2;
-    x2 = x1; x1 = input; y2 = y1; y1 = output;
-    const body = withBody ? PATCH_SOFT_TONE_LEVEL * patchLowRegisterBodyLevel(frequency) * Math.sin(4 * phase) : 0;
-    if (i >= sampleRate) power += (output + body) ** 2;
-  }
-  return Math.sqrt(power / sampleRate);
-}
-
-test('the fixed pentatonic pitches use subtle harmonic tuning, with exact octaves and no gesture retuning', () => {
-  const anchor = 440 * 2 ** ((25 - 69) / 12);
-  for (const [index, midi] of PATCH_PENTATONIC_MIDI.entries()) {
-    const degree = index % 5, octave = Math.floor(index / 5);
-    assert.ok(Math.abs(patchFrequencyForMidi(midi) / anchor / 2 ** octave - PATCH_PENTATONIC_RATIOS[degree]) < 1e-12);
-    assert.equal(patchTuningCents(midi), PATCH_TUNING_CENTS[degree]);
-    assert.ok(Math.abs(patchTuningCents(midi)) < 16);
-  }
-  assert.ok(PATCH_TUNING_CENTS.filter(cents => Math.abs(cents) > 10).length === 2, 'Third and sixth receive a small audible shade.');
-  assert.equal(patchFrequencyForMidi(97), patchFrequencyForMidi(25) * 64, 'D♭ octaves remain anchored.');
+test('register progression changes new admissions while held tones retain their native pitch', () => {
   const { audio, context } = harness();
-  const key = Array.from({ length: 100 }, (_, index) => `tuned-${index}`).find(key => Math.abs(patchTuningCents(patchMidi(key))) > 10);
+  const keys = Array.from({length:24}, (_, index) => `progress-tone-${index}`);
+  audio.configure({enabled:true, extinctionProgress:0});
+  audio.setPatches(keys.map(key => patch(key)));
+  const voices = [...audio.voices.values()], before = voices.map(voice => voice.frequency);
+  assert.deepEqual(before, voices.map(voice => overtonePitchForKey(voice.key, 0).frequency));
+  context.advance(2);
+  audio.configure({enabled:true, extinctionProgress:1}); audio.setPatches(keys.map(key => patch(key)));
+  assert.deepEqual([...audio.voices.values()].map(voice => voice.frequency), before);
+  assert.ok(voices.every(voice => voice.oscillators[0].frequency.value === voice.frequency));
+  assert.deepEqual(audio.getMetrics().voices.map(voice => voice.harmonic), before.map(frequency => Math.round(frequency / OVERTONE_ROOT_HZ)));
+  audio.reset(); audio.configure({enabled:true, extinctionProgress:1}); audio.setPatches(keys.map(key => patch(key)));
+  const after = [...audio.voices.values()].map(voice => voice.frequency);
+  assert.deepEqual(after, [...audio.voices.values()].map(voice => overtonePitchForKey(voice.key, 1).frequency));
+  assert.ok(after.reduce((sum,value)=>sum+value,0) < before.reduce((sum,value)=>sum+value,0) * .6);
+});
+
+test('fixed geographic tones use exact harmonics 2–30 with no gesture retuning', () => {
+  for (const [index, pitch] of OVERTONE_TONE_PITCHES.entries()) {
+    assert.equal(patchFrequencyForMidi(pitch.midi), OVERTONE_ROOT_HZ * pitch.harmonic);
+    assert.equal(patchTuningCents(pitch.midi), PATCH_TUNING_CENTS[index]);
+    assert.ok(Math.abs(patchTuningCents(pitch.midi)) <= 50);
+  }
+  assert.equal(patchFrequencyForMidi(OVERTONE_TONE_PITCHES[2].midi), patchFrequencyForMidi(OVERTONE_TONE_PITCHES[0].midi) * 2);
+  // The low drone retains its original just fifths while map notes change scale.
+  for (const [midi, ratio] of [[37, 1], [44, 1.5], [51, 2.25]]) assert.ok(Math.abs(patchFrequencyForMidi(midi) / OVERTONE_ROOT_HZ - ratio) < 1e-12);
+  const { audio, context } = harness();
+  const key = Array.from({ length: 100 }, (_, index) => `tuned-${index}`).find(key => overtonePitchForKey(key).harmonic === 11);
   audio.setPatches([patch(key)]);
   const voice = audio.voices.get(key), frequency = voice.frequency;
-  assert.equal(frequency, patchFrequencyForMidi(voice.midi));
-  assert.deepEqual(voice.oscillators.map(node => node.frequency.value), [frequency, frequency * 2]);
+  assert.equal(frequency, OVERTONE_ROOT_HZ * 11);
   context.advance(1);
   audio.setPatches([patch(key, { position: [.9, .1], heat: .1, moisture: .8 })]);
   audio.setPatches([patch(key, { extinguished: true, heat: 0, holding: false })]);
-  assert.equal(audio.morphVoices.get(key), voice);
-  assert.equal(voice.frequency, frequency);
-  assert.ok(voice.oscillators.every(node => node.frequency.events.length === 0), 'Drag and cooling change the envelope rather than the assigned pitch.');
-  audio.reset(); audio.setPatches([patch(key)]);
-  assert.equal(audio.voices.get(key).frequency, frequency, 'Reload/reset restores the same tuning for the patch.');
+  assert.equal(audio.morphVoices.get(key), voice); assert.equal(voice.frequency, frequency);
+  assert.ok(voice.oscillators.every(node => node.frequency.events.length === 0), 'Cooling never retunes an existing patch.');
+  audio.reset(); audio.setPatches([patch(key)]); assert.equal(audio.voices.get(key).frequency, frequency);
 });
 
-test('every focused Db1–Db7 note and each fully emerged filtered material retain matched RMS', () => {
-  const { audio, recording } = harness();
-  assert.equal(PATCH_SOFT_TONE_LEVEL, .012);
+test('material recording levels retain their authored fixed listening trims', () => {
+  const { audio, recording } = harness(); assert.equal(PATCH_SOFT_TONE_LEVEL, .012);
   for (const id of ['ash', 'moisture', 'haze']) {
     const conditioned = audio._loopBuffer(recording, id, `/${id}.wav`);
     const textureRms = patchTextureRecordingParameters(conditioned, id).filteredRms * patchTextureLevel(id);
     const expectedRms = .008 * 10 ** ((id === 'moisture' ? -2 : id === 'haze' ? 1 : 0) / 20);
     assert.ok(Math.abs(textureRms - expectedRms) < 1e-7);
-    for (const midi of PATCH_PENTATONIC_MIDI) {
-      const toneRms = filteredToneRms(midi);
-      assert.ok(Math.abs(20 * Math.log10(textureRms / toneRms)) < (id === 'moisture' ? 2.6 : id === 'haze' ? 1.6 : .6), `${id}, MIDI ${midi}: energy follows the gentle listening trim.`);
-    }
   }
 });
 
-test('low notes carry a stable quiet octave body without brightening upper notes or changing their assigned pitch', () => {
+test('the extended lower tone uses its quiet native body and keeps the same pitch on cooling', () => {
   const { audio, context } = harness();
-  const keys = Array.from({ length: 500 }, (_, index) => `low-body-${index}`);
-  const low = keys.find(key => patchMidi(key) === 25), high = keys.find(key => patchMidi(key) === 97);
+  const keys = Array.from({ length: 500 }, (_, index) => `range-${index}`);
+  const low = keys.find(key => overtonePitchForKey(key).harmonic === 2), high = keys.find(key => overtonePitchForKey(key).harmonic === 30);
   audio.setPatches([patch(low), patch(high)]);
-  const voice = audio.voices.get(low), body = voice.bodyOscillator, frequency = patchFrequencyForMidi(25);
-  assert.equal(body.frequency.value, frequency * 4); assert.equal(body.type, 'sine');
-  assert.deepEqual(body.connections, [voice.bodyGain]); assert.deepEqual(voice.bodyGain.connections, [voice.gain]);
-  assert.equal(voice.bodyGain.gain.value, .22); assert.equal(audio.voices.get(high).bodyOscillator, null);
-  for (const midi of PATCH_PENTATONIC_MIDI) assert.ok(20 * Math.log10(filteredToneRms(midi) / filteredToneRms(midi, false)) < .5);
+  for (const key of [low, high]) { const voice = audio.voices.get(key); assert.equal(voice.frequency, overtonePitchForKey(key).frequency); }
+  assert.ok(audio.voices.get(low).bodyOscillator); assert.ok(audio.voices.get(low).bodyLevel > 0 && audio.voices.get(low).bodyLevel < .1);
+  assert.equal(audio.voices.get(high).bodyOscillator,null);
+  const voice = audio.voices.get(low), frequency = voice.frequency;
   context.advance(.5); audio.setPatches([patch(low, { heat: .9, moisture: .2 })]);
-  assert.equal(voice.bodyOscillator, body); assert.equal(body.frequency.events.length, 0);
-  assert.ok(voice.bodyGain.gain.at(context.currentTime + 4) < .15, 'The body follows the same focus as its fundamental.');
-  audio.setPatches([]); assert.equal(body.stoppedAt, voice.oscillators[0].stoppedAt);
-  context.advance(1.3); assert.ok(body.disconnected && voice.bodyGain.disconnected);
+  assert.equal(audio.voices.get(low), voice); assert.equal(voice.frequency, frequency);
+  audio.setPatches([]); context.advance(1.3); assert.ok(voice.oscillators.every(node => node.disconnected));
 });
 
 test('the fastest real cooling reveals its native note before extinction without increasing its calibrated peak', () => {
@@ -872,9 +863,9 @@ test('crowded explicit area events retain the finite native tone and texture bud
 });
 
 
-test('confirmed cooling clears a substantial noise halo while the same pentatonic fundamental and spatial path remain fixed', () => {
+test('confirmed cooling narrows breath-excited resonances while pitch and spatial identity remain fixed', () => {
   const { audio, context } = harness();
-  const key = 'focused-upper', states = [
+  const key = 'focused-air', states = [
     { heat: .94, moisture: .08, surfaceWetness: .9 },
     { heat: .62, moisture: .38, surfaceWetness: 1 },
     { heat: .26, moisture: .75, surfaceWetness: 1 },
@@ -882,36 +873,87 @@ test('confirmed cooling clears a substantial noise halo while the same pentatoni
   ];
   audio.setPatches([patch(key, states[0])]);
   const voice = audio.voices.get(key), fundamental = voice.oscillators[0], octave = voice.oscillators[1], space = voice.space;
-  const targets = [voice.upperBlurCents];
-  assert.ok(targets[0] > 150 && targets[0] < 180, 'The emerging pitch begins with an audibly rough upper.');
-  assert.ok(voice.hazeGain.gain.value / voice.hazeMakeup > .8, 'The emerging note has a substantial real noise halo.');
-  assert.ok(voice.partials[0].gain.value < .45, 'Early noise and upper grain share the note level rather than only adding volume.');
-  assert.ok(voice.modulators[0].frequency.value >= 21 && voice.modulators[0].frequency.value < 43);
-  assert.deepEqual(voice.upperBlur.connections, [octave.detune]);
-  assert.equal(fundamental.detune.events.length, 0, 'The assigned note never receives the upper grain.');
-  assert.equal(audio.textureSources.size, 0, 'Tone character consumes no material source.');
-  assert.deepEqual(voice.hazeSource.connections, [voice.hazeFilter]);
-  assert.deepEqual(voice.hazeGain.connections, [voice.gain], 'Noise shares the same finite gain, mixer, position and crowd path as the assigned tone.');
-  const hazeTargets = [voice.haziness];
+  const widths = [voice.hazeFilter.Q.value], hazeTargets = [voice.haziness];
+  assert.ok(widths[0] >= 8 && widths[0] < 9);
+  assert.ok(voice.partials[0].gain.value < .22, 'The anchor does not dominate the initial breath.');
+  assert.equal(voice.modulators.length, 1, 'Only the existing held-note breath LFO remains; no fast pitch FM is layered on.');
+  assert.equal(voice.modulators[0], voice.motionOscillator);
+  assert.equal(fundamental.detune.events.length + octave.detune.events.length, 0);
+  assert.deepEqual(voice.hazeSource.connections, [voice.hazeFilter, voice.airFilter]);
+  assert.equal(voice.hazeFilter.frequency.value, fundamental.frequency.value);
+  assert.ok(voice.airFilter.frequency.value > fundamental.frequency.value * 2);
+  assert.deepEqual(voice.hazeGain.connections, [voice.gain]); assert.deepEqual(voice.airGain.connections, [voice.gain]);
+  assert.equal(audio.textureSources.size, 0, 'Breath excitation consumes no recording or material slot.');
   for (const state of states.slice(1)) {
     context.advance(.2); audio.setPatches([patch(key, { ...state, position: [.8, .1] })]);
-    assert.equal(audio.voices.get(key), voice); targets.push(voice.upperBlurCents); hazeTargets.push(voice.haziness);
+    assert.equal(audio.voices.get(key), voice); widths.push(voice.hazeFilter.Q.value); hazeTargets.push(voice.haziness);
     assert.equal(voice.space, space); assert.deepEqual(voice.position, [.2, .7]);
     assert.equal(voice.targetGain, patchSoftToneParameters(state).gain);
   }
-  assert.ok(targets.every((value, index) => !index || value < targets[index - 1]));
+  assert.ok(widths.every((value, index) => !index || value > widths[index - 1]));
   assert.ok(hazeTargets.every((value, index) => !index || value < hazeTargets[index - 1]));
-  assert.equal(targets.at(-1), 0);
-  assert.ok(voice.upperBlur.gain.at(context.currentTime + 5) < .1, 'Native automation focuses the upper even without another scheduler tick.');
-  assert.ok(voice.hazeGain.gain.at(context.currentTime + 5) / voice.hazeMakeup < .001);
-  assert.ok(voice.partials[0].gain.at(context.currentTime + 5) > .999);
+  assert.ok(voice.hazeFilter.Q.at(context.currentTime + 5) > 17.99);
+  assert.ok(Math.abs(voice.hazeGain.gain.at(context.currentTime + 5) / voice.hazeMakeup - .87) < .001,
+    'Fully cooled pitch retains a breath-excited body instead of becoming a bare sine.');
+  assert.ok(Math.abs(voice.airGain.gain.at(context.currentTime + 5) / voice.airMakeup - .3) < .001);
+  assert.ok(Math.abs(voice.partials[0].gain.at(context.currentTime + 5) - .6) < .001);
   assert.equal(fundamental.frequency.value, patchFrequencyForMidi(patchMidi(key)));
   assert.equal(octave.frequency.value, fundamental.frequency.value * 2);
   assert.ok(voice.oscillators.every(node => node.frequency.events.length === 0));
   assert.equal(voice.targetGain, PATCH_SOFT_TONE_LEVEL);
   const wetSkin = patchSoftToneParameters({ heat: 1, moisture: 0, surfaceWetness: 1 });
-  assert.equal(wetSkin.gain, 0); assert.equal(wetSkin.upperBlurCents, 180, 'A wet surface alone cannot focus uncooled ground.');
-  assert.equal(wetSkin.haziness, 1); assert.equal(wetSkin.focus, 0);
+  assert.equal(wetSkin.gain, 0); assert.equal(wetSkin.focus, 0); assert.equal(wetSkin.breathQ, 8);
+});
+
+test('held tones settle into a stronger fixed pitch after motion starts while retaining quiet breath and steady estimated power', () => {
+  const power = shape => .5 * (shape.fundamentalGain ** 2 + shape.harmonicGain ** 2) + .36 * (shape.hazeGain ** 2 + shape.airGain ** 2);
+  for (const state of [{ heat: .9, moisture: .1 }, { heat: .4, moisture: .6 }, { heat: .01, moisture: 1 }]) {
+    const onset = patchSoftToneParameters(state), shapes = [4, 5, 6.5, 8, 9, 40].map(age => patchHeldToneCharacter(onset, age));
+    assert.equal(shapes[0], onset, 'Short notes keep their original airy character.');
+    assert.ok(shapes.slice(0, -1).every((shape, index) => shape.fundamentalGain <= shapes[index + 1].fundamentalGain));
+    assert.ok(shapes.slice(0, -1).every((shape, index) => shape.hazeGain >= shapes[index + 1].hazeGain));
+    assert.ok(shapes[4].fundamentalGain > .85 && shapes[4].hazeGain > .3 && shapes[4].hazeGain < .4);
+    assert.ok(shapes[4].airGain > .1 && shapes[4].airGain < .16, 'The clearer settled tone retains a quiet airy octave.');
+    assert.equal(shapes[4].breathQ, 48); assert.equal(shapes[4].airQ, 24); assert.equal(shapes[4].airRatio, 2);
+    assert.deepEqual(shapes[4], shapes[5], 'Clarity settles instead of continuing to brighten forever.');
+    for (const shape of shapes) {
+      assert.equal(shape.gain, onset.gain); assert.equal(shape.emergence, onset.emergence);
+      assert.ok(Math.abs(power(shape) / power(onset) - 1) < 1e-12, 'The character mix exchanges power rather than raising the note level.');
+    }
+    const diffuse = patchSoftToneParameters(state, 1);
+    assert.equal(patchHeldToneCharacter(diffuse, 40), diffuse, 'Held age cannot reintroduce pitch in the fully diffuse forest scene.');
+  }
+  assert.equal(patchHeldToneClarity(4), 0); assert.equal(patchHeldToneClarity(6.5), .5); assert.equal(patchHeldToneClarity(9), 1);
+});
+
+test('held clarity follows the existing voice smoothly and freezes when its finite release begins', () => {
+  const { audio, context } = harness();
+  audio.setPatches([patch('clarity-motion')]); const voice = audio.voices.get('clarity-motion');
+  const identity = { frequency: voice.frequency, space: voice.space, nodes: [...voice.nodes], sources: [...context.sources] };
+  context.advance(4); audio.tick(); assert.equal(voice.heldClarity, 0);
+  const anchorAtStart = voice.partials[0].gain.at(4), airAtStart = voice.airGain.gain.at(4);
+  context.advance(.1); const before = [voice.partials[0].gain.at(4.1), voice.hazeGain.gain.at(4.1)]; audio.tick();
+  assert.deepEqual([voice.partials[0].gain.at(4.1), voice.hazeGain.gain.at(4.1)], before, 'The clarity entrance starts at the actual current native values.');
+  assert.ok(voice.heldClarity > 0 && voice.heldClarity < .01);
+  for (let tick = 0; tick < 60; tick++) { context.advance(.1); audio.tick(); }
+  assert.equal(voice.heldClarity, 1); assert.ok(voice.partials[0].gain.at(context.currentTime) > anchorAtStart * 1.4);
+  assert.ok(voice.airGain.gain.at(context.currentTime) < airAtStart);
+  assert.equal(voice.frequency, identity.frequency); assert.equal(voice.space, identity.space);
+  assert.deepEqual(voice.nodes, identity.nodes); assert.deepEqual(context.sources, identity.sources);
+  assert.ok(voice.oscillators.every(source => source.frequency.events.length === 0));
+  audio.setPatches([]); const stopAt = voice.disposeAt, clarityAtRelease = voice.heldClarity;
+  audio.configure({ hazeOnlyBlend: 1 }); audio.tick(); context.advance(.1); audio.configure({ hazeOnlyBlend: 0 }); audio.tick();
+  assert.equal(voice.heldClarity, clarityAtRelease); assert.equal(voice.disposeAt, stopAt);
+  context.advance(2); audio.tick(); assert.ok(voice.disposed && voice.nodes.every(node => node.disconnected));
+  audio.setPatches([patch('clarity-mid-release')]); context.advance(6.3); audio.tick();
+  const middle = audio.voices.get('clarity-mid-release'), partialClarity = middle.heldClarity;
+  assert.ok(partialClarity > .3 && partialClarity < .5);
+  audio.setPatches([]); const middleStopAt = middle.disposeAt;
+  context.advance(.4); audio.configure({ hazeOnlyBlend: 1 }); audio.tick();
+  context.advance(.4); audio.configure({ hazeOnlyBlend: 0 }); audio.tick();
+  assert.equal(middle.heldClarity, partialClarity, 'A scene return cannot advance clarity after a partly settled note is released.');
+  assert.equal(middle.disposeAt, middleStopAt);
+  context.advance(2); audio.tick(); assert.ok(middle.disposed);
 });
 
 test('forest takeover blends clear partials into cooling-driven haze without revealing wet skin or changing the normal character', () => {
@@ -937,14 +979,15 @@ test('forest takeover blends clear partials into cooling-driven haze without rev
 
 test('haze takeover and its interrupted return change every clear partial continuously while retaining pitch, spatial path and source count', () => {
   const { audio, context } = harness();
-  const key = Array.from({ length: 500 }, (_, index) => `haze-return-${index}`).find(key => patchMidi(key) === 25);
+  const key = 'haze-return-air';
   audio.setPatches([patch(key)]); context.advance(2); audio.tick();
   const voice = audio.voices.get(key), space = voice.space, sources = [...context.sources], frequency = voice.frequency;
-  const parameters = [voice.partials[0].gain, voice.partials[1].gain, voice.bodyGain.gain, voice.hazeGain.gain];
+  const parameters = [voice.partials[0].gain, voice.partials[1].gain, ...(voice.bodyGain ? [voice.bodyGain.gain] : []), voice.hazeGain.gain, voice.airGain.gain, voice.hazeFilter.Q];
   const before = parameters.map(parameter => parameter.at(context.currentTime));
   audio.configure({ hazeOnlyBlend: 1 }); audio.tick();
   assert.deepEqual(parameters.map(parameter => parameter.at(context.currentTime)), before, 'The takeover starts at the current native values.');
-  assert.equal(voice.partials[0].gain.value, 0); assert.equal(voice.partials[1].gain.value, 0); assert.equal(voice.bodyGain.gain.value, 0);
+  assert.equal(voice.partials[0].gain.value, 0); assert.equal(voice.partials[1].gain.value, 0); if (voice.bodyGain) assert.equal(voice.bodyGain.gain.value, 0);
+  assert.equal(voice.airGain.gain.value, 0, 'The second pitch-centred resonance leaves the fully diffuse endpoint.');
   assert.equal(voice.hazeGain.gain.value / voice.hazeMakeup, .9);
   assert.ok(voice.hazeFilter.Q.value <= 1, 'The remaining noise band stays broad rather than becoming a ringing note.');
   context.advance(4); audio.tick();
@@ -957,13 +1000,17 @@ test('haze takeover and its interrupted return change every clear partial contin
   const returning = parameters.map(parameter => parameter.at(context.currentTime));
   audio.configure({ hazeOnlyBlend: .7 }); audio.tick();
   assert.deepEqual(parameters.map(parameter => parameter.at(context.currentTime)), returning, 'An interrupted return remains continuous.');
-  context.advance(.17); audio.configure({ hazeOnlyBlend: 0 }); audio.tick(); context.advance(5);
+  context.advance(.17); audio.configure({ hazeOnlyBlend: 0 }); audio.tick();
+  const settled = patchHeldToneCharacter(patchSoftToneParameters(voice.patch), context.currentTime - voice.startedAt);
+  context.advance(5);
   const restored = audio.getMetrics().voices[0];
-  assert.ok(restored.currentFundamentalGain > .999 && restored.currentHazeGain < .001);
-  assert.ok(Math.abs(restored.currentHarmonicGain - .04) < .001 && Math.abs(restored.currentBodyGain - voice.bodyLevel) < .001);
+  assert.ok(Math.abs(restored.currentFundamentalGain - settled.fundamentalGain) < .001 && Math.abs(restored.currentHazeGain - settled.hazeGain) < .001);
+  assert.ok(Math.abs(restored.currentHarmonicGain - settled.harmonicGain) < .001 && Math.abs(restored.currentAirGain - settled.airGain) < .001);
+  assert.ok(Math.abs(restored.currentBodyGain - voice.bodyLevel * settled.fundamentalGain) < .001);
   assert.equal(audio.voices.get(key), voice); assert.equal(voice.space, space); assert.equal(voice.frequency, frequency);
   assert.deepEqual(context.sources, sources); assert.ok(voice.oscillators.every(node => node.frequency.events.length === 0));
-  assert.equal(voice.hazeFilter.frequency.value, Math.max(70, Math.min(2600, frequency * 1.7)));
+  assert.equal(voice.hazeFilter.frequency.value, Math.max(70, Math.min(2600, frequency)));
+  assert.equal(voice.hazeFilter.Q.value, settled.breathQ);
   audio.stop(); assert.ok(voice.nodes.every(node => node.disconnected));
 });
 
@@ -1013,24 +1060,24 @@ test('a haze scene change reaches released and morphing voices without restartin
   audio.stop(); assert.equal(audio.textureSources.size + audio.residues.size, 0);
 });
 
-test('upper grain follows the existing finite tone morph and is stopped with every released voice', () => {
-  const { audio, context } = harness(), key = 'grain-morph';
+test('breath resonators follow the finite tone morph and stop with every released voice', () => {
+  const { audio, context } = harness(), key = 'air-morph';
   audio.setPatches([patch(key, { heat: .9, moisture: .1 })]); context.advance(.5); audio.tick();
   const voice = audio.voices.get(key), modulator = voice.modulators[0];
-  assert.ok(voice.upperBlurCents > 0);
+  assert.ok(voice.hazeFilter.Q.value < 18 && voice.airGain.gain.value > 0);
   audio.setPatches([patch(key, { extinguished: true, heat: 0, holding: false })]);
-  assert.equal(audio.morphVoices.get(key), voice); assert.equal(voice.upperBlurCents, 0);
-  assert.ok(voice.upperBlur.gain.at(context.currentTime + 2) < .1);
+  assert.equal(audio.morphVoices.get(key), voice);
+  assert.ok(voice.hazeFilter.Q.at(context.currentTime + 2) > 17.99);
   assert.equal(modulator.stoppedAt, voice.oscillators[0].stoppedAt);
   context.advance(8.1); audio.tick();
-  assert.ok(modulator.disconnected && voice.upperBlur.disconnected && voice.hazeSource.disconnected && voice.hazeGain.disconnected);
-  audio.setPatches([patch('grain-release', { heat: .8, moisture: .2 })]); context.advance(.5); audio.tick();
-  const released = audio.voices.get('grain-release'); audio.setPatches([]);
+  assert.ok(modulator.disconnected && voice.airFilter.disconnected && voice.airGain.disconnected && voice.hazeSource.disconnected && voice.hazeGain.disconnected);
+  audio.setPatches([patch('air-release', { heat: .8, moisture: .2 })]); context.advance(.5); audio.tick();
+  const released = audio.voices.get('air-release'); audio.setPatches([]);
   assert.equal(released.modulators[0].stoppedAt, released.oscillators[0].stoppedAt); assert.equal(released.hazeSource.stoppedAt, released.oscillators[0].stoppedAt);
-  audio.reset(); assert.ok(released.modulators[0].disconnected && released.upperBlur.disconnected);
+  audio.reset(); assert.ok(released.modulators[0].disconnected && released.airFilter.disconnected && released.airGain.disconnected);
 });
 
-test('real cooling clears the noise halo progressively before the confirmed out edge', () => {
+test('real cooling focuses the resonances while retaining breath before the confirmed out edge', () => {
   const { audio, context } = harness({ areaMode: true });
   const simulation = new RainSimulation({ deepCoolingSeconds: 8, extinctionHoldSeconds: 0 });
   const point = [110.125, -2.125], key = '440,-9'; simulation.seed([{ longitude: point[0], latitude: point[1] }]);
@@ -1046,6 +1093,7 @@ test('real cooling clears the noise halo progressively before the confirmed out 
   assert.ok(early.haze > .8 && early.audibleHaze > .65, 'The real cooling window begins with a substantial noise halo.');
   assert.ok(middle.haze < early.haze && late.haze < middle.haze);
   assert.ok(late.haze < .1 && late.focus > .95, 'The ground settles into a focused note before confirmed out.');
+  assert.ok(late.audibleHaze > .3 && late.audibleHaze < early.audibleHaze, 'Long-held pitch becomes clearer while keeping a quiet resonated breath body.');
   assert.ok(frames.every((frame, index) => !index || frame.haze <= frames[index - 1].haze));
   assert.equal(audio.residues.size, 0, 'The full area event still owns the bell and material transition.');
 });

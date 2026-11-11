@@ -1,7 +1,7 @@
 // Optional sound layer. This module never writes to the simulation and does no
 // work requiring user activation until enable() is called from a gesture.
 import { derivePeatDepthState } from '../visual-assets/peat-section.js';
-import { computeSceneScore, scoreDurations } from './scene-score.js';
+import { computeSceneScore, scoreDurations, phoneRetreatTailGain } from './scene-score.js';
 import { PatchSoftToneAudio, patchMidi, patchResidueId, patchFrequencyForMidi } from './patch-soft-tones.js';
 import { PhoneWeatherAudio } from './phone-weather.js';
 import { PhoneTapRainAudio } from './phone-tap-rain.js';
@@ -18,7 +18,7 @@ import { DragAshAudio } from './drag-ash.js';
 import { countryPoint } from './country-view.mjs';
 import { prepareRecording, recordingPreparation, copyRecordingPreparation, outputDynamics, OUTPUT_LIMIT_INPUT_RANGE, OUTPUT_LIMIT_CEILING, outputProtectionCurve } from './audio-loudness.js';
 export { sampleMakeupGain } from './audio-loudness.js';
-export { PATCH_PENTATONIC_MIDI, patchMidi, patchResidueId, patchSoftToneParameters, patchResidueEnvelope } from './patch-soft-tones.js';
+export { PATCH_OVERTONE_MIDI, PATCH_PENTATONIC_MIDI, patchMidi, patchResidueId, patchSoftToneParameters, patchResidueEnvelope } from './patch-soft-tones.js';
 export const SOUND_MACRO_DEFAULTS = Object.freeze({ haze: .35, forest: .5, ash: .25, rain: .15, moisture: .2 });
 export const SOUND_MIXER_DEFAULTS = Object.freeze({ haze: 1, forest: 1, ash: 1, dragAsh: 1, rain: 1, moisture: 1, crickets: 1, orangutan: 1, orangutanTail: 1, chimes: 1, outDrone: 1, lowDrone: 1, bells: 1.6, quench: 1, blob: 1 });
 export const SOUND_SAMPLE_URLS = Object.freeze({ crackle: '/audio-assets/fire-crackle.mp3', forest: '/audio-assets/burning-forest.mp3', crickets: '/audio-assets/crickets.mp3', roar: '/audio-assets/fire-roar.mp3', charcoal: '/audio-assets/charcoal.mp3', rain: '/audio-assets/rain.mp3' });
@@ -64,6 +64,14 @@ export const MAIN_DRONE_AMPLITUDES = Object.freeze([.72, .24, .34]);
 export const MAIN_DRONE_LEVEL = .05;
 export const MAIN_DRONE_OVERTONES = Object.freeze([0, 1, .1, .14, 0, .035]);
 const AMBIANCE_IDS = Object.freeze(['haze', 'forest', 'ash', 'rain', 'moisture', 'crickets']);
+// Fixed Main-only cuts for the active recordings' measured midrange emphasis.
+// They sit before layer gain and preserve the existing score/mixer envelopes;
+// rain's low thunder is outside these bands. No gain compensation or dynamic
+// riding is added by this treatment.
+const MAIN_AMBIENCE_EQ = Object.freeze({
+  rain: Object.freeze([[1030, 3, -2], [1900, .8, -3.5]].map(Object.freeze)),
+  haze: Object.freeze([[1050, .7, -5], [2050, 2.5, -3]].map(Object.freeze)),
+});
 
 /** Equal-power character interpolation, with gentle response at both ends. */
 export function variationWeights(value, stops = [0, 1]) {
@@ -132,7 +140,7 @@ export function cricketRetreatParameters(elapsedMs = 0, durationMs = 60000) {
   const distance = 2 + 88 * travel;
   return { progress, distance, gain: 1 / (1 + .075 * (distance - 2)),
     lowpass: 7200 * (.13 ** travel), highpass: 600 - 320 * travel, spread: 1 - .8 * travel,
-    tail: 1 - smoothstep(Math.max(0, durationMs - 2200), durationMs, elapsedMs) };
+    tail: phoneRetreatTailGain(elapsedMs, durationMs) };
 }
 
 /** Filtering reveals a fixed fundamental as the authoritative fire cools. */
@@ -1251,7 +1259,7 @@ export class WildfireSound {
     if (Array.isArray(values)) for (const value of values) {
       if (!value || value.key == null || String(value.key).length > 200) continue;
       const key = String(value.key), id = `patch:${key}`, previous = this.patchVoices.get(id), pose = participantPosition(value.position);
-      const midiPair = patchMidiPair({ key });
+      const midiPair = Object.freeze([this.patchSoftTones?.voices.get(key)?.midi ?? patchMidi({ key }, this._progression().fraction)]);
       next.set(id, { id, key, midi: midiPair[0], midiPair, position: previous?.position ?? [pose.x, pose.y],
         holding: value.holding === true, heat: clamp(value.heat, 1), moisture: clamp(value.moisture), surfaceWetness: clamp(value.surfaceWetness),
         extinguished: value.extinguished === true, sourceCount: 1, local: value.local === true,
@@ -1442,6 +1450,7 @@ export class WildfireSound {
     if (!this.localBells || !this.context) return;
     const eligible = !this.scene || !this.scene.paused && ['participation', 'forest-takeover', 'final-rain'].includes(this.scene.id);
     const active = this.enabled && !this.muted && !this.hidden && eligible && this._sceneGain() > 0;
+    this.localBells.setExtinctionProgress?.(this._progression().fraction);
     this.localBells.setActive(active);
     // Preserve each strike and its room tail. Dense peaks reach the shared
     // signal compressor/limiter; audience or bell counts never duck a strike.
@@ -1525,7 +1534,7 @@ export class WildfireSound {
     const score = this._sceneScore();
     this.patchSoftTones.configure({ enabled: this.enabled && !this.muted && !this.hidden && this._sceneGain() > 0,
       allowReleasedCooling: !this.scene || ['participation', 'forest-takeover'].includes(this.scene.id),
-      globalHeat: this._soundCondition().heat,
+      globalHeat: this._soundCondition().heat, extinctionProgress: this._progression().fraction,
       // The takeover removes clear pitch but retains a hazy cooling response.
       // Finale tails keep their outgoing character; returning to cue 3 clears
       // the haze through the same smooth voice controls.
@@ -1777,15 +1786,24 @@ export class WildfireSound {
       if (presence) { presence.type = 'peaking'; presence.frequency.value = 420; presence.Q.value = .55; presence.gain.value = 4.2; }
       const distantBody = this.mode === 'operator' && definition.id === 'forest' ? c.createBiquadFilter() : null;
       const distantAir = distantBody ? c.createBiquadFilter() : null;
-      if (distantBody) { distantBody.type = 'lowshelf'; distantBody.frequency.value = 240; distantBody.gain.value = 5; distantAir.type = 'highshelf'; distantAir.frequency.value = 1800; distantAir.gain.value = -9; }
+      // These recordings already carry strong, naturally moving bass. Avoid
+      // magnifying it with the former +5 dB shelf; keep the distant air contour.
+      if (distantBody) { distantBody.type = 'lowshelf'; distantBody.frequency.value = 240; distantBody.gain.value = 0; distantAir.type = 'highshelf'; distantAir.frequency.value = 1800; distantAir.gain.value = -9; }
+      const toneEq = (this.mode === 'operator' ? MAIN_AMBIENCE_EQ[definition.id] ?? [] : []).map(([frequency, Q, gain]) => {
+        const node = c.createBiquadFilter(); node.type = 'peaking'; node.frequency.value = frequency; node.Q.value = Q; node.gain.value = gain; return node;
+      });
       highpass.connect(filter);
       if (distantBody) { filter.connect(distantBody); distantBody.connect(distantAir); distantAir.connect(shaper); }
-      else { filter.connect(presence ?? shaper); if (presence) presence.connect(shaper); }
+      else {
+        let tail = filter;
+        for (const node of toneEq) { tail.connect(node); tail = node; }
+        tail.connect(presence ?? shaper); if (presence) presence.connect(shaper);
+      }
       shaper.connect(gain);
       const mixerId = ['roar', 'charcoal'].includes(definition.id) ? 'forest' : definition.id;
       gain.connect(this.mode === 'operator' ? this.mixerNodes.get(mixerId) : this.phoneMixerNodes.get(definition.id));
       filter.Q.value = .35; highpass.Q.value = .35;
-      this.layers.set(definition.id, { ...definition, highpass, filter, presence, distantBody, distantAir, shaper, gain, sampleGate, sources: new Set(), variationSlots: new Map(), fallbackSource: null, fallbackGain: null, buffer: null, currentUrl: null, nextAt: 0, sequence: 0 });
+      this.layers.set(definition.id, { ...definition, highpass, filter, presence, distantBody, distantAir, toneEq, shaper, gain, sampleGate, sources: new Set(), variationSlots: new Map(), fallbackSource: null, fallbackGain: null, buffer: null, currentUrl: null, nextAt: 0, sequence: 0 });
       this._syncVariationSlots(this.layers.get(definition.id));
     }
     if (this.mode === 'operator') {

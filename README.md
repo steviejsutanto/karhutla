@@ -28,6 +28,14 @@ Bookmark the remote address; the browser remembers access. Updates on the same c
 
 The remote speaker button enables and disables Main sound on the host. On a Mac, use [remote sound mode](docs/mac.md#enable-main-sound-from-the-remote-page) to let the remote button start sound without a first click on the host. Keep the host's Operator page open; audio stays on that computer and the remote device stays silent. Keep the PIN private.
 
+## Move fire data to an offline host
+
+1. On a computer with internet, open **Operator → Setup → Fire data**, choose **Fetch latest fires**, then **Export fire data**.
+2. Send the exported JSON file to your controller phone, or copy it directly to the host.
+3. Connect to the rehearsal Wi-Fi, open the host's Operator or paired remote page, and choose **Setup → Fire data → Import fire data**. Review the dates and observation count, then choose **Import this fire data**.
+
+The host needs no internet for the import. It replaces the landscape and returns to paused Arrival, keeping mixer settings, timings and audience information. Fire data uses its own JSON file; raw NASA CSV and settings files cannot be imported here.
+
 ## Move settings and install updates
 
 Use **Operator → Setup → Settings file → Export settings**. Copy that file to the other computer, then choose **Import settings** there.

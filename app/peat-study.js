@@ -37,7 +37,7 @@ let atmosphereCalmAreas = [];
 const sectionRain = new RainFeedback();
 const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 const cells = new Map(), transitions = new Map();
-let layout = null, connection = null, actors = [], snapshotVersion = null;
+let layout = null, connection = null, actors = [], snapshotVersion = null, layoutEpoch = null;
 let pointer = null, pointerCanvas = null, lastPosition = [.5, .5], keyboardHold = false, hoverPosition = null;
 let renderer = null, sectionRenderer = null, sectionPatches = [], sectionIndex = new Map(), sectionScale = 1, assetsReady = false, dirty = true, lastScene = -Infinity, lastReadout = -Infinity, lastContactFrame = -Infinity;
 let layoutRequest = 0, requestedRegion = 'indonesia', gestureError = '', connectionLabel = 'Connecting…', rainStrength = DEFAULT_RAIN_STRENGTH;
@@ -252,7 +252,9 @@ async function loadRegion(id, { refresh = false } = {}) {
     $('empty-region').hidden = layout.fireKeys.size > 0;
     dirty = true; contactDirty = true;
     if (assetsReady) $('study-loading').hidden = true;
+    return true;
   } catch (error) { if (request === layoutRequest) showError(error); }
+  return false;
 }
 function receiveActors(message) {
   actors = message.participants || [];
@@ -544,9 +546,10 @@ async function initialize() {
       applyCells(message.simulation, reset);
       rainStrength = Number.isFinite(message.strength) ? message.strength : DEFAULT_RAIN_STRENGTH;
       $('study-bootstrap').hidden = !message.bootstrapAvailable;
-      if (message.snapshotVersion !== snapshotVersion && !forceLayout) {
+      if ((reset || message.epoch !== layoutEpoch || message.snapshotVersion !== snapshotVersion) && !forceLayout) {
+        const epoch = message.epoch;
         forceLayout = true;
-        loadRegion(requestedRegion, { refresh: true }).finally(() => { forceLayout = false; });
+        loadRegion(requestedRegion, { refresh: true }).then(loaded => { if (loaded) layoutEpoch = epoch; }).finally(() => { forceLayout = false; });
       }
       receiveActors(message); syncStatus();
     },

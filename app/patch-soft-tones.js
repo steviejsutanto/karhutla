@@ -1,20 +1,26 @@
 import { derivePeatDepthState } from '../visual-assets/peat-section.js';
 import { mainSpatialPosition } from './main-spatial.js';
+import { OVERTONE_ROOT_HZ, TONE_HARMONICS, OVERTONE_TONE_PITCHES, overtonePitchForKey } from './overtone-scale.js';
 
 const clamp = value => Math.max(0, Math.min(1, Number(value) || 0));
 const smooth = value => { const x = clamp(value); return x * x * (3 - 2 * x); };
 const hash = key => { let value = 2166136261; for (const character of String(key)) { value ^= character.charCodeAt(0); value = Math.imul(value, 16777619); } return value >>> 0; };
-const PATCH_SCALE_STEPS = Object.freeze([0, 2, 4, 7, 9]);
-export const PATCH_PENTATONIC_MIDI = Object.freeze(Array.from({ length: 31 }, (_, index) => 25 + Math.floor(index / 5) * 12 + PATCH_SCALE_STEPS[index % 5]));
-// Keep D♭ and its octaves anchored; gently shade the other degrees toward
-// simple harmonic ratios. The largest departure from equal tuning is 16 cents.
+const LEGACY_SCALE_STEPS = Object.freeze([0, 2, 4, 7, 9]);
+export const PATCH_OVERTONE_MIDI = Object.freeze(OVERTONE_TONE_PITCHES.map(pitch => pitch.midi));
+// Preserve the former exported name for existing diagnostics. Production
+// assignments now use exact harmonics 2–30, including fractional MIDI values.
+export const PATCH_PENTATONIC_MIDI = PATCH_OVERTONE_MIDI;
 export const PATCH_PENTATONIC_RATIOS = Object.freeze([1, 9 / 8, 5 / 4, 3 / 2, 5 / 3]);
-export const PATCH_TUNING_CENTS = Object.freeze(PATCH_PENTATONIC_RATIOS.map((ratio, index) => 1200 * Math.log2(ratio) - PATCH_SCALE_STEPS[index] * 100));
+const LEGACY_TUNING_CENTS = PATCH_PENTATONIC_RATIOS.map((ratio, index) => 1200 * Math.log2(ratio) - LEGACY_SCALE_STEPS[index] * 100);
+export const PATCH_TUNING_CENTS = Object.freeze(PATCH_OVERTONE_MIDI.map(midi => 100 * (midi - Math.round(midi))));
+const overtoneForMidi = midi => OVERTONE_TONE_PITCHES.find(pitch => pitch.midi === midi);
+const legacyTuningCents = midi => LEGACY_TUNING_CENTS[LEGACY_SCALE_STEPS.indexOf(((midi - 25) % 12 + 12) % 12)] ?? 0;
 export function patchTuningCents(midi) {
-  const degree = ((midi - 25) % 12 + 12) % 12;
-  return PATCH_TUNING_CENTS[PATCH_SCALE_STEPS.indexOf(degree)] ?? 0;
+  return overtoneForMidi(midi) ? 100 * (midi - Math.round(midi)) : legacyTuningCents(midi);
 }
-export const patchFrequencyForMidi = midi => 440 * 2 ** ((midi - 69) / 12) * 2 ** (patchTuningCents(midi) / 1200);
+// The drone still calls this helper with its original low MIDI voicing.
+// Keep that tuning independent; never round the new harmonic-series pitches.
+export const patchFrequencyForMidi = midi => overtoneForMidi(midi)?.frequency ?? 440 * 2 ** ((midi - 69) / 12) * 2 ** (legacyTuningCents(midi) / 1200);
 // A quiet, stable two-octave body carries the lowest fundamentals on small
 // speakers. It disappears before the middle register and adds < .5 dB RMS.
 export const patchLowRegisterBodyLevel = frequency => .22 * (1 - smooth((frequency - 70) / 100));
@@ -40,6 +46,8 @@ export const PATCH_HELD_MOTION_RISE_SECONDS = 1;
 export const PATCH_HELD_MOTION_DEPTH = .32;
 const HELD_MOTION_EXIT_SECONDS = .2;
 export const patchHeldToneMotionDepth = age => PATCH_HELD_MOTION_DEPTH * smooth((age - PATCH_HELD_MOTION_START_SECONDS) / PATCH_HELD_MOTION_RISE_SECONDS);
+const HELD_CLARITY_SETTLE_SECONDS = 5;
+export const patchHeldToneClarity = age => smooth((age - PATCH_HELD_MOTION_START_SECONDS) / HELD_CLARITY_SETTLE_SECONDS);
 // A completed short gesture can reach Main after its actor has released.
 // Retain only the measured cooling edge, for one rounded finite response.
 export const PATCH_COOLING_RESPONSE_SECONDS = 1.2;
@@ -52,7 +60,7 @@ const textureTargetRms = id => id === 'ash' ? .11 : id === 'haze' ? .1 : .085;
 // distinct droplet detail versus diffuse air and fine ash in the full mix.
 export const PATCH_TEXTURE_TRIMS_DB = Object.freeze({ ash: 0, moisture: -2, haze: 1 });
 export const patchTextureLevel = id => PATCH_RESIDUE_LEVEL * .1 / textureTargetRms(id) * 10 ** ((PATCH_TEXTURE_TRIMS_DB[id] ?? 0) / 20);
-export const patchMidi = patch => PATCH_PENTATONIC_MIDI[hash(patch?.key ?? patch) % PATCH_PENTATONIC_MIDI.length];
+export const patchMidi = (patch, extinctionProgress = null) => overtonePitchForKey(patch, extinctionProgress).midi;
 export const patchResidueId = patch => PATCH_RESIDUE_IDS[hash(`${patch?.key ?? patch}:residue`) % PATCH_RESIDUE_IDS.length];
 const materialUnit = (patch, property) => {
   // Avalanche nearby grid keys before deriving separate material dimensions.
@@ -91,12 +99,43 @@ export function patchSoftToneParameters(patch = {}, hazeOnlyBlend = 0) {
   const blend = clamp(hazeOnlyBlend), hazeMix = smooth(blend), periodic = 1 - hazeMix;
   const focus = groundFocus * periodic, haziness = groundHaziness + (1 - groundHaziness) * hazeMix;
   return { cooling, emergence, focus, haziness, gain: PATCH_SOFT_TONE_LEVEL * emergence,
-    // A substantial filtered noise halo and rough upper become one stable
-    // note. The fundamental itself never receives pitch modulation.
-    fundamentalGain: (.4 + .6 * groundFocus) * periodic, hazeGain: .9 * haziness,
-    upperBlurCents: 180 * haziness, harmonicGain: (.04 + .25 * groundHaziness) * periodic,
+    // Breath excites two pitch-centred resonances instead of sitting beside
+    // a clean sine as an unrelated hiss. Cooling narrows the bands while
+    // retaining air in the sound; the quiet fundamental stays exactly fixed.
+    fundamentalGain: (.18 + .42 * groundFocus) * periodic,
+    harmonicGain: (.1 - .04 * groundFocus) * periodic, upperBlurCents: 0,
+    hazeGain: (1.03 - .16 * groundFocus) * periodic + .9 * hazeMix,
+    breathQ: (8 + 10 * groundFocus) * periodic + hazeMix,
+    breathRatio: 1 + .7 * hazeMix,
+    airGain: (.367 - .067 * groundFocus) * periodic,
+    airQ: 6 + 6 * groundFocus,
+    airRatio: 2 * 2 ** ((10 - 4 * groundFocus) / 1200),
     cutoffRatio: 2.2 + 1.4 * (1 - emergence), hazeOnlyBlend: blend };
 
+}
+
+/** After held motion begins, breath slowly settles around its fixed pitch. */
+export function patchHeldToneCharacter(shape, age) {
+  const clarity = patchHeldToneClarity(age), hazeMix = smooth(shape.hazeOnlyBlend), periodic = 1 - hazeMix;
+  if (clarity <= 0 || periodic <= 0) return shape;
+  const blend = (from, to) => from + (to - from) * clarity;
+  const initial = { anchor: shape.fundamentalGain / periodic, upper: shape.harmonicGain / periodic,
+    breath: (shape.hazeGain - .9 * hazeMix) / periodic, air: shape.airGain / periodic };
+  const settled = { anchor: blend(initial.anchor, .9), upper: blend(initial.upper, .06),
+    breath: blend(initial.breath, .35), air: blend(initial.air, .14) };
+  // Sine power is amplitude²/2; each prepared breath band is about .6 RMS.
+  // Match the character's estimated power throughout, so clarity is heard as
+  // a stronger pitch within the same note rather than an extra volume swell.
+  const power = value => .5 * (value.anchor ** 2 + value.upper ** 2) + .36 * (value.breath ** 2 + value.air ** 2);
+  const makeup = Math.sqrt(power(initial) / power(settled));
+  return { ...shape, heldClarity: clarity * periodic,
+    fundamentalGain: settled.anchor * makeup * periodic,
+    harmonicGain: settled.upper * makeup * periodic,
+    hazeGain: settled.breath * makeup * periodic + .9 * hazeMix,
+    airGain: settled.air * makeup * periodic,
+    breathQ: blend((shape.breathQ - hazeMix) / periodic, 48) * periodic + hazeMix,
+    airQ: blend(shape.airQ, 24),
+    airRatio: blend(shape.airRatio, 2) };
 }
 
 /** A finite equal-power tone → recording morph, then a complete fade to zero. */
@@ -141,6 +180,7 @@ const curveValue = (curve, progress) => {
 const disconnect = node => { try { node?.disconnect(); } catch {} };
 const stop = (node, at) => { try { node?.stop(at); } catch {} };
 const voiceSources = voice => [...voice.oscillators, ...(voice.modulators || []), ...(voice.bodyOscillator ? [voice.bodyOscillator] : []), ...(voice.hazeSource ? [voice.hazeSource] : [])];
+const breathBandMakeup = (frequency, q, sampleRate) => .6 / Math.sqrt(Math.PI * frequency / (3 * q * sampleRate));
 
 // Keep analytic targets because AudioParam.value is not a reliable way to
 // recover the instantaneous value during an interrupted Safari target ramp.
@@ -179,12 +219,13 @@ export class PatchSoftToneAudio {
     this.participantCount = 0; this.normalizationCount = 1; this.crowdTargetGain = 1;
     this.textureNormalizationCount = 1; this.textureCrowdTargetGain = 1;
     this.enabled = false; this.toneWeight = 1; this.textureWeight = 1; this.hazeOnlyBlend = 0; this.mixer = { chimes: 1, outDrone: 1 }; this.recentCooling = new Map(); this.allowReleasedCooling = true;
-    this.morphSeconds = 8; this.fadeSeconds = 20; this.servedTransitions = 0; this.admissionSequence = 0;
+    this.morphSeconds = 8; this.fadeSeconds = 20; this.servedTransitions = 0; this.admissionSequence = 0; this.extinctionProgress = null;
   }
-  configure({ enabled = this.enabled, toneWeight = 1, textureWeight = 1, hazeOnlyBlend = this.hazeOnlyBlend, globalHeat = this.globalHeat, mixer = this.mixer, morphSeconds = 8, fadeSeconds = 20, participantCount = this.participantCount, allowReleasedCooling = this.allowReleasedCooling } = {}) {
+  configure({ enabled = this.enabled, toneWeight = 1, textureWeight = 1, hazeOnlyBlend = this.hazeOnlyBlend, globalHeat = this.globalHeat, extinctionProgress = this.extinctionProgress, mixer = this.mixer, morphSeconds = 8, fadeSeconds = 20, participantCount = this.participantCount, allowReleasedCooling = this.allowReleasedCooling } = {}) {
     if (this.enabled && !enabled) this.stop();
     this.enabled = enabled; this.toneWeight = clamp(toneWeight); this.textureWeight = clamp(textureWeight); this.hazeOnlyBlend = clamp(hazeOnlyBlend); this.mixer = mixer;
     this.allowReleasedCooling = allowReleasedCooling === true; this.globalHeat = clamp(globalHeat);
+    this.extinctionProgress = Number.isFinite(extinctionProgress) ? clamp(extinctionProgress) : null;
     if (!this.enabled || this.toneWeight <= 0 || !this.allowReleasedCooling) this.recentCooling.clear();
     this.participantCount = Number.isFinite(Number(participantCount)) ? Math.max(0, Math.floor(Number(participantCount))) : 0;
     this.morphSeconds = Math.max(1, Math.min(180, Number(morphSeconds) || 8)); this.fadeSeconds = Math.max(1, Math.min(180, Number(fadeSeconds) || 20));
@@ -195,7 +236,8 @@ export class PatchSoftToneAudio {
     // one extinction edge. Holding identities remain diagnostic information.
     for (const value of new Map(Array.from(values, value => [String(value.key), value])).values()) {
       const key = String(value.key), previous = this.patches.get(key);
-      const patch = { ...value, key, midi: patchMidi(key), position: previous?.position ?? [...(value.position ?? [.5, .5])] };
+      const pitch = overtonePitchForKey(key, this.extinctionProgress);
+      const patch = { ...value, key, midi: pitch.midi, position: previous?.position ?? [...(value.position ?? [.5, .5])] };
       next.set(key, patch);
       // Only in-session, authoritative heat loss admits a released patch.
       // Initial cooled snapshots, wet skin, repeated packets and reheating
@@ -351,36 +393,37 @@ export class PatchSoftToneAudio {
       // It shares the complete emergence, spatial, mixer and release path.
       bodyOscillator.connect(bodyGain); bodyGain.connect(gain); bodyOscillator.start(now + .02);
     }
-    // The upper's audible roughness leaves the assigned fundamental fixed.
-    const blurOscillator = c.createOscillator(), upperBlur = c.createGain();
-    blurOscillator.type = 'triangle'; blurOscillator.frequency.value = 21 + 22 * materialUnit(patch, 'upper-grain');
-    upperBlur.gain.value = shape.upperBlurCents;
-    blurOscillator.connect(upperBlur); upperBlur.connect(oscillators[1].detune); blurOscillator.start(now + .02);
-    // A shared, local noise buffer makes haze audible instead of relying on
-    // a barely perceptible vibrato. Each bounded tone owns only its source and
-    // band-pass; no fetches or places in the finite material pool are needed.
+    // A shared breath excitation drives pitch-centred resonators. The extra
+    // resonator replaces the former fast upper-pitch LFO and its depth node,
+    // so this remains one small native graph with no worklet or sample fetch.
     const hazeSource = c.createBufferSource(), hazeFilter = c.createBiquadFilter(), hazeGain = c.createGain();
+    const airFilter = c.createBiquadFilter(), airGain = c.createGain();
     if (!this.hazeBuffer) {
       const sampleRate = Math.min(12000, c.sampleRate), length = Math.ceil(sampleRate * 1.37);
       this.hazeBuffer = c.createBuffer(1, length, sampleRate);
       const data = this.hazeBuffer.getChannelData(0); let state = 0x5ab37de9;
       for (let index = 0; index < data.length; index++) { state ^= state << 13; state ^= state >>> 17; state ^= state << 5; data[index] = (state >>> 0) / 2147483648 - 1; }
     }
-    const hazeFrequency = Math.max(70, Math.min(2600, frequency * 1.7));
-    // Approximate band-pass noise power matching keeps low assigned notes
-    // just as grainy as high ones without making their halo excessively loud.
-    const hazeMakeup = .6 / Math.sqrt(Math.PI * hazeFrequency / (3 * this.hazeBuffer.sampleRate));
+    const hazeFrequency = Math.max(70, Math.min(2600, frequency * shape.breathRatio));
+    const airFrequency = Math.min(this.hazeBuffer.sampleRate * .43, frequency * shape.airRatio);
+    // Constant bandwidth-aware preparation preserves energy as cooling
+    // narrows the resonances; this is authored compensation, not an AGC.
+    const hazeMakeup = breathBandMakeup(hazeFrequency, shape.breathQ, this.hazeBuffer.sampleRate);
+    const airMakeup = breathBandMakeup(airFrequency, shape.airQ, this.hazeBuffer.sampleRate);
     hazeSource.buffer = this.hazeBuffer; hazeSource.loop = true;
     hazeSource.playbackRate.value = .97 + .06 * materialUnit(patch, 'haze-speed');
-    hazeFilter.type = 'bandpass'; hazeFilter.frequency.value = hazeFrequency; hazeFilter.Q.value = 1;
+    hazeFilter.type = 'bandpass'; hazeFilter.frequency.value = hazeFrequency; hazeFilter.Q.value = shape.breathQ;
     hazeGain.gain.value = hazeMakeup * shape.hazeGain;
     hazeSource.connect(hazeFilter); hazeFilter.connect(hazeGain); hazeGain.connect(gain);
+    airFilter.type = 'bandpass'; airFilter.frequency.value = airFrequency; airFilter.Q.value = shape.airQ;
+    airGain.gain.value = airMakeup * shape.airGain;
+    hazeSource.connect(airFilter); airFilter.connect(airGain); airGain.connect(gain);
     hazeSource.start(now + .02, this.hazeBuffer.duration * materialUnit(patch, 'haze-phase'));
     return { key: patch.key, midi: patch.midi, frequency, position: patch.position, patch, filter, gain, mixer, space, oscillators, partials,
-      modulators: [blurOscillator, motionOscillator], motionOscillator, motionDepth, motionGain, motionFrequencyHz, motionStop: null,
-      upperBlur, upperBlurCents: shape.upperBlurCents, hazeSource, hazeFilter, hazeGain, hazeMakeup, haziness: shape.haziness, focus: shape.focus, hazeOnlyBlend: shape.hazeOnlyBlend, startedAt: now,
+      modulators: [motionOscillator], motionOscillator, motionDepth, motionGain, motionFrequencyHz, motionStop: null,
+      upperBlurCents: 0, hazeSource, hazeFilter, hazeGain, hazeMakeup, airFilter, airGain, airMakeup, haziness: shape.haziness, focus: shape.focus, hazeOnlyBlend: shape.hazeOnlyBlend, startedAt: now,
       bodyLevel, bodyOscillator, bodyGain,
-      admission: ++this.admissionSequence, nodes: [filter, gain, motionGain, motionDepth, motionOscillator, mixer, ...oscillators, ...partials, ...(bodyOscillator ? [bodyOscillator, bodyGain] : []), blurOscillator, upperBlur, hazeSource, hazeFilter, hazeGain, ...space.nodes] };
+      admission: ++this.admissionSequence, nodes: [filter, gain, motionGain, motionDepth, motionOscillator, mixer, ...oscillators, ...partials, ...(bodyOscillator ? [bodyOscillator, bodyGain] : []), hazeSource, hazeFilter, hazeGain, airFilter, airGain, ...space.nodes] };
   }
   _heldMotionDepthAt(voice, now) {
     return voice.motionStop ? voice.motionStop.depth * (1 - clamp((now - voice.motionStop.at) / HELD_MOTION_EXIT_SECONDS))
@@ -399,12 +442,24 @@ export class PatchSoftToneAudio {
     voice.motionStop = { at: now, depth };
   }
   _toneCharacter(voice, shape, now, seconds = .55) {
-    voice.upperBlurCents = shape.upperBlurCents; voice.haziness = shape.haziness; voice.focus = shape.focus; voice.hazeOnlyBlend = shape.hazeOnlyBlend;
-    approach(voice.upperBlur.gain, shape.upperBlurCents, now, seconds);
+    // Freeze settling when the note exits; finite releases and material morphs
+    // keep their own end times and cannot restart a later clarity swell.
+    shape = patchHeldToneCharacter(shape, (voice.motionStop?.at ?? now) - voice.startedAt);
+    voice.heldClarity = shape.heldClarity ?? 0;
+    voice.upperBlurCents = 0; voice.haziness = shape.haziness; voice.focus = shape.focus; voice.hazeOnlyBlend = shape.hazeOnlyBlend;
     approach(voice.partials[0].gain, shape.fundamentalGain, now, seconds);
     approach(voice.partials[1].gain, shape.harmonicGain, now, seconds);
     if (voice.bodyGain) approach(voice.bodyGain.gain, voice.bodyLevel * shape.fundamentalGain, now, seconds);
+    const hazeFrequency = Math.max(70, Math.min(2600, voice.frequency * shape.breathRatio));
+    const airFrequency = Math.min(this.hazeBuffer.sampleRate * .43, voice.frequency * shape.airRatio);
+    voice.hazeMakeup = breathBandMakeup(hazeFrequency, shape.breathQ, this.hazeBuffer.sampleRate);
+    voice.airMakeup = breathBandMakeup(airFrequency, shape.airQ, this.hazeBuffer.sampleRate);
+    approach(voice.hazeFilter.frequency, hazeFrequency, now, seconds);
+    approach(voice.hazeFilter.Q, shape.breathQ, now, seconds);
+    approach(voice.airFilter.frequency, airFrequency, now, seconds);
+    approach(voice.airFilter.Q, shape.airQ, now, seconds);
     approach(voice.hazeGain.gain, shape.hazeGain * voice.hazeMakeup, now, seconds);
+    approach(voice.airGain.gain, shape.airGain * voice.airMakeup, now, seconds);
     approach(voice.filter.frequency, voice.frequency * shape.cutoffRatio, now, seconds);
   }
   _disposeVoice(voice) {
@@ -641,7 +696,7 @@ export class PatchSoftToneAudio {
   reset() { this.stop(); this.patches.clear(); this.loopBuffers = new WeakMap(); this.textureRecordings.clear(); this.recentTextureAssignments = []; this.servedTransitions = 0; this.participantCount = 0;
     this.areaEventIds.clear(); this.areaHotKeys.clear(); this.areaCompletedKeys.clear(); }
   getMetrics() {
-    return { scale: 'D♭ major pentatonic', tuning: 'D♭-anchored just intonation', character: 'filtered noise and rough uppers to focused pitch', tuningCents: [...PATCH_TUNING_CENTS], singlePitch: true, areaMode: this.areaMode, consumedAreaEvents: this.areaEventIds.size,
+    return { scale: 'D♭2 overtone series H2–H30', tuning: 'exact harmonic frequencies', rootFrequency: OVERTONE_ROOT_HZ, extinctionProgress: this.extinctionProgress, registerSelection: 'new onsets descend into the lower half by about 21% fire-out', harmonics: [...TONE_HARMONICS], character: 'breath-excited pitch resonators with a quiet fixed anchor', tuningCents: [...PATCH_TUNING_CENTS], singlePitch: true, areaMode: this.areaMode, consumedAreaEvents: this.areaEventIds.size,
       activeCount: this.voices.size, releaseCount: this.tails.size + this.handoffTails.size, morphToneCount: this.morphVoices.size,
       maxActiveVoices: this.maxVoices, maxNativeVoices: this.maxVoices * 4, textureSourceCount: this.textureSources.size, textureSourceLimit: PATCH_TEXTURE_SOURCE_LIMIT,
       textureAdmissionSeconds: PATCH_TEXTURE_ADMISSION_SECONDS,
@@ -655,7 +710,7 @@ export class PatchSoftToneAudio {
       textureRmsLevels: Object.fromEntries(PATCH_RESIDUE_IDS.map(id => [id, textureTargetRms(id) * patchTextureLevel(id)])),
       pendingResidues: [...this.residues.values()].filter(residue => !residue.windowsScheduled).length,
       recordings: [...this.textureRecordings.values()].map(recording => ({ ...recording })),
-      voices: [...this.voices.values(), ...this.morphVoices.values()].map(voice => ({ key: voice.key, midi: voice.midi, frequency: voice.frequency, tuningCents: patchTuningCents(voice.midi), position: [...voice.position], emergence: voice.emergence, focus: voice.focus, haziness: voice.haziness, targetGain: voice.targetGain, hazeOnlyBlend: voice.hazeOnlyBlend, motionDepth: this._heldMotionDepthAt(voice, this.context.currentTime), motionFrequencyHz: voice.motionFrequencyHz, currentFundamentalGain: valueAt(voice.partials[0].gain, this.context.currentTime), currentHarmonicGain: valueAt(voice.partials[1].gain, this.context.currentTime), currentBodyGain: voice.bodyGain ? valueAt(voice.bodyGain.gain, this.context.currentTime) : 0, upperBlurCents: voice.upperBlurCents, currentUpperBlurCents: valueAt(voice.upperBlur.gain, this.context.currentTime), currentHazeGain: valueAt(voice.hazeGain.gain, this.context.currentTime) / voice.hazeMakeup })),
+      voices: [...this.voices.values(), ...this.morphVoices.values()].map(voice => ({ key: voice.key, midi: voice.midi, harmonic: Math.round(voice.frequency / OVERTONE_ROOT_HZ), frequency: voice.frequency, tuningCents: patchTuningCents(voice.midi), position: [...voice.position], emergence: voice.emergence, focus: voice.focus, haziness: voice.haziness, targetGain: voice.targetGain, hazeOnlyBlend: voice.hazeOnlyBlend, heldClarity: voice.heldClarity, motionDepth: this._heldMotionDepthAt(voice, this.context.currentTime), motionFrequencyHz: voice.motionFrequencyHz, currentFundamentalGain: valueAt(voice.partials[0].gain, this.context.currentTime), currentHarmonicGain: valueAt(voice.partials[1].gain, this.context.currentTime), currentBodyGain: voice.bodyGain ? valueAt(voice.bodyGain.gain, this.context.currentTime) : 0, upperBlurCents: voice.upperBlurCents, currentUpperBlurCents: 0, currentHazeGain: valueAt(voice.hazeGain.gain, this.context.currentTime) / voice.hazeMakeup, currentAirGain: valueAt(voice.airGain.gain, this.context.currentTime) / voice.airMakeup, breathFrequency: valueAt(voice.hazeFilter.frequency, this.context.currentTime), breathQ: valueAt(voice.hazeFilter.Q, this.context.currentTime), airFrequency: valueAt(voice.airFilter.frequency, this.context.currentTime), airQ: valueAt(voice.airFilter.Q, this.context.currentTime) })),
       residues: [...this.residues.values()].map(residue => ({ key: residue.key, memberKeys: residue.memberKeys, eventId: residue.eventId, texture: residue.id, url: residue.selected?.url ?? residue.assignedUrl,
         ...residue.treatment, windowsScheduled: residue.windowsScheduled, at: residue.at, endAt: residue.endAt })) };
   }

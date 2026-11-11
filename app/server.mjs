@@ -1,9 +1,9 @@
 import http from 'node:http';
 import os from 'node:os';
-import { readFile } from 'node:fs/promises';
+import { link, mkdir, mkdtemp, readFile, rename, rm, unlink, writeFile } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
-import { timingSafeEqual } from 'node:crypto';
-import { fileURLToPath } from 'node:url';
+import { randomUUID, timingSafeEqual } from 'node:crypto';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import path from 'node:path';
 import { WebSocketServer, WebSocket } from 'ws';
 import QRCode from 'qrcode';
@@ -11,9 +11,11 @@ import { SharedRoom } from './shared-room.mjs';
 import { stateFrame, statePacket } from './wire-state.mjs';
 import { createBellRelay } from './bell-relay.mjs';
 import { createOperatorCredentials, defaultOperatorDataDirectory, loadOperatorCredentials, saveOperatorCredentials } from './operator-access.mjs';
+import { MAX_FIRE_SNAPSHOT_BYTES, validateFireSnapshot } from './fire-snapshot.mjs';
 import { isMain } from '../scripts/is-main.mjs';
 
 const workspaceRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const stagedRefreshScript = "const {refreshSnapshot} = await import(process.argv[1]); await refreshSnapshot({rootDir:process.argv[2], boundaryPath:process.argv[3]});";
 const staticFiles = new Map([
   ['/operator', ['app/operator.html', 'text/html; charset=utf-8']],
   ['/operator/', ['app/operator.html', 'text/html; charset=utf-8']],
@@ -22,6 +24,7 @@ const staticFiles = new Map([
   ['/operator.html', ['app/operator.html', 'text/html; charset=utf-8']],
   ['/operator.js', ['app/operator.js', 'text/javascript; charset=utf-8']],
   ['/operator.css', ['app/operator.css', 'text/css; charset=utf-8']],
+  ['/fire-snapshot.mjs', ['app/fire-snapshot.mjs', 'text/javascript; charset=utf-8']],
   ['/performance-view.js', ['app/performance-view.js', 'text/javascript; charset=utf-8']],
   ['/audience-instructions.js', ['app/audience-instructions.js', 'text/javascript; charset=utf-8']],
   ['/projection-fullscreen.js', ['app/projection-fullscreen.js', 'text/javascript; charset=utf-8']],
@@ -31,6 +34,8 @@ const staticFiles = new Map([
   ['/audience', ['app/peat-phone.html', 'text/html; charset=utf-8']],
   ['/audience/', ['app/peat-phone.html', 'text/html; charset=utf-8']],
   ['/sound-engine.js', ['app/sound-engine.js', 'text/javascript; charset=utf-8']],
+  ['/overtone-scale.js', ['app/overtone-scale.js', 'text/javascript; charset=utf-8']],
+  ['/app/overtone-scale.js', ['app/overtone-scale.js', 'text/javascript; charset=utf-8']],
   ['/phone-crickets.js', ['app/phone-crickets.js', 'text/javascript; charset=utf-8']],
   ['/phone-mixer.mjs', ['app/phone-mixer.mjs', 'text/javascript; charset=utf-8']],
   ['/app/phone-mixer.mjs', ['app/phone-mixer.mjs', 'text/javascript; charset=utf-8']],
@@ -169,6 +174,36 @@ async function jsonBody(request, maxBytes = 8 * 1024 * 1024) {
   catch { throw Object.assign(new Error('Expected a valid JSON body.'), { status: 400 }); }
 }
 
+async function replaceSavedFiles(files) {
+  const staged = [], published = [];
+  let complete = false;
+  try {
+    for (const [file, content] of files) {
+      await mkdir(path.dirname(file), { recursive: true });
+      const temporary = `${file}.${randomUUID()}.tmp`, backup = `${file}.${randomUUID()}.bak`;
+      const entry = { file, temporary, backup, previous: false, restored: false };
+      staged.push(entry);
+      await writeFile(temporary, content, { flag: 'wx', mode: 0o600 });
+      try { await link(file, backup); entry.previous = true; }
+      catch (error) { if (error.code !== 'ENOENT') throw error; }
+    }
+    for (const entry of staged) { await rename(entry.temporary, entry.file); published.push(entry); }
+    complete = true;
+  } catch (error) {
+    for (const entry of [...published].reverse()) {
+      if (entry.previous) await rename(entry.backup, entry.file);
+      else await unlink(entry.file);
+      entry.restored = true;
+    }
+    throw error;
+  } finally {
+    for (const entry of staged) {
+      await unlink(entry.temporary).catch(() => {});
+      if (complete || !published.includes(entry) || entry.restored) await unlink(entry.backup).catch(() => {});
+    }
+  }
+}
+
 export async function createPerformanceServer(options = {}) {
   const root = options.rootDir || workspaceRoot;
   const configuredPort = options.port ?? Number(process.env.PORT || 4173);
@@ -216,7 +251,8 @@ export async function createPerformanceServer(options = {}) {
   });
   room.on('persistenceWarning', error => console.warn('Shared state could not be restored:', error.message));
   await room.initialize();
-  let activeRefresh = null;
+  let activeRefresh = null, activeSnapshotOperation = null, snapshotGeneration = 0;
+  let committedSnapshot = savedSnapshot;
   let closed = false;
   const sockets = new Map();
   const bellRelay = createBellRelay({ room, deliver: event => {
@@ -322,31 +358,71 @@ export async function createPerformanceServer(options = {}) {
     if (phonesDue) lastPhoneBroadcast = now;
     scheduleActors();
   };
-  const snapshot = async () => JSON.parse(await readFile(path.join(root, 'data/fire-snapshot.json'), 'utf8'));
-  function refreshSnapshot() {
-    if (activeRefresh) return activeRefresh;
-    activeRefresh = new Promise((resolve, reject) => {
-      const child = spawn(process.execPath, ['scripts/fetch-snapshot.mjs'], { cwd: root, stdio: ['ignore', 'ignore', 'pipe'] });
+  const snapshotPath = path.join(root, 'data/fire-snapshot.json');
+  const snapshot = async () => options.snapshotRead ? options.snapshotRead(snapshotPath) : JSON.parse(await readFile(snapshotPath, 'utf8'));
+  const snapshotBusy = () => Object.assign(new Error('A fire snapshot is already being fetched or imported. Wait for it to finish.'), { status: 409 });
+  // An asynchronous file read can still return the old inode after an import
+  // has completed and released its lock. Track intervening operations too.
+  const snapshotReadIsStale = generation => activeSnapshotOperation !== null || generation !== snapshotGeneration;
+  const sendCommittedSnapshot = response => sendJSON(response, committedSnapshot ? 200 : 404,
+    committedSnapshot || { error: 'No saved snapshot yet. Fetch or import one to begin.' });
+  async function applySnapshot(current, extraFiles = []) {
+    const state = await room.importSnapshot(current.records, current.fetchedAt, async envelope => {
+      const files = [[snapshotPath, `${JSON.stringify(current, null, 2)}\n`], ...extraFiles];
+      if (room.persistencePath) files.push([room.persistencePath, JSON.stringify(envelope)]);
+      await replaceSavedFiles(files);
+    });
+    committedSnapshot = current;
+    broadcast({ forcePhone: true });
+    return state;
+  }
+  function downloadStagedSnapshot(staging, boundaryPath) {
+    return new Promise((resolve, reject) => {
+      const moduleURL = pathToFileURL(path.join(root, 'scripts/fetch-snapshot.mjs')).href;
+      const child = spawn(process.execPath, ['--input-type=module', '-e', stagedRefreshScript, moduleURL, staging, boundaryPath],
+        { cwd: root, stdio: ['ignore', 'ignore', 'pipe'], windowsHide: true });
       let stderr = '', timedOut = false;
       child.stderr.on('data', chunk => { stderr = (stderr + chunk.toString()).slice(-4000); });
-      const timer = setTimeout(() => { timedOut = true; child.kill('SIGKILL'); }, 110_000);
-      child.on('error', error => { clearTimeout(timer); reject(error); });
-      child.on('close', async code => {
-        clearTimeout(timer);
+      const deadline = setTimeout(() => { timedOut = true; child.kill('SIGKILL'); }, 110000);
+      child.once('error', error => {
+        clearTimeout(deadline);
+        reject(new Error('Could not start the fire-data download. Please try again.', { cause: error }));
+      });
+      child.once('close', async code => {
+        clearTimeout(deadline);
         if (code !== 0) {
           console.error('Snapshot refresh failed:', stderr || `exit ${code}`);
           reject(new Error(timedOut ? 'The NASA download timed out. Please try again.' : 'Could not download a fresh NASA snapshot. Please try again.'));
           return;
         }
-        try {
-          const current = await snapshot();
-          room.seed(current.records, current.fetchedAt);
-          await room.persist();
-          broadcast({ forcePhone: true });
-          resolve(current);
-        } catch (error) { reject(error); }
+        try { resolve(JSON.parse(await readFile(path.join(staging, 'data/fire-snapshot.json'), 'utf8'))); }
+        catch (error) { reject(error); }
       });
-    }).finally(() => { activeRefresh = null; });
+    });
+  }
+  function refreshSnapshot() {
+    if (activeRefresh) return activeRefresh;
+    if (activeSnapshotOperation) return Promise.reject(snapshotBusy());
+    activeSnapshotOperation = 'refresh';
+    snapshotGeneration += 1;
+    activeRefresh = (async () => {
+      let staging;
+      try {
+        await mkdir(path.join(root, 'data'), { recursive: true });
+        staging = await mkdtemp(path.join(root, 'data/.fire-refresh-'));
+        const boundaryPath = path.join(root, 'data/indonesia.geojson');
+        const current = validateFireSnapshot(await (options.snapshotRefresh
+          ? options.snapshotRefresh({ rootDir: staging, boundaryPath }) : downloadStagedSnapshot(staging, boundaryPath)));
+        const extraFiles = [];
+        try { extraFiles.push([path.join(root, 'data/raw-noaa20-24h.csv'), await readFile(path.join(staging, 'data/raw-noaa20-24h.csv'))]); }
+        catch (error) { if (error.code !== 'ENOENT') throw error; }
+        await applySnapshot(current, extraFiles);
+        return current;
+      } finally {
+        try { if (staging) await rm(staging, { recursive: true, force: true }); }
+        finally { activeSnapshotOperation = null; activeRefresh = null; }
+      }
+    })();
     return activeRefresh;
   }
 
@@ -435,6 +511,35 @@ export async function createPerformanceServer(options = {}) {
         if (!sameOrigin(request)) return sendJSON(response, 403, { error: 'Open Operator to export settings.' });
         return sendJSON(response, 200, room.exportSettingsPreset());
       }
+      if (url.pathname === '/api/snapshot/export' || url.pathname === '/api/snapshot/import') {
+        const importing = url.pathname.endsWith('/import'), method = importing ? 'POST' : 'GET';
+        if (request.method !== method) { response.setHeader('Allow', method); return sendJSON(response, 405, { error: `Use ${method}.` }); }
+        if (!operatorAllowed(request) || readOnlyRequest(request)) return sendJSON(response, 403, { error: 'Open Operator on the host computer or use its paired remote controls to transfer a fire snapshot.' });
+        if (!sameOrigin(request)) return sendJSON(response, 403, { error: 'Open Operator to transfer a fire snapshot.' });
+        if (!importing) {
+          const generation = snapshotGeneration;
+          let current;
+          try { current = activeSnapshotOperation ? committedSnapshot : await snapshot(); }
+          catch (error) {
+            if (snapshotReadIsStale(generation)) current = committedSnapshot;
+            else { if (error.code === 'ENOENT') return sendJSON(response, 404, { error: 'No saved fire snapshot is available to export. Fetch one first.' }); throw error; }
+          }
+          if (snapshotReadIsStale(generation)) current = committedSnapshot;
+          if (!current) return sendJSON(response, 404, { error: 'No saved fire snapshot is available to export. Fetch one first.' });
+          const canonical = validateFireSnapshot(current);
+          response.setHeader('Content-Disposition', `attachment; filename="karhutla-fire-snapshot-${canonical.fetchedAt.slice(0, 10)}.json"`);
+          return sendJSON(response, 200, canonical);
+        }
+        if (!(request.headers['content-type'] || '').startsWith('application/json')) return sendJSON(response, 415, { error: 'Expected application/json.' });
+        if (activeSnapshotOperation) throw snapshotBusy();
+        activeSnapshotOperation = 'import';
+        snapshotGeneration += 1;
+        try {
+          const current = validateFireSnapshot(await jsonBody(request, MAX_FIRE_SNAPSHOT_BYTES));
+          const state = await applySnapshot(current);
+          return sendJSON(response, 200, { snapshot: current, state });
+        } finally { activeSnapshotOperation = null; }
+      }
       if (url.pathname === '/api/qr.svg') {
         if (request.method !== 'GET') return sendJSON(response, 405, { error: 'Use GET.' });
         const operatorQR = url.searchParams.get('view') === 'operator';
@@ -474,7 +579,7 @@ export async function createPerformanceServer(options = {}) {
         if (!body || typeof body !== 'object' || Array.isArray(body)) return sendJSON(response, 400, { error: 'Expected a JSON object.' });
         if (['/api/snapshot/refresh', '/api/firms/refresh'].includes(url.pathname)) {
           try { return sendJSON(response, 200, await refreshSnapshot()); }
-          catch (error) { return sendJSON(response, 502, { error: error.message }); }
+          catch (error) { return sendJSON(response, error.status || 502, { error: error.message }); }
         }
         let state;
         if (url.pathname === '/api/bootstrap') state = await room.bootstrap(body);
@@ -490,12 +595,21 @@ export async function createPerformanceServer(options = {}) {
       if (url.pathname === '/api/snapshot') {
         if (request.method !== 'GET') return sendJSON(response, 405, { error: 'Use GET.' });
         try {
-          const current = await snapshot();
+          if (activeSnapshotOperation) return sendCommittedSnapshot(response);
+          const generation = snapshotGeneration;
+          let current;
+          try { current = await snapshot(); }
+          catch (error) {
+            if (snapshotReadIsStale(generation)) return sendCommittedSnapshot(response);
+            throw error;
+          }
+          if (snapshotReadIsStale(generation)) return sendCommittedSnapshot(response);
           // Reconcile snapshots also refreshed by the local command-line helper.
-          if (current.fetchedAt !== room.snapshotVersion) {
-            room.seed(current.records, current.fetchedAt);
-            await room.persist();
-            broadcast({ forcePhone: true });
+          if (current.fetchedAt !== room.snapshotVersion || JSON.stringify(current.records) !== JSON.stringify(room.records)) {
+            activeSnapshotOperation = 'reconcile';
+            snapshotGeneration += 1;
+            try { await applySnapshot(validateFireSnapshot(current)); }
+            finally { activeSnapshotOperation = null; }
           }
           return sendJSON(response, 200, current);
         }
