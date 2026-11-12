@@ -22,7 +22,7 @@ The downloads include recordings, visuals and a fire snapshot. Performances run 
 
 ## Control from another device
 
-Connect the second device to the same Wi-Fi and scan the audience QR code. In its browser address, replace `/audience` with `/operator-remote`. Enter the six-digit PIN shown on the host in **Operator → Setup → Remote control**. Scene cues, mixer changes and setup edits stay synchronized across the operator pages.
+Connect the second device to the same Wi-Fi and scan the audience QR code. In its browser address, replace `/audience` with `/operator-remote`. Enter the six-digit PIN shown on the host in **Operator → Setup → Remote control**. Scene cues, mixer changes and setup edits stay synchronized across the operator pages. The remote page opens with lightweight controls. Choose **Show landscape preview** only when you need to see or rain on the map; **Hide landscape preview** closes it while the controls stay connected.
 
 Bookmark the remote address; the browser remembers access. Updates on the same computer and user account retain the PIN and remembered devices automatically. **Reset PIN & devices** replaces these shared credentials for future updates too. Another computer or user account has its own PIN. If the host's network address changes, use **Refresh address** and update the bookmark. Both devices must still share the same network.
 

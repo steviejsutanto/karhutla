@@ -175,7 +175,9 @@ LAN mode binds this one prototype to `0.0.0.0`; it does not configure a tunnel, 
 
 ## Remote operator
 
-Start with the launcher or `npm run start:lan`. Scan the audience QR code on the controller, replace `/audience` with `/operator-remote`, and enter the six-digit PIN shown on the host in **Operator → Setup → Remote control**. Both `/operator-remote` and `/operator-remote/` open the PIN entry page or the remembered controller. Scene transport, shared mixer settings, timings and landscape state continue to come from the one host server, so both operator pages receive the same live updates. This route always uses a silent remote preview, including when opened on the host. Keep the host Operator page open with Main sound enabled and keep the host awake; it remains the Main audio owner.
+Start with the launcher or `npm run start:lan`. Scan the audience QR code on the controller, replace `/audience` with `/operator-remote`, and enter the six-digit PIN shown on the host in **Operator → Setup → Remote control**. Both `/operator-remote` and `/operator-remote/` open the PIN entry page or the remembered controller. Scene transport, shared mixer settings, timings and landscape state continue to come from the one host server, so both operator pages receive the same live updates. This route opens a compact authenticated operator connection without loading the projection or fire-record file, including when opened on the host. **Show landscape preview** loads an optional silent preview with economy rendering at 10 fps; hiding it closes only that remote preview. While open, its rendering pauses when offscreen or in Setup, and its silent audio analysis is skipped. The host Operator preview and standalone Projection retain their existing rendering and Main audio behavior. Keep the host Operator page open with Main sound enabled and keep the host awake; it remains the Main audio owner.
+
+Remote controllers use `/ws?role=operator&view=controls` with their own client identity. This view retains the operator authorization and PIN-reset rules, but sends scene, mixer, Main status, rain strength, ground parameters and crowd summaries without simulation cells, actor motion or bells. It creates no full landscape wire baseline. The ordinary operator/projection transports are unchanged.
 
 The remote page also has the Main sound speaker button. Each explicit Enable
 request attempts to create/resume the host audio context, including a cold start.
@@ -291,6 +293,7 @@ Reusable drawing functions, transparent frames, GIF previews, a sprite sheet, an
 - `GET /api/qr.svg`: QR code generated locally for that URL.
 - `GET /api/operator/remote`: host-only PIN, simple `remoteUrl(s)` ending in `/operator-remote`, and legacy private pairing `url(s)`; addresses are available when LAN mode has a network address.
 - `GET /api/qr.svg?view=operator`: host-only private operator pairing QR code.
+- `GET /api/snapshot/info`: paired-operator metadata from the last committed fire snapshot (dates and observation count only); never reads the source file or reconciles the landscape.
 - `POST /api/operator/pair`: exchange a six-digit `{pin}` or legacy `{token}` for a remote operator cookie; repeated failures return `429` and `Retry-After`.
 - `POST /api/operator/remote/renew`: host-only PIN and token rotation; closes paired operator connections and returns the replacement credentials.
 - `WS /ws?role=participant&clientId=...`: normalized `space: "region"` hold controls, assigned-region summaries, and acknowledgments.

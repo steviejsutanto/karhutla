@@ -40,11 +40,19 @@ class Element {
 }
 
 async function desk({ remote = false, authorized = true, importError = null, holdImport = false } = {}) {
-  const elements = new Map(), requests = [], actions = [], downloads = [], blobs = [], mounts = [], intervals = [];
+  const elements = new Map(), requests = [], actions = [], downloads = [], blobs = [], mounts = [], intervals = [], connections = [];
   const element = id => { if (!elements.has(id)) elements.set(id, new Element(id)); return elements.get(id); };
   element('fire-data-preview').hidden = true;
   const frame = element('operator-preview'), engine = { context: {}, enabled: true, applySharedSettings() {}, getMetrics: () => ({ state: 'ready' }) };
-  frame.contentWindow = { __wildfireSound: engine };
+  const remoteEngine = { context: null, enabled: false, applySharedSettings() {}, getMetrics: () => ({ state: 'off' }) };
+  frame.contentWindow = { __wildfireSound: engine, postMessage() {} };
+  class SharedConnection {
+    constructor(options) { this.options = options; this.socket = { close: () => { this.closed = true; } }; connections.push(this); }
+    emitState(state) { this.options.onState?.(state); }
+    clearHold() {}
+    stop() {}
+    destroy() { this.destroyed = true; this.socket.close(); }
+  }
   const scene = { id: 'participation', paused: false, elapsedMs: 500, settings: { wifiName: 'Fixture Wi-Fi', wifiPassword: 'fixture', participationSeconds: 333 } };
   const preservedSound = { automation: true, level: .43, mixer: { bells: 1.2 } };
   let current = sample('2026-11-07T05:00:00Z'), releaseImport, pauseRead = false, releaseRead;
@@ -54,14 +62,14 @@ async function desk({ remote = false, authorized = true, importError = null, hol
     static revokeObjectURL() {}
   }
   const context = {
-    URL: BrowserURL, URLSearchParams, Blob, Date, location, navigator: {}, createMainSoundControl, MAX_FIRE_SNAPSHOT_BYTES,
+    URL: BrowserURL, URLSearchParams, Blob, Date, location, navigator: {}, createMainSoundControl, MAX_FIRE_SNAPSHOT_BYTES, SharedConnection,
     validateFireSnapshot: value => validateFireSnapshot(JSON.parse(JSON.stringify(value))),
     DEFAULT_PARAMETERS: {}, PARAMETER_LIMITS: {}, DEFAULT_PROGRAM_NOTES: '', DEFAULT_SCORE_SETTINGS: {}, SCENE_DURATION_LIMITS: {},
     sceneClock: () => '00:00', sceneRemaining: () => 0, scenePresentation: value => ({ cueScene: value.id }), scenePhaseReadout: () => '',
-    document: { body: { dataset: { workspaceView: 'performance' }, append(node) { downloads.push(node); } }, getElementById: element, querySelectorAll: () => [], activeElement: null, createElement: () => new Element() },
+    document: { body: { dataset: { workspaceView: 'performance' }, append(node) { downloads.push(node); } }, getElementById: element, querySelectorAll: () => [], activeElement: null, createElement: () => new Element(), addEventListener() {}, hidden: false },
     window: { addEventListener() {} },
     setInterval(callback, delay) { intervals.push({ callback, delay }); return intervals.length; }, setTimeout() { return 1; }, clearTimeout() {},
-    mountSoundControls(_host, options) { mounts.push(options); return engine; },
+    mountSoundControls(_host, options) { mounts.push(options); return options.engine || (options.remoteControl ? remoteEngine : engine); },
     async operatorRequest(url, body) {
       actions.push({ url, body });
       if (url === '/api/snapshot/import') {
@@ -78,8 +86,8 @@ async function desk({ remote = false, authorized = true, importError = null, hol
       requests.push({ url, options });
       if (url === '/api/session') return { ok: true, json: async () => ({ operatorAllowed: authorized, localOperator: !remote, scene, audienceUrl: 'http://192.168.1.10:4173/audience' }) };
       if (url === '/api/snapshot/export') return { ok: true, json: async () => current };
-      if (url === '/data/fire-snapshot.json') {
-        const captured = structuredClone(current);
+      if (url === '/api/snapshot/info') {
+        const captured = { recordCount: current.records.length, fetchedAt: current.fetchedAt, observationStart: current.observationStart, observationEnd: current.observationEnd };
         if (pauseRead) { pauseRead = false; await new Promise(resolve => { releaseRead = resolve; }); }
         return { ok: true, json: async () => captured };
       }
@@ -90,7 +98,8 @@ async function desk({ remote = false, authorized = true, importError = null, hol
   vm.runInNewContext(source, context, { filename: 'operator.js' });
   const settle = () => new Promise(resolve => setImmediate(resolve));
   await settle(); await frame.emit('load');
-  return { element, frame, engine, requests, actions, downloads, blobs, mounts, metrics: context.window.__performanceOperator, settle,
+  if (authorized && remote) { connections[0].emitState({ type: 'state', epoch: 'initial-epoch', snapshotVersion: current.fetchedAt, scene, soundSettings: preservedSound, strength: .37 }); await settle(); }
+  return { element, frame, engine: remote ? remoteEngine : engine, requests, actions, downloads, blobs, mounts, connections, metrics: context.window.__performanceOperator, settle,
     releaseImport() { releaseImport?.(); }, pauseSourceRead() { pauseRead = true; }, releaseSourceRead() { releaseRead?.(); },
     readSnapshot: () => context.readSnapshot(),
     async choose(file) { element('fire-data-file').files = [file]; await element('fire-data-file').emit('change'); await settle(); },
@@ -136,7 +145,7 @@ for (const [description, input] of [
   assert.equal(page.element('operator-controls').disabled, false);
 });
 
-for (const remote of [false, true]) test(`${remote ? 'paired remote' : 'host'} import returns to paused Arrival without replacing the preview or its activated engine`, async () => {
+for (const remote of [false, true]) test(`${remote ? 'paired remote' : 'host'} import returns to paused Arrival while preserving ${remote ? 'direct controls without loading a preview' : 'the preview and activated engine'}`, async () => {
   const page = await desk({ remote });
   const preview = page.frame.src, srcChanges = page.frame.srcChanges, context = page.engine.context;
   await page.choose(file(sample()));
@@ -147,8 +156,19 @@ for (const remote of [false, true]) test(`${remote ? 'paired remote' : 'host'} i
   assert.equal(page.metrics.soundSettings.level, .43);
   assert.equal(page.element('rain-strength').value, '37');
   assert.equal(page.frame.src, preview); assert.equal(page.frame.srcChanges, srcChanges);
-  assert.equal(page.frame.contentWindow.__wildfireSound, page.engine); assert.equal(page.engine.context, context);
-  assert.equal(page.engine.enabled, true); assert.equal(page.mounts.length, 1);
+  assert.equal(page.engine.context, context);
+  if (remote) {
+    assert.equal(page.frame.hasAttribute('src'), false);
+    assert.equal(page.connections.length, 1);
+    assert.equal(page.connections[0].options.view, 'controls');
+    assert.equal(page.engine.enabled, false);
+    assert.equal(page.requests.some(request => request.url === '/data/fire-snapshot.json'), false);
+    assert.equal(page.requests.some(request => request.url === '/api/snapshot/info'), true);
+  } else {
+    assert.equal(page.frame.contentWindow.__wildfireSound, page.engine);
+    assert.equal(page.engine.enabled, true);
+  }
+  assert.equal(page.mounts.length, 1);
   assert.equal(page.element('fire-data-preview').hidden, true);
   assert.match(page.element('snapshot-status').textContent, /2026-11-08/);
   assert.match(page.element('fire-data-transfer-status').textContent, /imported and saved on the host/);

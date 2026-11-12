@@ -334,6 +334,21 @@ export class SharedRoom extends EventEmitter {
     };
   }
 
+  operatorControlsState() {
+    let joinedCount = 0, activeCount = 0;
+    for (const actor of this.connections.values()) if (actor.role === 'participant') {
+      joinedCount++;
+      if (actor.holding) activeCount++;
+    }
+    return {
+      type: 'state', view: 'controls', epoch: this.epoch, snapshotVersion: this.snapshotVersion,
+      simulation: { parameters: { ...this.simulation.parameters } }, strength: this.strength,
+      bootstrapAvailable: this.bootstrapAvailable, ready: !this.bootstrapAvailable,
+      joinedCount, activeCount, ...this.globalSound(), scene: this.sceneState(),
+      soundSettings: this.soundSettingsState(), mainSound: this.mainSoundState(),
+    };
+  }
+
   sceneState() { return this.scenes.state(this.clock(), this.wallClock()); }
 
   soundSettingsState() { return { ...this.soundSettings, macros: { ...this.soundSettings.macros }, mixer: { ...this.soundSettings.mixer }, phoneMixer: { ...this.soundSettings.phoneMixer } }; }

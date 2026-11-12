@@ -42,7 +42,24 @@ let pointer = null, pointerCanvas = null, lastPosition = [.5, .5], keyboardHold 
 let renderer = null, sectionRenderer = null, sectionPatches = [], sectionIndex = new Map(), sectionScale = 1, assetsReady = false, dirty = true, lastScene = -Infinity, lastReadout = -Infinity, lastContactFrame = -Infinity;
 let layoutRequest = 0, requestedRegion = 'indonesia', gestureError = '', connectionLabel = 'Connecting…', rainStrength = DEFAULT_RAIN_STRENGTH;
 let forceLayout = false, contactDirty = true;
+let previewRenderingVisible = true, remoteFrameRequest = null, frameStarted = false;
 const metrics = window.__peatStudyMetrics = { sceneDraws: 0, contactDraws: 0, sceneMs: [], sectionMs: [], atmosphereMs: [], combinedMs: [], contactMs: [], region: null, renderErrors: [], ready: false, lastContactEvent: null, lastContactDraw: null };
+
+// A remote desk keeps receiving the current room while its optional preview
+// is offscreen. Only the owning page may suspend that preview's painting.
+window.addEventListener('message', event => {
+  if (!operatorPreview || !remoteControl || window.parent === window || event.source !== window.parent || event.origin !== location.origin
+    || event.data?.type !== 'wildfire-preview-visibility' || typeof event.data.visible !== 'boolean') return;
+  if (previewRenderingVisible === event.data.visible) return;
+  previewRenderingVisible = event.data.visible;
+  document.body.dataset.previewRendering = previewRenderingVisible ? 'visible' : 'paused';
+  if (remoteFrameRequest !== null) { cancelAnimationFrame(remoteFrameRequest); remoteFrameRequest = null; }
+  finalRainLastFrame = null;
+  if (previewRenderingVisible) {
+    dirty = true; contactDirty = true; lastScene = -Infinity; lastContactFrame = -Infinity; finalRainLastPaint = -Infinity;
+    if (frameStarted) requestFrame();
+  }
+});
 
 // One static tile covers both views, their shared haze and the rain layer.
 // It is prepared once; resizing and animation do not regenerate the pixels.
@@ -172,7 +189,7 @@ function applyCells(wire, reset) {
     const key = studyCellKey(longitude, latitude), previous = cells.get(key);
     const next = { longitude, latitude, surfaceWetness, moisture, heat, extinguished, hasFire };
     // Audio receives packet endpoints before the drawing interpolates them.
-    soundCells.set(key, { key, ...next });
+    if (!remoteControl) soundCells.set(key, { key, ...next });
     if (previous && !extinguished && !reset) {
       transitions.set(key, { at: now, fromHeat: previous.heat, fromWet: previous.surfaceWetness, heat, surfaceWetness });
       next.heat = previous.heat; next.surfaceWetness = previous.surfaceWetness;
@@ -195,12 +212,14 @@ window.addEventListener('wildfire-bell', event => {
   if (operatorPreview && previewAllowed && !remoteControl) connection?.sendBellFeedback(event.detail);
 });
 function syncStudySound() {
+  if (remoteControl) return;
   const patches = layout ? [...layout.fireKeys].map(key => soundCells.get(key)).filter(Boolean) : [];
   sound.setPatches(patches);
   soundField = createParticipantSoundField(patches);
   syncSoundParticipants();
 }
 function syncSoundParticipants() {
+  if (remoteControl) return;
   const options = { excludeId: connection?.clientId, localPosition: localSoundGeo, localHolding: localSoundHolding };
   const rainAreas = actors.filter(actor => actor.role === 'participant' && actor.id !== connection?.clientId && actor.holding)
     .map(actor => ({ id: actor.id, holding: true, position: actor.position }));
@@ -282,7 +301,7 @@ function contactPoints() {
   return contacts;
 }
 function drawFeedback(now = performance.now()) {
-  if (!assetsReady || !layout) return;
+  if (!assetsReady || !layout || remoteControl && !previewRenderingVisible) return;
   const start = performance.now(), contacts = contactPoints();
   renderer.setContacts(contacts, now);
   updateCalming(contacts);
@@ -389,26 +408,35 @@ function resize() {
   const box = $('top-view').getBoundingClientRect();
   renderer?.resize(box.width, box.height);
   metrics.layout = { mapRect: renderer ? { ...renderer.mapRect } : null, groundTop, sectionTop, sectionHeight: side.height };
-  sectionScale = Math.min(window.devicePixelRatio || 1, 1.25, Math.sqrt(1280 * 720 / Math.max(1, side.width * side.height)));
+  const maxOverlayPixels = remoteControl ? 640 * 360 : 1280 * 720;
+  sectionScale = Math.min(window.devicePixelRatio || 1, remoteControl ? 1 : 1.25, Math.sqrt(maxOverlayPixels / Math.max(1, side.width * side.height)));
   sectionContact.width = Math.max(1, Math.round(side.width * sectionScale));
   sectionContact.height = Math.max(1, Math.round(side.height * sectionScale));
   finalRainCanvas.width = sectionContact.width; finalRainCanvas.height = sectionContact.height;
   finalRainLastPaint = -Infinity;
   atmosphereWidth = whole.width; atmosphereHeight = whole.height;
-  atmosphereScale = Math.min(1, Math.sqrt(1280 * 720 / Math.max(1, whole.width * whole.height)));
+  atmosphereScale = Math.min(1, Math.sqrt(maxOverlayPixels / Math.max(1, whole.width * whole.height)));
   atmosphereCanvas.width = Math.max(1, Math.round(whole.width * atmosphereScale));
   atmosphereCanvas.height = Math.max(1, Math.round(whole.height * atmosphereScale));
   dirty = true; contactDirty = true;
 }
 function record(list, value) { if (Number.isFinite(value)) { list.push(value); if (list.length > 180) list.shift(); } }
 function percentile(list, fraction) { const sorted = [...list].sort((a, b) => a - b); return sorted.length ? sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * fraction))] : 0; }
+function requestFrame() {
+  if (!remoteControl) { requestAnimationFrame(frame); return; }
+  if (previewRenderingVisible && remoteFrameRequest === null) remoteFrameRequest = requestAnimationFrame(frame);
+}
 function frame(now) {
+  if (remoteControl) {
+    remoteFrameRequest = null;
+    if (!previewRenderingVisible) return;
+  }
   if (!document.hidden && assetsReady && layout) {
     const active = Boolean(connection?.holding || actors.some(actor => actor.holding));
-    if ((contactDirty || (active && !reduced.matches) || renderer?.hasContactAnimation(now)) && now - lastContactFrame >= 1000 / 30) {
+    if ((contactDirty || (active && !reduced.matches) || renderer?.hasContactAnimation(now)) && now - lastContactFrame >= 1000 / (remoteControl ? 20 : 30)) {
       drawFeedback(now);
     }
-    if (now - lastScene >= 1000 / 24 && (dirty || transitions.size || !reduced.matches)) {
+    if (now - lastScene >= 1000 / (remoteControl ? 10 : 24) && (dirty || transitions.size || !reduced.matches)) {
       interpolate(now);
       const patches = studyPatches(layout, cells);
       renderer.setPatches(patches);
@@ -453,13 +481,14 @@ function frame(now) {
     }
   }
   drawFinalRain(now);
-  requestAnimationFrame(frame);
+  requestFrame();
 }
 function drawFinalRain(now) {
+  if (remoteControl && !previewRenderingVisible) return;
   const elapsed = finalRainLastFrame === null ? 0 : Math.min(100, Math.max(0, now - finalRainLastFrame));
   finalRainLastFrame = now;
   if (!document.hidden && !currentScene?.paused) finalRainMotionMs += elapsed;
-  if (!sectionRenderer || document.hidden || now - finalRainLastPaint < 1000 / 24) return;
+  if (!sectionRenderer || document.hidden || now - finalRainLastPaint < 1000 / (remoteControl ? 10 : 24)) return;
   const w = sectionRenderer.width, h = sectionRenderer.height;
   finalRainContext.setTransform(sectionScale, 0, 0, sectionScale, 0, 0);
   finalRainContext.clearRect(0, 0, w, h);
@@ -517,8 +546,10 @@ const projectionFullscreen = mountProjectionFullscreen({
 new ResizeObserver(resize).observe(stage);
 
 async function initialize() {
-  renderer = new PeatSurface(canvas, { quality: 'auto', reducedMotion: reduced.matches });
-  sectionRenderer = new PeatSection(sectionCanvas, { quality: 'auto', reducedMotion: reduced.matches });
+  const renderOptions = remoteControl ? { quality: 'economy', maxPixelRatio: 1, maxPixels: 640 * 360, reducedMotion: reduced.matches }
+    : { quality: 'auto', reducedMotion: reduced.matches };
+  renderer = new PeatSurface(canvas, renderOptions);
+  sectionRenderer = new PeatSection(sectionCanvas, renderOptions);
   const assetLoad = Promise.all([renderer.ready(), fetch('/data/indonesia.geojson').then(response => { if (!response.ok) throw new Error('The Indonesia outline could not load.'); return response.json(); })]).then(([, geography]) => {
     renderer.setGeography(geography);
     assetsReady = true; metrics.ready = true; resize();
@@ -528,7 +559,15 @@ async function initialize() {
   await loadRegion('indonesia');
   const session = await fetch('/api/session', { cache: 'no-store' }).then(response => response.json());
   previewAllowed = operatorPreview && session.operatorAllowed === true;
+  const wasRemote = remoteControl;
   remoteControl ||= previewAllowed && session.localOperator === false;
+  if (remoteControl && !wasRemote) {
+    soundCells.clear();
+    for (const view of [renderer, sectionRenderer]) {
+      view.maxPixelRatio = 1; view.maxPixels = 640 * 360; view.setQuality('economy');
+    }
+    resize();
+  }
   if (remoteControl) { sound.setLocalBellAudition?.(false); sound.setMuted(true); }
   document.body.dataset.remoteControl = String(remoteControl);
   syncScene(session.scene);
@@ -571,6 +610,7 @@ async function initialize() {
     if (snapshot.observationStart && snapshot.observationEnd) text('study-observed', `Satellite snapshot observed ${snapshot.observationStart.slice(0, 10)} · NASA FIRMS / NOAA-20.`);
   } catch { /* The live server state remains usable without this provenance label. */ }
   await assetLoad;
-  requestAnimationFrame(frame);
+  frameStarted = true;
+  requestFrame();
 }
 initialize().catch(showError);

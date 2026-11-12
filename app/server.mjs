@@ -257,7 +257,7 @@ export async function createPerformanceServer(options = {}) {
   const sockets = new Map();
   const bellRelay = createBellRelay({ room, deliver: event => {
     const payload = JSON.stringify(event);
-    for (const connection of sockets.values()) if (connection.readyState === WebSocket.OPEN && connection.bufferedAmount < 65536) connection.send(payload);
+    for (const connection of sockets.values()) if (connection.view !== 'controls' && connection.readyState === WebSocket.OPEN && connection.bufferedAmount < 65536) connection.send(payload);
   } });
   const localOperator = (request, currentNetwork = refreshNetwork()) => {
     const address = normalizeIP(request.socket.remoteAddress);
@@ -290,7 +290,7 @@ export async function createPerformanceServer(options = {}) {
   let revision = 0, lastPhoneBroadcast = -Infinity;
   const ACTOR_INTERVAL_MS = 1000 / 30;
   let actorTimer = null, lastActorPublish = -Infinity;
-  const needsActors = connection => ['operator', 'projection'].includes(connection.role) && connection.readyState === WebSocket.OPEN
+  const needsActors = connection => connection.view !== 'controls' && ['operator', 'projection'].includes(connection.role) && connection.readyState === WebSocket.OPEN
     && connection.baseline?.state.epoch === room.epoch && connection.actorRevisionSent !== room.actorRevision;
   const scheduleActors = () => {
     if (closed || actorTimer || ![...sockets.values()].some(needsActors)) return;
@@ -343,13 +343,16 @@ export async function createPerformanceServer(options = {}) {
   const broadcast = ({ forcePhone = false } = {}) => {
     const now = performance.now();
     const phonesDue = forcePhone || options.autoTick === false || now - lastPhoneBroadcast >= 480;
-    let frame = null, summaries = null;
+    let frame = null, summaries = null, controls = null;
     for (const [connectionId, connection] of sockets) {
       if (connection.readyState !== WebSocket.OPEN || connection.stateSending || connection.actorSending || connection.bufferedAmount > 64 * 1024) continue;
       if (connection.role === 'participant') {
         if (!phonesDue) continue;
         summaries ??= new Map();
         sendUpdate(connection, room.phoneState(connectionId, summaries));
+      } else if (connection.view === 'controls') {
+        controls ??= room.operatorControlsState();
+        sendUpdate(connection, controls);
       } else {
         frame ??= makeFrame();
         sendUpdate(connection, statePacket(frame, connection.baseline), frame);
@@ -511,6 +514,16 @@ export async function createPerformanceServer(options = {}) {
         if (!sameOrigin(request)) return sendJSON(response, 403, { error: 'Open Operator to export settings.' });
         return sendJSON(response, 200, room.exportSettingsPreset());
       }
+      if (url.pathname === '/api/snapshot/info') {
+        if (request.method !== 'GET') { response.setHeader('Allow', 'GET'); return sendJSON(response, 405, { error: 'Use GET.' }); }
+        if (!operatorAllowed(request) || readOnlyRequest(request)) return sendJSON(response, 403, { error: 'Open Operator on the host computer or use its paired remote controls to read the saved fire-data status.' });
+        if (!sameOrigin(request)) return sendJSON(response, 403, { error: 'Open Operator to read the saved fire-data status.' });
+        if (!committedSnapshot) return sendJSON(response, 404, { error: 'No saved snapshot yet. Fetch or import one to begin.' });
+        return sendJSON(response, 200, {
+          fetchedAt: committedSnapshot.fetchedAt, observationStart: committedSnapshot.observationStart,
+          observationEnd: committedSnapshot.observationEnd, recordCount: committedSnapshot.records?.length || 0,
+        });
+      }
       if (url.pathname === '/api/snapshot/export' || url.pathname === '/api/snapshot/import') {
         const importing = url.pathname.endsWith('/import'), method = importing ? 'POST' : 'GET';
         if (request.method !== method) { response.setHeader('Allow', method); return sendJSON(response, 405, { error: `Use ${method}.` }); }
@@ -639,9 +652,11 @@ export async function createPerformanceServer(options = {}) {
     if (!sameOrigin(request)) return rejectUpgrade('403 Forbidden', 'Connection origin is not allowed.');
     const role = url.searchParams.get('role') || 'participant';
     const scope = url.searchParams.get('scope') || 'region';
+    const view = url.searchParams.get('view') || 'full';
     const clientId = url.searchParams.get('clientId');
     if (!['operator', 'participant', 'projection'].includes(role) || !clientId || !/^[a-zA-Z0-9_-]{1,128}$/.test(clientId)) return rejectUpgrade('400 Bad Request', 'Invalid role or clientId.');
     if (!['region', 'indonesia'].includes(scope)) return rejectUpgrade('400 Bad Request', 'Invalid audience scope.');
+    if (!['full', 'controls'].includes(view) || (view === 'controls' && role !== 'operator')) return rejectUpgrade('400 Bad Request', 'Invalid operator view.');
     if (role === 'operator' && !operatorAllowed(request)) return rejectUpgrade('403 Forbidden', 'Use the private operator link from the host computer to control this performance.');
     socket.setNoDelay(true);
     webSockets.handleUpgrade(request, socket, head, connection => {
@@ -651,6 +666,7 @@ export async function createPerformanceServer(options = {}) {
       const connectionId = welcome.connectionId;
       sockets.set(connectionId, connection);
       connection.role = role;
+      connection.view = view;
       connection.remoteOperator = role === 'operator' && !localOperator(request);
       connection.operatorSecret = connection.remoteOperator ? cookieValue(request, operatorCookie) : null;
       connection.baseline = null;
@@ -688,8 +704,9 @@ export async function createPerformanceServer(options = {}) {
         }
       });
       connection.on('close', () => { sockets.delete(connectionId); room.disconnect(connectionId); scheduleActors(); });
-      connection.send(JSON.stringify(welcome));
+      connection.send(JSON.stringify(view === 'controls' ? { ...welcome, view } : welcome));
       if (role === 'participant') sendUpdate(connection, room.phoneState(connectionId));
+      else if (view === 'controls') sendUpdate(connection, room.operatorControlsState());
       else {
         const frame = makeFrame();
         sendUpdate(connection, statePacket(frame), frame);

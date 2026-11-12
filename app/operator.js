@@ -1,4 +1,4 @@
-import { operatorRequest } from '/shared-client.js';
+import { SharedConnection, operatorRequest } from '/shared-client.js';
 import { DEFAULT_PARAMETERS, PARAMETER_LIMITS } from '/simulation.js';
 import { mountSoundControls } from '/sound-controls.js';
 import { createMainSoundControl } from '/main-sound-control.js';
@@ -10,8 +10,8 @@ const $ = id => document.getElementById(id), frame = $('operator-preview');
 const remoteRoute = /^\/operator-remote\/?$/.test(location.pathname);
 document.body.dataset.operatorAccess = 'locked';
 if (remoteRoute) document.title = 'karhutla · remote operator';
-// View changes only reveal existing nodes. The preview owns Main audio and
-// must stay attached, including while Setup is open.
+// The host preview owns Main audio and stays attached across workspace changes.
+// Remote controls connect directly; their optional preview only supplies visuals.
 const workspaceTabs = [...document.querySelectorAll('[data-workspace-tab]')];
 function selectWorkspace(view, focusTab = false) {
   const activeTab = workspaceTabs.find(tab => tab.dataset.workspaceTab === view);
@@ -26,6 +26,7 @@ function selectWorkspace(view, focusTab = false) {
   $('operator-setup-view').hidden = view !== 'setup';
   if (view !== 'setup') $('operator-live-view').setAttribute('aria-labelledby', activeTab.id);
   if (focusTab) activeTab.focus();
+  updatePreviewVisibility();
 }
 for (const [index, tab] of workspaceTabs.entries()) {
   tab.addEventListener('click', () => selectWorkspace(tab.dataset.workspaceTab));
@@ -41,7 +42,27 @@ for (const [index, tab] of workspaceTabs.entries()) {
   });
 }
 const metrics = window.__performanceOperator = { allowed: false, localOperator: false, remoteControl: false, connected: false, lastState: null, scene: null, soundSettings: null, mainSound: null, actions: [], errors: [] };
-let mainSoundControl = null;
+let mainSoundControl = null, controller = null, remotePreviewOpen = false, previewInView = true;
+let lastSceneControls = '';
+function updatePreviewVisibility() {
+  if (!metrics.remoteControl || !remotePreviewOpen) return;
+  frame.contentWindow?.postMessage({ type: 'wildfire-preview-visibility', visible: previewInView && document.body.dataset.workspaceView !== 'setup' && !document.hidden }, location.origin);
+}
+if (typeof IntersectionObserver !== 'undefined') new IntersectionObserver(entries => {
+  previewInView = entries[0]?.isIntersecting === true; updatePreviewVisibility();
+}).observe(frame);
+document.addEventListener('visibilitychange', updatePreviewVisibility);
+$('operator-preview-toggle').addEventListener('click', () => {
+  if (!metrics.remoteControl || !metrics.allowed) return;
+  remotePreviewOpen = !remotePreviewOpen;
+  frame.hidden = !remotePreviewOpen;
+  $('operator-preview-toggle').setAttribute('aria-expanded', String(remotePreviewOpen));
+  text('operator-preview-toggle', remotePreviewOpen ? 'Hide landscape preview' : 'Show landscape preview');
+  if (remotePreviewOpen) frame.src = '/projection?operator-preview=1&remote-control=1';
+  else frame.removeAttribute('src');
+  text('operator-preview-hint', remotePreviewOpen ? 'Hold the landscape to rain. Close the preview when adjusting controls.' : 'Controls stay live with the preview closed. Open it to view the landscape or add rain.');
+  updatePreviewVisibility();
+});
 let latestState = null, sound = null, scene = null, pending = 0, soundTimer = null, soundPatch = {}, soundWaiters = [], strengthTimer = null, timingTimer = null, settingsDirty = false, scoreSettingsDirty = false, lastSoundSettings = '', connectionNotice = true;
 let fireDataBusy = false, selectedFireData = null, snapshotReadTask = null, lastSnapshotIdentity;
 const parameterLabels = { fireReturnSeconds: ['Fire return', 'How quickly unfinished fire returns after rain leaves.'], rainResponseSeconds: ['Surface response', 'How quickly held rain damps the surface flames.'], deepCoolingSeconds: ['Ground cooling', 'How long rain takes to cool the deeper fire.'], extinctionHoldSeconds: ['Extinction hold', 'How long cooled ground must stay wet to settle out.'] };
@@ -51,6 +72,7 @@ for (const input of $('score-settings').querySelectorAll('input')) {
   const limits = SCENE_DURATION_LIMITS[input.name];
   if (limits) { input.min = String(limits.min); input.max = String(limits.max); }
   input.value = String(DEFAULT_SCORE_SETTINGS[input.name]);
+  input.addEventListener('blur', () => { lastSceneControls = ''; });
 }
 function text(id, value) { const node = $(id); if (node && node.textContent !== String(value)) node.textContent = String(value); }
 function notify(message, error = false, connection = false) { connectionNotice = connection; text('operator-notice', message); $('operator-notice').dataset.error = String(error); if (error) metrics.errors.push(message); }
@@ -65,7 +87,9 @@ function renderScene(next) {
   if (!next) return;
   scene = next; metrics.scene = next;
   const view = scenePresentation(next);
-  document.body.dataset.scene = next.id;
+  if (document.body.dataset.scene !== next.id) document.body.dataset.scene = next.id;
+  const signature = JSON.stringify([next.id, next.paused, next.pendingFinalRain, next.settings, settingsDirty, scoreSettingsDirty]);
+  const controlsChanged = signature !== lastSceneControls; lastSceneControls = signature;
   const labels = { arrival: '01 · Arrival', instructions: '02 · Instructions', participation: '03 · Participation', 'forest-takeover': '04 · Forest takeover', 'final-rain': '05 · Final rain' };
   text('current-scene', labels[view.cueScene] || next.label || next.id);
   text('scene-paused', next.paused ? 'Paused' : next.id === 'ended' ? '' : 'Running');
@@ -76,7 +100,7 @@ function renderScene(next) {
   $('scene-phase').dataset.phase = view.phase;
   const finalQueued = next.id === 'forest-takeover' && next.pendingFinalRain === true;
   $('scene-queue').hidden = !finalQueued;
-  for (const button of document.querySelectorAll('button[data-scene]')) {
+  if (controlsChanged) for (const button of document.querySelectorAll('button[data-scene]')) {
     const current = button.dataset.scene === view.cueScene, queued = button.dataset.scene === 'final-rain' && finalQueued;
     button.setAttribute('aria-current', current ? 'step' : 'false'); button.disabled = false;
     button.title = current ? 'Restart this scene and reset its timer.' : 'Override the sequence and start this scene now.';
@@ -96,11 +120,11 @@ function renderScene(next) {
   $('scene-end').disabled = next.id === 'ended';
   const descriptions = { arrival: 'Title, program notes and numbered Wi-Fi then QR steps are visible. Start timed performance when the room is ready. Scenes then advance automatically; any scene button overrides the sequence and resets that scene’s timer.', instructions: 'Wi-Fi details, instructions and QR are visible on Projection; the same instructions appear on phones. Main moves from haze into distant burning forest. Participation opens automatically when this countdown ends.', participation: 'Audience rain cools the ground. D♭ soft tones sound in fixed places. Main rings once when an entire rain area is extinguished; phones add light rain during touch. Forest takeover begins automatically when this countdown ends.', 'forest-takeover': 'Fire returns as burning forest rises to 100%. The low drone transfers to phones with soft distortion. Audience rain cools and extinguishes patches while returning heat fights back. Final rain begins automatically after this countdown; the scene buttons can override it.', 'final-rain': `Sparse, quiet rain builds over ${next.settings?.finalRainRiseSeconds ?? DEFAULT_SCORE_SETTINGS.finalRainRiseSeconds} seconds. After all fires are out, rain crossfades into PA crickets over ${next.settings?.rainCricketOverlapSeconds ?? DEFAULT_SCORE_SETTINGS.rainCricketOverlapSeconds} seconds as the screens fade. PA crickets and a distant orangutan voice then hold in complete darkness before the crickets transfer to phones.`, afterglow: 'Rain crossfades smoothly into PA crickets as the screens fade. PA crickets and a distant orangutan voice hold in darkness before crickets transfer to phones. Very sparse bird calls pass between phones while the orangutan remains faint on Main; all recede into silence.', ended: 'Every screen is black and all sound is silent. Restart returns the room to paused Arrival with a fresh landscape.' };
   text('scene-description', next.paused && next.id !== 'arrival' ? `Paused. ${descriptions[next.id]}` : descriptions[next.id]);
-  if (!settingsDirty) {
+  if (controlsChanged && !settingsDirty) {
     $('wifi-name').value = next.settings?.wifiName || ''; $('wifi-password').value = next.settings?.wifiPassword || '';
     $('program-notes').value = next.settings?.programNotes || DEFAULT_PROGRAM_NOTES;
   }
-  if (!scoreSettingsDirty) for (const input of $('score-settings').querySelectorAll('input')) {
+  if (controlsChanged && !scoreSettingsDirty) for (const input of $('score-settings').querySelectorAll('input')) {
     if (document.activeElement !== input) input.value = String(next.settings?.[input.name] ?? DEFAULT_SCORE_SETTINGS[input.name]);
   }
 }
@@ -113,6 +137,7 @@ function receiveState(message) {
     metrics.mainSound = message.mainSound;
     mainSoundControl?.applyState(message.mainSound, message.epoch);
   }
+  if (metrics.remoteControl) { sound?.setSceneState?.(message.scene); sound?.setMacroCondition?.(message.soundCondition); }
   renderScene(message.scene);
   const condition = message.soundCondition;
   if (condition) { text('operator-heat', `${Math.round((condition.heat || 0) * 100)}%`); text('operator-wetness', `${Math.round((condition.surfaceWetness || 0) * 100)}%`); text('operator-out', `${condition.outCount || 0} / ${condition.sourceCount || 0}`); }
@@ -132,7 +157,7 @@ function receiveState(message) {
 }
 window.addEventListener('message', event => {
   if (event.origin !== location.origin || event.source !== frame.contentWindow) return;
-  if (!metrics.allowed) return;
+  if (!metrics.allowed || metrics.remoteControl) return;
   if (event.data?.type === 'wildfire-preview-state') receiveState(event.data.state);
   if (event.data?.type === 'wildfire-preview-actors') text('operator-crowd', `${event.data.state.joinedCount || 0} phones · ${event.data.state.activeCount || 0} raining`);
   if (event.data?.type === 'wildfire-preview-connection') {
@@ -145,12 +170,14 @@ window.addEventListener('message', event => {
   }
 });
 function mountAudition() {
-  if (!metrics.allowed || sound || !frame.contentWindow?.__wildfireSound) return;
-  mainSoundControl = createMainSoundControl({ engine: frame.contentWindow.__wildfireSound, remoteControl: metrics.remoteControl,
+  if (!metrics.allowed || sound || !metrics.remoteControl && !frame.contentWindow?.__wildfireSound) return;
+  const engine = metrics.remoteControl ? undefined : frame.contentWindow.__wildfireSound;
+  lastSoundSettings = ''; // A re-paired controller needs its first shared mixer state again.
+  mainSoundControl = createMainSoundControl({ engine, remoteControl: metrics.remoteControl,
     request: enabled => operatorRequest('/api/main-sound', { enabled }, { timeoutMs: 8000 }),
     report: status => operatorRequest('/api/main-sound/status', status, { timeoutMs: 8000 }),
     onError: message => notify(message, true) });
-  sound = mountSoundControls($('operator-sound'), { mode: 'operator', engine: frame.contentWindow.__wildfireSound, shared: true, remoteControl: metrics.remoteControl,
+  sound = mountSoundControls($('operator-sound'), { mode: 'operator', engine, shared: true, remoteControl: metrics.remoteControl,
     mainSoundControl,
     onSettings(patch) {
       for (const [key, value] of Object.entries(patch)) soundPatch[key] = ['mixer', 'macros', 'phoneMixer'].includes(key) ? { ...soundPatch[key], ...value } : value;
@@ -165,10 +192,24 @@ function mountAudition() {
       }, 160);
       return saved;
     } });
+  mainSoundControl.setConnected(metrics.connected);
   if (latestState?.mainSound) mainSoundControl.applyState(latestState.mainSound, latestState.epoch);
   if (latestState?.soundSettings) { sound.applySharedSettings(latestState.soundSettings); lastSoundSettings = JSON.stringify(latestState.soundSettings); }
 }
-frame.addEventListener('load', mountAudition);
+frame.addEventListener('load', () => { mountAudition(); updatePreviewVisibility(); });
+function connectController() {
+  mountAudition();
+  if (controller) return;
+  controller = new SharedConnection({ role: 'operator', view: 'controls', onState: receiveState,
+    onConnection(status) {
+      const connected = status === 'connected';
+      mainSoundControl?.setConnected(connected);
+      metrics.connected = connected;
+      if (status === 'disconnected') { notify('Disconnected. Waiting for the host to reconnect.', false, true); void refreshSession(); }
+      else if (status === 'connecting') notify('Connecting to the host…', false, true);
+      else if (connectionNotice) notify('Connected to the host. Remote controls are ready.');
+    }, onError(message) { notify(message, true); } });
+}
 mountAudition();
 const sceneCueMessages = { arrival: 'Arrival is ready.', instructions: 'Instructions are visible. Main is moving into distant burning forest.', participation: 'Participation opened.', 'forest-takeover': 'Forest takeover started. Rain cools the ground while fire keeps returning.', 'final-rain': 'Final rain started.' };
 for (const button of document.querySelectorAll('button[data-scene]')) button.addEventListener('click', async () => {
@@ -195,13 +236,13 @@ function fireDataDate(value) {
   return value && Number.isFinite(date.getTime()) ? `${date.toISOString().slice(0, 16).replace('T', ' ')} UTC` : 'Not recorded';
 }
 function fireDataSummary(data) {
-  const count = data.records?.length ?? 0;
+  const count = data.recordCount ?? data.records?.length ?? 0;
   const observed = count ? `Observed ${fireDataDate(data.observationStart)} to ${fireDataDate(data.observationEnd)}` : 'No fire observations in this snapshot';
   return `${count.toLocaleString()} observations · ${observed} · Fetched ${fireDataDate(data.fetchedAt)}`;
 }
 function readSnapshot() {
   if (!snapshotReadTask) snapshotReadTask = (async () => {
-    try { const response = await fetch('/data/fire-snapshot.json', { cache: 'no-store' }); if (!response.ok) throw new Error(); const data = await response.json(); text('snapshot-status', `NASA FIRMS / NOAA-20 · ${fireDataSummary(data)}`); }
+    try { const response = await fetch('/api/snapshot/info', { cache: 'no-store' }); if (!response.ok) throw new Error(); const data = await response.json(); text('snapshot-status', `NASA FIRMS / NOAA-20 · ${fireDataSummary(data)}`); }
     catch { text('snapshot-status', 'Saved source status unavailable. The received landscape remains visible.'); }
   })().finally(() => { snapshotReadTask = null; });
   return snapshotReadTask;
@@ -385,7 +426,12 @@ async function readSession() {
     renderScene(session.scene);
     if (!metrics.allowed) {
       if (frame.hasAttribute('src')) frame.removeAttribute('src');
-      sound = null; latestState = null; metrics.connected = false;
+      controller?.destroy(); controller = null;
+      mainSoundControl?.destroy(); mainSoundControl = null;
+      sound = null; latestState = null; metrics.connected = false; remotePreviewOpen = false;
+      lastSceneControls = '';
+      $('operator-preview-toggle').setAttribute('aria-expanded', 'false');
+      text('operator-preview-toggle', 'Show landscape preview');
       const message = pairingError || 'Enter the operator PIN to connect this device.';
       if (wasAllowed || !sessionReady || $('operator-notice').textContent !== message) notify(message, true, true);
       sessionReady = true;
@@ -395,13 +441,18 @@ async function readSession() {
     $('operator-audience-link').href = join.href; $('operator-join-url').href = join.href; text('operator-join-url', join.href);
     const audienceQR = `/api/qr.svg?view=audience&address=${encodeURIComponent(join.host)}`;
     if ($('operator-qr').getAttribute('src') !== audienceQR) $('operator-qr').src = audienceQR;
-    const previewURL = `/projection?operator-preview=1${metrics.remoteControl ? '&remote-control=1' : ''}`;
-    if (frame.getAttribute('src') !== previewURL) {
+    $('operator-preview-toggle').hidden = !metrics.remoteControl;
+    frame.hidden = metrics.remoteControl && !remotePreviewOpen;
+    if (metrics.remoteControl) {
+      frame.title = 'Remote landscape preview: hold the map to rain';
+      text('operator-preview-hint', remotePreviewOpen ? 'Hold the landscape to rain. Close the preview when adjusting controls.' : 'Controls stay live with the preview closed. Open it to view the landscape or add rain.');
+      connectController();
+    } else if (frame.getAttribute('src') !== '/projection?operator-preview=1') {
       sound = null; latestState = null;
-      frame.src = previewURL;
-      frame.title = metrics.remoteControl ? 'Remote landscape preview: hold the map to rain' : 'Operator landscape preview: hold the map to rain and audition fire patches';
-      text('operator-preview-hint', metrics.remoteControl ? 'Hold the landscape to rain. Mixer changes control Main sound on the host computer.' : 'Enable main sound, then hold either view to rain and audition patches.');
-      notify(metrics.remoteControl ? 'Connected to the host. Loading the shared landscape…' : 'Connected. Start timed performance when the audience is ready.');
+      frame.src = '/projection?operator-preview=1';
+      frame.title = 'Operator landscape preview: hold the map to rain and audition fire patches';
+      text('operator-preview-hint', 'Enable main sound, then hold either view to rain and audition patches.');
+      notify('Connected. Start timed performance when the audience is ready.');
       void readSnapshot();
     }
     if (metrics.localOperator && !metrics.remoteControl && (!sessionReady || document.body.dataset.workspaceView === 'setup')) void refreshRemoteLink();
@@ -469,8 +520,9 @@ async function initialize() {
 }
 initialize();
 setInterval(() => {
-  if (!sound || !metrics.soundSettings?.automation) return;
-  const effective = sound.getMetrics()?.automation?.effectiveMacros || sound.getMetrics()?.macros;
+  if (!sound || document.hidden || document.body.dataset.workspaceView !== 'mixer' || !metrics.soundSettings?.automation) return;
+  const soundMetrics = sound.getMetrics();
+  const effective = soundMetrics?.automation?.effectiveMacros || soundMetrics?.macros;
   if (!effective) return;
   for (const input of $('operator-sound').querySelectorAll('[data-macro]')) {
     if (document.activeElement === input || soundTimer) continue;

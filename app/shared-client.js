@@ -1,7 +1,8 @@
 // Transport only. The venue server owns time, water, heat, and persistence.
 export class SharedConnection {
-  constructor({ role, scope = 'region', onState, onActors, onBell, onConnection, onWelcome, onError }) {
+  constructor({ role, scope = 'region', view = null, onState, onActors, onBell, onConnection, onWelcome, onError }) {
     this.role = role;
+    this.view = view === 'controls' ? 'controls' : null;
     this.scope = scope === 'indonesia' ? 'indonesia' : 'region';
     this.onState = onState;
     this.onActors = onActors;
@@ -29,7 +30,9 @@ export class SharedConnection {
     this.newGesture = false;
     this.gestureSeq = Infinity;
     this.retryMs = 500;
-    const key = `wildfire-${role}-client-id`;
+    this.destroyed = false;
+    this.reconnectTimer = null;
+    const key = `wildfire-${role}${this.view ? `-${this.view}` : ''}-client-id`;
     const newId = `${role}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
     try {
       const storage = role === 'participant' ? localStorage : sessionStorage;
@@ -44,11 +47,14 @@ export class SharedConnection {
   }
 
   connect() {
+    if (this.destroyed) return;
     this.onConnection?.('connecting');
+    if (this.destroyed) return;
     const url = new URL('/ws', location.href);
     url.protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
     url.searchParams.set('role', this.role);
     url.searchParams.set('clientId', this.clientId);
+    if (this.view) url.searchParams.set('view', this.view);
     if (this.role === 'participant' && this.scope === 'indonesia') url.searchParams.set('scope', 'indonesia');
     const socket = new WebSocket(url);
     this.socket = socket;
@@ -79,7 +85,7 @@ export class SharedConnection {
           socket.send(JSON.stringify({ type: 'resync' }));
           return;
         }
-        if (message.type === 'state') this.revision = message.revision;
+        if (message.type === 'state' && this.view !== 'controls') this.revision = message.revision;
         if (message.assignment) this.assignment = message.assignment;
         const reset = this.epoch !== null && message.epoch !== this.epoch;
         if (reset) this.clearHold();
@@ -116,11 +122,12 @@ export class SharedConnection {
       if (this.socket !== socket) return;
       this.connected = false; this.ready = false; this.clearHold();
       this.onConnection?.('disconnected');
+      if (this.destroyed) return;
       if (event.code === 4001) {
         this.onError?.('This participant is open in another tab. This tab is not contributing.');
         return;
       }
-      setTimeout(() => this.connect(), this.retryMs);
+      this.reconnectTimer = setTimeout(() => { this.reconnectTimer = null; this.connect(); }, this.retryMs);
       this.retryMs = Math.min(5000, this.retryMs * 1.5);
     });
     socket.addEventListener('error', () => { /* close handles recovery; no old gestures are queued */ });
@@ -206,6 +213,21 @@ export class SharedConnection {
     if (this.holding || this.inputHeld) this.sendHold(false);
     this.clearHold();
     this.onConnection?.(this.connected ? 'connected' : 'disconnected');
+  }
+
+  destroy() {
+    if (this.destroyed) return;
+    if (this.holding || this.inputHeld) this.sendHold(false);
+    this.destroyed = true;
+    this.connected = false;
+    this.ready = false;
+    clearInterval(this.timer);
+    if (this.reconnectTimer !== null) clearTimeout(this.reconnectTimer);
+    this.reconnectTimer = null;
+    this.clearHold();
+    const socket = this.socket;
+    this.socket = null;
+    socket?.close();
   }
 }
 

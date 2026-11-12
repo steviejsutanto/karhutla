@@ -75,6 +75,8 @@ body[data-operator-access='locked'] .access-help { max-width: 520px; margin: 40p
 .preview-panel { padding: 16px 18px 12px; }
 .preview-panel h2 { font-size: 20px; margin-bottom: 12px; }
 #operator-crowd { color: #cfb499; font-size: 11px; text-align: right; padding-top: 4px; }
+.preview-toggle { margin: 0 0 12px; min-height: 42px; }
+#operator-preview[hidden] { display: none; }
 iframe { width: 100%; height: clamp(225px,calc(100dvh - 560px),520px); display: block; border: 1px solid #523525; background: #130c09; }
 .preview-footer { display: flex; align-items: center; gap: 20px; justify-content: space-between; padding-top: 12px; }
 .readings { display: flex; gap: 26px; margin: 0; flex-shrink: 0; }
