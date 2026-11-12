@@ -1,11 +1,11 @@
-karhutla 1.1.8 brings the latest sound refinements, a smoother phone transition from Scene 2 to Scene 3, and fire-data transfer for offline hosts.
+karhutla 1.1.9 makes the remote Operator page lighter for Android phones and other remote controllers.
 
-- **Sound:** exact overtone tuning, an earlier descent into lower tones, darker bells with longer reverb, softer rain and haze midrange, less forest bass boost, and a gentler final cricket fade.
-- **Phones:** the opening landscape fade stays smooth between venue updates, through delayed Wi-Fi packets, and after reconnecting or restarting a scene.
-- **Fire data:** use **Operator → Setup → Fire data** to fetch and export observations on a computer with internet. Send the JSON file to the host or a paired remote controller, review its dates and observation count, then import it over rehearsal Wi-Fi. The host returns to paused Arrival and keeps its mixer, timings and audience information.
-- **Reliable imports:** invalid files, failed saves and delayed reads preserve the last successfully saved landscape.
+- **Lightweight controls:** the remote page opens without loading the landscape. Scene cues, mixer, Main sound and Setup controls stay connected directly to the host.
+- **Optional preview:** choose **Show landscape preview** to see or rain on the map. The silent preview uses economy rendering at 10 fps and pauses painting while offscreen or in Setup. **Hide landscape preview** closes it while the controls stay connected.
+- **Host sound and Projection:** Main sound stays on the host Operator. Its preview remains attached across workspace changes, and standalone Projection retains its normal rendering and in-app fullscreen behavior.
+- **Settings and fire data:** export/import, PIN pairing, reconnects and mixer synchronization work with the remote preview closed. All sound refinements, phone transitions and offline fire-data transfer from 1.1.8 are included.
 
-Downloads are available for **Windows x64**, **Mac Apple Silicon**, and **Mac Intel**, each with its launcher and offline runtime. Packages are built and checked on their matching platforms. The source suite passed 919 checks with no failures and one Windows-only check skipped on Mac.
+Downloads are available for **Windows x64**, **Mac Apple Silicon**, and **Mac Intel**, each with its launcher and offline runtime. Packages are built and checked on their matching platforms. The source suite passed 936 checks with no failures and one Windows-only check skipped on Mac. Performance and interaction checks used throttled desktop Chromium with a phone viewport; physical Android verification remains pending.
 
 To update:
 
@@ -13,6 +13,7 @@ To update:
 2. Stop the old server with **Ctrl+C in its Terminal or command window**.
 3. Extract the new download into a new folder and open **Start-Karhutla.cmd** on Windows or **Start-Karhutla.command** on Mac.
 4. Import your settings through **Setup → Settings file**. Import any saved fire-data file through **Setup → Fire data**.
+5. Reload the Android phone's `/operator-remote` page to load the new controls from the updated host. The landscape preview starts closed.
 
 Settings files and fire-data files are separate. If your older version has no fire-data export button, keep its folder and use its `data/fire-snapshot.json` file for the new Fire data import.
 
